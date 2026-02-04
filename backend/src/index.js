@@ -1,0 +1,61 @@
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+
+const authRoutes = require('./routes/auth');
+const projectRoutes = require('./routes/projects');
+const actionRoutes = require('./routes/actions');
+const fileRoutes = require('./routes/files');
+const noteRoutes = require('./routes/notes');
+const meetingRoutes = require('./routes/meetings');
+const userRoutes = require('./routes/users');
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Middleware
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  credentials: true
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/actions', actionRoutes);
+app.use('/api/files', fileRoutes);
+app.use('/api/notes', noteRoutes);
+app.use('/api/meetings', meetingRoutes);
+app.use('/api/users', userRoutes);
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({
+    error: {
+      message: err.message || 'Internal server error',
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    }
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: { message: 'Not found' } });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Stats Lab API running on port ${PORT}`);
+});
+
+module.exports = app;
