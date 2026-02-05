@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from './store/authStore'
 import socket from './services/socket'
+
+// Joe's existing components (protected app)
 import Layout from './components/Layout'
 import ToastContainer from './components/Toast'
 import Login from './pages/Login'
@@ -14,6 +16,16 @@ import Settings from './pages/Settings'
 import Admin from './pages/Admin'
 import Chat from './pages/Chat'
 import Apply from './pages/Apply'
+
+// Jared's public site components
+import PublicLayout from './components/public/layout/PublicLayout'
+import HomePage from './components/public/pages/HomePage'
+import AboutPage from './components/public/pages/AboutPage'
+import PublicProjectsPage from './components/public/pages/PublicProjectsPage'
+import TeamPage from './components/public/pages/TeamPage'
+import BlogPage from './components/public/pages/BlogPage'
+import ContactPage from './components/public/pages/ContactPage'
+import DonatePage from './components/public/pages/DonatePage'
 
 function ProtectedRoute({ children }) {
   const { token, user, isLoading } = useAuthStore()
@@ -53,11 +65,25 @@ function App() {
     <BrowserRouter>
       <ToastContainer />
       <Routes>
+        {/* Public Routes - Jared's public-facing pages */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/projects" element={<PublicProjectsPage />} />
+          <Route path="/team" element={<TeamPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/donate" element={<DonatePage />} />
+        </Route>
+
+        {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/apply" element={<Apply />} />
+
+        {/* Protected Routes - Joe's app */}
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <ProtectedRoute>
               <Layout />
@@ -73,6 +99,9 @@ function App() {
           <Route path="chat/:roomId" element={<Chat />} />
           <Route path="admin" element={<AdminRoute><Admin /></AdminRoute>} />
         </Route>
+
+        {/* Redirect old root to dashboard for logged-in users - optional fallback */}
+        <Route path="/app" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   )

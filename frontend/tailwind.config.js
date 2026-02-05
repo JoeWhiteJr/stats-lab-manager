@@ -7,6 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Joe's existing colors (protected app)
         primary: {
           50: '#eef0f9',
           100: '#d5daf0',
@@ -48,19 +49,56 @@ export default {
         text: {
           primary: '#37474F',
           secondary: '#78909C',
-        }
+        },
+        // Public site colors - Slate Blue theme (distinct from UVU)
+        'pub-blue': {
+          50: '#f0f4f8',
+          100: '#d9e2ec',
+          200: '#bcccdc',
+          300: '#9fb3c8',
+          400: '#829ab1',
+          500: '#627d98',
+          600: '#486581',
+          700: '#334e68',
+          800: '#243b53',
+          900: '#102a43',
+        },
+        'pub-accent': {
+          50: '#fff4e6',
+          100: '#ffe4c4',
+          200: '#ffd19a',
+          300: '#ffbd70',
+          400: '#f9a849',
+          500: '#e8912d',
+          600: '#cb7519',
+          700: '#a35a12',
+          800: '#7c4310',
+          900: '#5c310d',
+        },
       },
       fontFamily: {
         sans: ['DM Sans', 'system-ui', 'sans-serif'],
         display: ['Fraunces', 'Georgia', 'serif'],
+        heading: ['Outfit', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         'organic': '0.625rem',
       },
       animation: {
         'fade-in': 'fadeIn 0.3s ease-out',
+        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
         'slide-up': 'slideUp 0.4s ease-out',
-      }
+      },
+      keyframes: {
+        fadeInUp: {
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+      },
     },
   },
   plugins: [],
