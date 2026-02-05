@@ -5,11 +5,11 @@ const db = require('../config/database');
 describe('Auth API', () => {
   beforeAll(async () => {
     // Clean up test data
-    await db.query('DELETE FROM users WHERE email LIKE $1', ['%test%']);
+    await db.query('DELETE FROM users WHERE email LIKE $1', ['%authtest%']);
   });
 
   afterAll(async () => {
-    await db.query('DELETE FROM users WHERE email LIKE $1', ['%test%']);
+    await db.query('DELETE FROM users WHERE email LIKE $1', ['%authtest%']);
   });
 
   describe('POST /api/auth/register', () => {
@@ -18,13 +18,13 @@ describe('Auth API', () => {
         .post('/api/auth/register')
         .send({
           name: 'Test User',
-          email: 'test@example.com',
+          email: 'authtest@example.com',
           password: 'password123'
         });
 
       expect(res.status).toBe(201);
       expect(res.body.user).toHaveProperty('id');
-      expect(res.body.user.email).toBe('test@example.com');
+      expect(res.body.user.email).toBe('authtest@example.com');
       expect(res.body.user.name).toBe('Test User');
       expect(res.body).toHaveProperty('token');
     });
@@ -34,7 +34,7 @@ describe('Auth API', () => {
         .post('/api/auth/register')
         .send({
           name: 'Another User',
-          email: 'test@example.com',
+          email: 'authtest@example.com',
           password: 'password123'
         });
 
@@ -58,7 +58,7 @@ describe('Auth API', () => {
         .post('/api/auth/register')
         .send({
           name: 'Test User',
-          email: 'test2@example.com',
+          email: 'authtest2@example.com',
           password: 'short'
         });
 
@@ -71,12 +71,12 @@ describe('Auth API', () => {
       const res = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'test@example.com',
+          email: 'authtest@example.com',
           password: 'password123'
         });
 
       expect(res.status).toBe(200);
-      expect(res.body.user.email).toBe('test@example.com');
+      expect(res.body.user.email).toBe('authtest@example.com');
       expect(res.body).toHaveProperty('token');
     });
 
@@ -84,7 +84,7 @@ describe('Auth API', () => {
       const res = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'test@example.com',
+          email: 'authtest@example.com',
           password: 'wrongpassword'
         });
 
@@ -110,7 +110,7 @@ describe('Auth API', () => {
       const res = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'test@example.com',
+          email: 'authtest@example.com',
           password: 'password123'
         });
       token = res.body.token;
@@ -122,7 +122,7 @@ describe('Auth API', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.user.email).toBe('test@example.com');
+      expect(res.body.user.email).toBe('authtest@example.com');
     });
 
     it('should reject without token', async () => {
