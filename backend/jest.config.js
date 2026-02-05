@@ -4,6 +4,6 @@ module.exports = {
   collectCoverageFrom: ['src/**/*.js', '!src/tests/**'],
   coverageDirectory: 'coverage',
   verbose: true,
-  runInBand: true,
+  maxWorkers: 1,
   globalTeardown: '<rootDir>/src/tests/globalTeardown.js'
 };
