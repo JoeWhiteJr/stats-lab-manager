@@ -77,16 +77,17 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Playfair Display', 'Georgia', 'serif'],
+        sans: ['DM Sans', 'system-ui', 'sans-serif'],
+        display: ['Fraunces', 'Georgia', 'serif'],
         heading: ['Outfit', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         'organic': '0.625rem',
       },
       animation: {
+        'fade-in': 'fadeIn 0.3s ease-out',
         'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
-        'fade-in': 'fadeIn 0.6s ease-out forwards',
+        'slide-up': 'slideUp 0.4s ease-out',
       },
       keyframes: {
         fadeInUp: {
