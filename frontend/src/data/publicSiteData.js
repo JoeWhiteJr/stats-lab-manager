@@ -2,8 +2,8 @@
 // This file contains all hardcoded text so Wave 2 terminals don't need to edit it
 
 export const siteInfo = {
-  name: 'Woodberry Center for Analytical Insights',
-  shortName: 'Stats Lab',
+  name: 'Utah Valley Research Lab',
+  shortName: 'UVRL',
   tagline: 'Turning Raw Data into Real Insight',
   description: 'Providing students real-world experience applying statistics and data analytics while helping businesses and communities make data-driven decisions.',
   affiliation: 'Independent non-profit organization',
@@ -37,7 +37,7 @@ export const navigation = [
 ];
 
 export const heroData = {
-  title: 'Woodberry Center for Analytical Insights',
+  title: 'Utah Valley Research Lab',
   tagline: 'Turning Raw Data into Real Insight',
   description: 'Providing students real-world experience applying statistics and data analytics while helping businesses and communities make data-driven decisions.',
   primaryCta: { label: 'View Our Work', path: '/projects' },
@@ -292,7 +292,7 @@ export const aboutPageData = {
   },
   mission: {
     title: 'Our Mission',
-    lead: 'The Woodberry Center for Analytical Insights bridges the gap between academic learning and professional practice by providing students with hands-on experience in statistical analysis and data science.',
+    lead: 'The Utah Valley Research Lab bridges the gap between academic learning and professional practice by providing students with hands-on experience in statistical analysis and data science.',
     description: 'We partner with businesses, government agencies, and non-profit organizations to deliver rigorous, actionable research while training the next generation of data professionals.',
   },
   cards: [
@@ -434,7 +434,7 @@ export const donatePageData = {
   },
   intro: {
     title: 'Why Your Support Matters',
-    lead: 'The Woodberry Center for Analytical Insights bridges academic learning with real-world impact. Your contribution directly supports student researchers and community-focused projects.',
+    lead: 'The Utah Valley Research Lab bridges academic learning with real-world impact. Your contribution directly supports student researchers and community-focused projects.',
   },
   impactCards: [
     {

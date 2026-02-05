@@ -20,7 +20,7 @@ export default function PublicFooter() {
           {/* About Column */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-pub-green-600 flex items-center justify-center text-white">
+              <div className="w-10 h-10 rounded-lg bg-pub-blue-600 flex items-center justify-center text-white">
                 <TrendingUp className="w-5 h-5" />
               </div>
               <span className="font-semibold text-white">{siteInfo.name}</span>
@@ -37,7 +37,7 @@ export default function PublicFooter() {
                 <li key={link.path}>
                   <Link
                     to={link.path}
-                    className="text-gray-400 hover:text-pub-green-400 transition-colors"
+                    className="text-gray-400 hover:text-pub-blue-400 transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -51,25 +51,25 @@ export default function PublicFooter() {
             <h4 className="font-semibold text-white mb-4">Contact</h4>
             <ul className="space-y-3">
               <li className="flex items-center gap-3">
-                <Mail className="w-4 h-4 text-pub-green-500" />
+                <Mail className="w-4 h-4 text-pub-blue-500" />
                 <a
                   href={`mailto:${siteInfo.contact.email}`}
-                  className="text-gray-400 hover:text-pub-green-400 transition-colors"
+                  className="text-gray-400 hover:text-pub-blue-400 transition-colors"
                 >
                   {siteInfo.contact.email}
                 </a>
               </li>
               <li className="flex items-center gap-3">
-                <Phone className="w-4 h-4 text-pub-green-500" />
+                <Phone className="w-4 h-4 text-pub-blue-500" />
                 <a
                   href={`tel:${siteInfo.contact.phoneRaw}`}
-                  className="text-gray-400 hover:text-pub-green-400 transition-colors"
+                  className="text-gray-400 hover:text-pub-blue-400 transition-colors"
                 >
                   {siteInfo.contact.phone}
                 </a>
               </li>
               <li className="flex items-start gap-3">
-                <MapPin className="w-4 h-4 text-pub-green-500 mt-1" />
+                <MapPin className="w-4 h-4 text-pub-blue-500 mt-1" />
                 <span className="text-gray-400">
                   {siteInfo.contact.city}, {siteInfo.contact.state} {siteInfo.contact.zip}
                 </span>
@@ -85,7 +85,7 @@ export default function PublicFooter() {
                 href={siteInfo.social.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-pub-green-600 hover:text-white transition-colors"
+                className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-pub-blue-600 hover:text-white transition-colors"
                 aria-label="LinkedIn"
               >
                 <Linkedin className="w-5 h-5" />
@@ -94,7 +94,7 @@ export default function PublicFooter() {
                 href={siteInfo.social.twitter}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-pub-green-600 hover:text-white transition-colors"
+                className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-pub-blue-600 hover:text-white transition-colors"
                 aria-label="Twitter"
               >
                 <Twitter className="w-5 h-5" />
@@ -103,7 +103,7 @@ export default function PublicFooter() {
                 href={siteInfo.social.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-pub-green-600 hover:text-white transition-colors"
+                className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-pub-blue-600 hover:text-white transition-colors"
                 aria-label="GitHub"
               >
                 <Github className="w-5 h-5" />

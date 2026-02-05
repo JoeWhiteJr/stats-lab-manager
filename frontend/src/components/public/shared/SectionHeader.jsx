@@ -2,7 +2,7 @@ export default function SectionHeader({ label, title, subtitle, centered = true 
   return (
     <div className={`mb-12 ${centered ? 'text-center' : ''}`}>
       {label && (
-        <span className="inline-block px-4 py-1.5 bg-pub-green-100 text-pub-green-700 rounded-full text-sm font-medium mb-4">
+        <span className="inline-block px-4 py-1.5 bg-pub-blue-100 text-pub-blue-700 rounded-full text-sm font-medium mb-4">
           {label}
         </span>
       )}

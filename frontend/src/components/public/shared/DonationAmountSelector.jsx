@@ -39,7 +39,7 @@ export default function DonationAmountSelector({
             onClick={() => handleAmountClick(amount)}
             className={`py-3 px-4 rounded-lg font-semibold transition-all ${
               selectedAmount === amount && !isCustom
-                ? 'bg-pub-green-600 text-white'
+                ? 'bg-pub-blue-600 text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -51,7 +51,7 @@ export default function DonationAmountSelector({
           onClick={() => handleAmountClick('custom')}
           className={`py-3 px-4 rounded-lg font-semibold transition-all ${
             isCustom
-              ? 'bg-pub-green-600 text-white'
+              ? 'bg-pub-blue-600 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
@@ -69,7 +69,7 @@ export default function DonationAmountSelector({
             value={customAmount}
             onChange={handleCustomChange}
             placeholder="Enter amount"
-            className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pub-green-500 focus:border-pub-green-500 outline-none"
+            className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pub-blue-500 focus:border-pub-blue-500 outline-none"
             autoFocus
           />
         </div>

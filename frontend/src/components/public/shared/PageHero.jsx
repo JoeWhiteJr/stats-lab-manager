@@ -9,8 +9,8 @@ export default function PageHero({ title, subtitle, variant = 'default' }) {
   }, []);
 
   const variantStyles = {
-    default: 'bg-gradient-to-br from-pub-green-600 to-pub-green-800',
-    donate: 'bg-gradient-to-br from-pub-tan-600 to-pub-tan-800',
+    default: 'bg-gradient-to-br from-pub-blue-600 to-pub-blue-800',
+    donate: 'bg-gradient-to-br from-pub-accent-600 to-pub-accent-800',
   };
 
   return (

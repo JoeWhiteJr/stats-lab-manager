@@ -14,7 +14,7 @@ export default function FeaturedProjectCard({
   const ClientIcon = LucideIcons[clientIcon] || LucideIcons.Building2;
 
   const statusStyles = {
-    completed: 'bg-pub-green-100 text-pub-green-700',
+    completed: 'bg-pub-blue-100 text-pub-blue-700',
     ongoing: 'bg-amber-100 text-amber-700',
   };
 
@@ -26,11 +26,11 @@ export default function FeaturedProjectCard({
     >
       {/* Image placeholder */}
       <div
-        className={`bg-gradient-to-br from-pub-green-100 to-pub-green-200 flex items-center justify-center ${
+        className={`bg-gradient-to-br from-pub-blue-100 to-pub-blue-200 flex items-center justify-center ${
           isFeatured ? 'lg:w-2/5 h-64 lg:h-auto' : 'h-48'
         }`}
       >
-        <LucideIcons.BarChart3 className="w-16 h-16 text-pub-green-400" />
+        <LucideIcons.BarChart3 className="w-16 h-16 text-pub-blue-400" />
       </div>
 
       {/* Content */}
@@ -63,7 +63,7 @@ export default function FeaturedProjectCard({
                   key={idx}
                   className="flex items-center gap-1.5 text-sm text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg"
                 >
-                  <HighlightIcon className="w-4 h-4 text-pub-green-600" />
+                  <HighlightIcon className="w-4 h-4 text-pub-blue-600" />
                   {highlight.text}
                 </span>
               );
@@ -78,7 +78,7 @@ export default function FeaturedProjectCard({
             <ul className="space-y-1.5">
               {findings.map((finding, idx) => (
                 <li key={idx} className="flex items-start gap-2 text-sm text-gray-600">
-                  <LucideIcons.ChevronRight className="w-4 h-4 text-pub-green-600 mt-0.5 flex-shrink-0" />
+                  <LucideIcons.ChevronRight className="w-4 h-4 text-pub-blue-600 mt-0.5 flex-shrink-0" />
                   {finding}
                 </li>
               ))}
