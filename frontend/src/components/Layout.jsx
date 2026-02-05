@@ -1,7 +1,8 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
-import { LayoutDashboard, User, FolderKanban, Settings, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, User, FolderKanban, Settings, LogOut, Menu, X, MessageCircle, Shield } from 'lucide-react'
 import { useState } from 'react'
+import NotificationBell from './NotificationBell'
 
 export default function Layout() {
   const { user, logout } = useAuthStore()
@@ -17,20 +18,30 @@ export default function Layout() {
     { to: '/', icon: LayoutDashboard, label: 'Lab Dashboard' },
     { to: '/my-dashboard', icon: User, label: 'My Dashboard' },
     { to: '/projects', icon: FolderKanban, label: 'Projects' },
-    { to: '/settings', icon: Settings, label: 'Settings' }
+    { to: '/chat', icon: MessageCircle, label: 'Chat' },
+    { to: '/settings', icon: Settings, label: 'Settings' },
+    ...(user?.role === 'admin' ? [{ to: '/admin', icon: Shield, label: 'Admin' }] : [])
   ]
 
   return (
     <div className="min-h-screen bg-background">
       {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 flex items-center px-4 z-50">
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 rounded-lg hover:bg-gray-100"
-        >
-          {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-        <span className="ml-3 font-display font-semibold text-lg text-primary-600">Stats Lab</span>
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-50">
+        <div className="flex items-center">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2 rounded-lg hover:bg-gray-100"
+          >
+            {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+          <span className="ml-3 font-display font-semibold text-lg text-primary-600">Stats Lab</span>
+        </div>
+        <NotificationBell />
+      </div>
+
+      {/* Desktop header */}
+      <div className="hidden lg:flex fixed top-0 left-64 right-0 h-16 bg-white border-b border-gray-200 items-center justify-end px-6 z-40">
+        <NotificationBell />
       </div>
 
       {/* Sidebar */}
@@ -96,7 +107,7 @@ export default function Layout() {
       )}
 
       {/* Main content */}
-      <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
+      <main className="lg:ml-64 pt-16 min-h-screen">
         <div className="p-6 lg:p-8">
           <Outlet />
         </div>
