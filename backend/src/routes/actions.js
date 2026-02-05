@@ -54,6 +54,44 @@ router.post('/project/:projectId', authenticate, [
   }
 });
 
+// Reorder action items (must be before /:id route)
+router.put('/reorder', authenticate, [
+  body('items').isArray(),
+  body('items.*.id').isUUID(),
+  body('items.*.sort_order').isInt({ min: 0 })
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: { message: 'Validation failed', details: errors.array() } });
+    }
+
+    const { items } = req.body;
+    const client = await db.getClient();
+
+    try {
+      await client.query('BEGIN');
+
+      for (const item of items) {
+        await client.query(
+          'UPDATE action_items SET sort_order = $1 WHERE id = $2',
+          [item.sort_order, item.id]
+        );
+      }
+
+      await client.query('COMMIT');
+      res.json({ message: 'Reorder successful' });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Update action item
 router.put('/:id', authenticate, [
   body('title').optional().trim().notEmpty(),
@@ -94,44 +132,6 @@ router.put('/:id', authenticate, [
     );
 
     res.json({ action: result.rows[0] });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Reorder action items
-router.put('/reorder', authenticate, [
-  body('items').isArray(),
-  body('items.*.id').isUUID(),
-  body('items.*.sort_order').isInt({ min: 0 })
-], async (req, res, next) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ error: { message: 'Validation failed', details: errors.array() } });
-    }
-
-    const { items } = req.body;
-    const client = await db.getClient();
-
-    try {
-      await client.query('BEGIN');
-
-      for (const item of items) {
-        await client.query(
-          'UPDATE action_items SET sort_order = $1 WHERE id = $2',
-          [item.sort_order, item.id]
-        );
-      }
-
-      await client.query('COMMIT');
-      res.json({ message: 'Reorder successful' });
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
-    }
   } catch (error) {
     next(error);
   }
