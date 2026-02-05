@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { chatApi } from '../services/api'
+import { chatApi, aiApi } from '../services/api'
 
 export const useChatStore = create((set, get) => ({
   rooms: [],
@@ -157,6 +157,17 @@ export const useChatStore = create((set, get) => ({
 
   onNewRoom: (room) => {
     set((state) => ({ rooms: [room, ...state.rooms] }))
+  },
+
+  // AI Features
+  summarizeChat: async (roomId, messageCount) => {
+    try {
+      const { data } = await aiApi.summarizeChat(roomId, messageCount)
+      return data.summary
+    } catch (error) {
+      set({ error: error.response?.data?.error?.message || 'Failed to summarize chat' })
+      return null
+    }
   },
 
   clearCurrentRoom: () => set({ currentRoom: null, messages: [], hasMore: false }),
