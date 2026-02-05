@@ -30,7 +30,6 @@ describe('Projects API', () => {
   afterAll(async () => {
     await db.query("DELETE FROM projects WHERE created_by = $1", [testUserId]);
     await db.query("DELETE FROM users WHERE email LIKE '%projecttest%'");
-    await db.pool.end();
   });
 
   describe('POST /api/projects', () => {

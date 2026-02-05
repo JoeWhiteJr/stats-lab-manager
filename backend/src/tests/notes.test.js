@@ -43,7 +43,6 @@ describe('Notes API', () => {
     await db.query("DELETE FROM notes WHERE project_id = $1", [testProjectId]);
     await db.query("DELETE FROM projects WHERE created_by = $1", [testUserId]);
     await db.query("DELETE FROM users WHERE email LIKE '%notetest%'");
-    await db.pool.end();
   });
 
   describe('POST /api/notes/project/:projectId', () => {

@@ -3,5 +3,7 @@ module.exports = {
   testMatch: ['**/*.test.js'],
   collectCoverageFrom: ['src/**/*.js', '!src/tests/**'],
   coverageDirectory: 'coverage',
-  verbose: true
+  verbose: true,
+  runInBand: true,
+  globalTeardown: '<rootDir>/src/tests/globalTeardown.js'
 };

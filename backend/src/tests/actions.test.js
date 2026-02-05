@@ -43,7 +43,6 @@ describe('Actions API', () => {
     await db.query("DELETE FROM action_items WHERE project_id = $1", [testProjectId]);
     await db.query("DELETE FROM projects WHERE created_by = $1", [testUserId]);
     await db.query("DELETE FROM users WHERE email LIKE '%actiontest%'");
-    await db.pool.end();
   });
 
   describe('POST /api/actions/project/:projectId', () => {

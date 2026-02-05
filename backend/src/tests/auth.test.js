@@ -10,7 +10,6 @@ describe('Auth API', () => {
 
   afterAll(async () => {
     await db.query('DELETE FROM users WHERE email LIKE $1', ['%test%']);
-    await db.pool.end();
   });
 
   describe('POST /api/auth/register', () => {

@@ -40,7 +40,6 @@ describe('Users API', () => {
 
   afterAll(async () => {
     await db.query("DELETE FROM users WHERE email LIKE '%usertest%'");
-    await db.pool.end();
   });
 
   describe('GET /api/users', () => {
