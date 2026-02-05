@@ -1,3 +1,6 @@
+/* Import public site overrides - must come before tailwind */
+@import './styles/public-overrides.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
