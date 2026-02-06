@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useChatStore } from '../store/chatStore'
 import { useAuthStore } from '../store/authStore'
 import { usersApi } from '../services/api'
@@ -112,12 +112,20 @@ export default function Chat() {
 
   const handleSummarize = async () => {
     setIsSummarizing(true)
-    const summary = await summarizeChat(currentRoom.id)
-    setIsSummarizing(false)
-    if (summary) {
-      setSummaryText(summary)
+    try {
+      const summary = await summarizeChat(currentRoom.id)
+      if (summary) {
+        setSummaryText(summary)
+        setShowSummaryModal(true)
+      } else {
+        setSummaryText('AI summarization is not available. An Anthropic API key needs to be configured on the server.')
+        setShowSummaryModal(true)
+      }
+    } catch (error) {
+      setSummaryText('AI summarization is not available. An Anthropic API key needs to be configured on the server.')
       setShowSummaryModal(true)
     }
+    setIsSummarizing(false)
   }
 
   const handleDeleteMessage = async (messageId) => {
@@ -166,9 +174,9 @@ export default function Chat() {
             <div className="p-4 text-center text-sm text-text-secondary">No conversations yet</div>
           ) : (
             rooms.map((room) => (
-              <a
+              <Link
                 key={room.id}
-                href={`/dashboard/chat/${room.id}`}
+                to={`/dashboard/chat/${room.id}`}
                 className={`block px-4 py-3 hover:bg-gray-50 border-b border-gray-100 ${currentRoom?.id === room.id ? 'bg-primary-50' : ''}`}
               >
                 <div className="flex items-center justify-between">
@@ -183,7 +191,7 @@ export default function Chat() {
                   {room.last_message?.sender_name && <span className="font-medium">{room.last_message.sender_name}: </span>}
                   {room.last_message?.content || 'No messages yet'}
                 </div>
-              </a>
+              </Link>
             ))
           )}
         </div>

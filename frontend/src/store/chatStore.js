@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { chatApi, aiApi } from '../services/api'
+import { useAuthStore } from './authStore'
 
 export const useChatStore = create((set, get) => ({
   rooms: [],
@@ -71,7 +72,6 @@ export const useChatStore = create((set, get) => ({
         payload.file_name = fileData.name
       }
       const { data } = await chatApi.sendMessage(roomId, payload)
-      set((state) => ({ messages: [...state.messages, data.message] }))
       return data.message
     } catch (error) {
       set({ error: error.response?.data?.error?.message || 'Failed to send message' })
@@ -135,13 +135,22 @@ export const useChatStore = create((set, get) => ({
   // Socket event handlers
   onNewMessage: (message) => {
     const { currentRoom } = get()
-    if (currentRoom && message.room_id === currentRoom.id) {
+    const currentUserId = useAuthStore.getState().user?.id
+    const isOwnMessage = message.sender_id === currentUserId
+    const isCurrentRoom = currentRoom && message.room_id === currentRoom.id
+
+    if (isCurrentRoom) {
       set((state) => ({ messages: [...state.messages, message] }))
     }
+
     set((state) => ({
       rooms: state.rooms.map((r) =>
         r.id === message.room_id
-          ? { ...r, last_message: { content: message.content, sender_name: message.sender_name, created_at: message.created_at }, unread_count: (r.unread_count || 0) + 1 }
+          ? {
+              ...r,
+              last_message: { content: message.content, sender_name: message.sender_name, created_at: message.created_at },
+              unread_count: (isOwnMessage || isCurrentRoom) ? (r.unread_count || 0) : (r.unread_count || 0) + 1
+            }
           : r
       )
     }))

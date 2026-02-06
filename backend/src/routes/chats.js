@@ -3,6 +3,7 @@ const { body, query, validationResult } = require('express-validator');
 const db = require('../config/database');
 const { authenticate, requireRole } = require('../middleware/auth');
 const socketService = require('../services/socketService');
+const { createNotification } = require('./notifications');
 
 const router = express.Router();
 
@@ -229,6 +230,30 @@ router.post('/:id/messages', authenticate, [
 
     // Emit to room via socket for real-time update
     socketService.emitToRoom(req.params.id, 'new_message', result.rows[0]);
+
+    // Create notifications for other members
+    const members = await db.query(
+      'SELECT user_id FROM chat_members WHERE room_id = $1 AND user_id != $2',
+      [req.params.id, req.user.id]
+    );
+
+    const roomName = (await db.query('SELECT name FROM chat_rooms WHERE id = $1', [req.params.id])).rows[0]?.name || 'Chat';
+    const senderName = result.rows[0].sender_name;
+    const preview = content.length > 50 ? content.substring(0, 50) + '...' : content;
+
+    for (const member of members.rows) {
+      const notification = await createNotification(
+        member.user_id,
+        'chat_message',
+        `${senderName} in ${roomName}`,
+        preview,
+        req.params.id,
+        'chat_room'
+      );
+      if (notification) {
+        socketService.emitToUser(member.user_id, 'notification', notification);
+      }
+    }
 
     res.status(201).json({ message: result.rows[0] });
   } catch (error) {
