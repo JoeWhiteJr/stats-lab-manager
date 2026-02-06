@@ -24,10 +24,8 @@ export default function MyDashboard() {
   const loadMyTasks = async () => {
     setLoadingTasks(true)
     try {
-      // Fetch tasks from all projects assigned to current user
-      const allTasks = []
-      const { data: projectsData } = await actionsApi.list('all')
-      // We need to fetch per project, so let's adjust this
+      const { data } = await actionsApi.my()
+      setMyTasks(data.actions || [])
     } catch (error) {
       console.error('Failed to load tasks:', error)
     }

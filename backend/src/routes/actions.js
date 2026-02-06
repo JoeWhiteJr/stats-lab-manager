@@ -5,6 +5,24 @@ const { authenticate } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Get all action items assigned to current user
+router.get('/my', authenticate, async (req, res, next) => {
+  try {
+    const result = await db.query(`
+      SELECT a.*, u.name as assigned_name, p.title as project_title
+      FROM action_items a
+      LEFT JOIN users u ON a.assigned_to = u.id
+      LEFT JOIN projects p ON a.project_id = p.id
+      WHERE a.assigned_to = $1
+      ORDER BY a.completed ASC, a.due_date ASC NULLS LAST, a.created_at DESC
+    `, [req.user.id]);
+
+    res.json({ actions: result.rows });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Get action items for a project
 router.get('/project/:projectId', authenticate, async (req, res, next) => {
   try {

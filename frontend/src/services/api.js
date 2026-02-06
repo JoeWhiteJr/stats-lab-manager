@@ -52,6 +52,7 @@ export const projectsApi = {
 
 // Actions
 export const actionsApi = {
+  my: () => api.get('/actions/my'),
   list: (projectId) => api.get(`/actions/project/${projectId}`),
   create: (projectId, data) => api.post(`/actions/project/${projectId}`, data),
   update: (id, data) => api.put(`/actions/${id}`, data),
