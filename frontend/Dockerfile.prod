@@ -10,6 +10,8 @@ COPY . .
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 
+# Limit Node.js heap to prevent OOM on small instances (<=2GB RAM)
+ENV NODE_OPTIONS="--max-old-space-size=1024"
 RUN npm run build
 
 FROM nginx:alpine
