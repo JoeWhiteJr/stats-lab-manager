@@ -32,6 +32,7 @@ services:
       PORT: 3001
       UPLOAD_DIR: /app/uploads
       CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
     volumes:
       - uploads_data:/app/uploads
     depends_on:
