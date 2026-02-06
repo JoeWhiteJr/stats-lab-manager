@@ -1,6 +1,7 @@
 const request = require('supertest');
 const { app } = require('../index');
 const db = require('../config/database');
+const { createTestUser } = require('./testHelper');
 
 describe('Projects API', () => {
   let authToken;
@@ -8,23 +9,16 @@ describe('Projects API', () => {
   let testProjectId;
 
   beforeAll(async () => {
-    // Clean up and create test user
     await db.query("DELETE FROM users WHERE email LIKE '%projecttest%'");
 
-    // Register and get token
-    const res = await request(app)
-      .post('/api/auth/register')
-      .send({
-        name: 'Project Test User',
-        email: 'projecttest@example.com',
-        password: 'password123'
-      });
+    const user = await createTestUser({
+      name: 'Project Test User',
+      email: 'projecttest@example.com',
+      role: 'project_lead'
+    });
 
-    authToken = res.body.token;
-    testUserId = res.body.user.id;
-
-    // Make user a project_lead so they can create projects
-    await db.query("UPDATE users SET role = 'project_lead' WHERE id = $1", [testUserId]);
+    authToken = user.token;
+    testUserId = user.id;
   });
 
   afterAll(async () => {
@@ -118,12 +112,10 @@ describe('Projects API', () => {
 
   describe('PUT /api/projects/:id', () => {
     beforeAll(async () => {
-      // Make user admin so they can update title, status, and progress
       await db.query("UPDATE users SET role = 'admin' WHERE id = $1", [testUserId]);
     });
 
     afterAll(async () => {
-      // Revert to project_lead for subsequent tests
       await db.query("UPDATE users SET role = 'project_lead' WHERE id = $1", [testUserId]);
     });
 
@@ -179,7 +171,6 @@ describe('Projects API', () => {
 
   describe('DELETE /api/projects/:id', () => {
     it('should require admin role to delete', async () => {
-      // User is project_lead, not admin
       const res = await request(app)
         .delete(`/api/projects/${testProjectId}`)
         .set('Authorization', `Bearer ${authToken}`);
@@ -188,7 +179,6 @@ describe('Projects API', () => {
     });
 
     it('should delete project when admin', async () => {
-      // Make user admin
       await db.query("UPDATE users SET role = 'admin' WHERE id = $1", [testUserId]);
 
       const res = await request(app)

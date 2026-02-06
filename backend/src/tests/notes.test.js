@@ -1,6 +1,7 @@
 const request = require('supertest');
 const { app } = require('../index');
 const db = require('../config/database');
+const { createTestUser } = require('./testHelper');
 
 describe('Notes API', () => {
   let authToken;
@@ -9,23 +10,16 @@ describe('Notes API', () => {
   let testNoteId;
 
   beforeAll(async () => {
-    // Clean up test data
     await db.query("DELETE FROM users WHERE email LIKE '%notetest%'");
 
-    // Register and get token
-    const res = await request(app)
-      .post('/api/auth/register')
-      .send({
-        name: 'Note Test User',
-        email: 'notetest@example.com',
-        password: 'password123'
-      });
+    const user = await createTestUser({
+      name: 'Note Test User',
+      email: 'notetest@example.com',
+      role: 'project_lead'
+    });
 
-    authToken = res.body.token;
-    testUserId = res.body.user.id;
-
-    // Make user a project_lead so they can create projects
-    await db.query("UPDATE users SET role = 'project_lead' WHERE id = $1", [testUserId]);
+    authToken = user.token;
+    testUserId = user.id;
 
     // Create a test project
     const projectRes = await request(app)
@@ -132,7 +126,6 @@ describe('Notes API', () => {
     });
 
     it('should order notes by updated_at descending', async () => {
-      // Create a new note to ensure ordering
       await request(app)
         .post(`/api/notes/project/${testProjectId}`)
         .set('Authorization', `Bearer ${authToken}`)

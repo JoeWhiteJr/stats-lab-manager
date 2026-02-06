@@ -1,6 +1,7 @@
 const request = require('supertest');
 const { app } = require('../index');
 const db = require('../config/database');
+const { createTestUser } = require('./testHelper');
 
 describe('Users API', () => {
   let adminToken;
@@ -9,33 +10,26 @@ describe('Users API', () => {
   let regularUserId;
 
   beforeAll(async () => {
-    // Clean up test data
     await db.query("DELETE FROM users WHERE email LIKE '%usertest%'");
 
     // Create admin user
-    const adminRes = await request(app)
-      .post('/api/auth/register')
-      .send({
-        name: 'Admin User Test',
-        email: 'usertest-admin@example.com',
-        password: 'password123'
-      });
-
-    adminToken = adminRes.body.token;
-    adminUserId = adminRes.body.user.id;
-    await db.query("UPDATE users SET role = 'admin', is_super_admin = true WHERE id = $1", [adminUserId]);
+    const admin = await createTestUser({
+      name: 'Admin User Test',
+      email: 'usertest-admin@example.com',
+      role: 'admin'
+    });
+    adminToken = admin.token;
+    adminUserId = admin.id;
+    await db.query("UPDATE users SET is_super_admin = true WHERE id = $1", [adminUserId]);
 
     // Create regular user
-    const regularRes = await request(app)
-      .post('/api/auth/register')
-      .send({
-        name: 'Regular User Test',
-        email: 'usertest-regular@example.com',
-        password: 'password123'
-      });
-
-    regularToken = regularRes.body.token;
-    regularUserId = regularRes.body.user.id;
+    const regular = await createTestUser({
+      name: 'Regular User Test',
+      email: 'usertest-regular@example.com',
+      role: 'researcher'
+    });
+    regularToken = regular.token;
+    regularUserId = regular.id;
   });
 
   afterAll(async () => {
@@ -296,7 +290,6 @@ describe('Users API', () => {
     });
 
     it('should reject non-admin users', async () => {
-      // Reset regular user to non-admin role
       await db.query("UPDATE users SET role = 'researcher' WHERE id = $1", [regularUserId]);
 
       const res = await request(app)
@@ -323,19 +316,13 @@ describe('Users API', () => {
 
   describe('DELETE /api/users/:id', () => {
     let userToDeleteId;
-    let userToDeleteToken;
 
     beforeAll(async () => {
-      // Create a user to delete
-      const res = await request(app)
-        .post('/api/auth/register')
-        .send({
-          name: 'User To Delete',
-          email: 'usertest-delete@example.com',
-          password: 'password123'
-        });
-      userToDeleteId = res.body.user.id;
-      userToDeleteToken = res.body.token;
+      const user = await createTestUser({
+        name: 'User To Delete',
+        email: 'usertest-delete@example.com'
+      });
+      userToDeleteId = user.id;
     });
 
     it('should not allow self-deletion', async () => {

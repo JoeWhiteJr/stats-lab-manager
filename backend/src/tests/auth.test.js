@@ -1,19 +1,21 @@
 const request = require('supertest');
 const { app } = require('../index');
 const db = require('../config/database');
+const { createTestUser } = require('./testHelper');
 
 describe('Auth API', () => {
   beforeAll(async () => {
-    // Clean up test data
+    await db.query('DELETE FROM applications WHERE email LIKE $1', ['%authtest%']);
     await db.query('DELETE FROM users WHERE email LIKE $1', ['%authtest%']);
   });
 
   afterAll(async () => {
+    await db.query('DELETE FROM applications WHERE email LIKE $1', ['%authtest%']);
     await db.query('DELETE FROM users WHERE email LIKE $1', ['%authtest%']);
   });
 
   describe('POST /api/auth/register', () => {
-    it('should register a new user', async () => {
+    it('should submit registration for approval (non-super-admin)', async () => {
       const res = await request(app)
         .post('/api/auth/register')
         .send({
@@ -23,13 +25,11 @@ describe('Auth API', () => {
         });
 
       expect(res.status).toBe(201);
-      expect(res.body.user).toHaveProperty('id');
-      expect(res.body.user.email).toBe('authtest@example.com');
-      expect(res.body.user.name).toBe('Test User');
-      expect(res.body).toHaveProperty('token');
+      expect(res.body.requiresApproval).toBe(true);
+      expect(res.body).not.toHaveProperty('token');
     });
 
-    it('should reject duplicate email', async () => {
+    it('should reject duplicate pending application email', async () => {
       const res = await request(app)
         .post('/api/auth/register')
         .send({
@@ -64,19 +64,43 @@ describe('Auth API', () => {
 
       expect(res.status).toBe(400);
     });
+
+    it('should reject duplicate email that exists as user', async () => {
+      await createTestUser({ name: 'Existing', email: 'authtest-existing@example.com' });
+
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Duplicate',
+          email: 'authtest-existing@example.com',
+          password: 'password123'
+        });
+
+      expect(res.status).toBe(409);
+    });
   });
 
   describe('POST /api/auth/login', () => {
+    let loginUser;
+
+    beforeAll(async () => {
+      loginUser = await createTestUser({
+        name: 'Auth Login User',
+        email: 'authtest-login@example.com',
+        password: 'password123'
+      });
+    });
+
     it('should login existing user', async () => {
       const res = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'authtest@example.com',
+          email: 'authtest-login@example.com',
           password: 'password123'
         });
 
       expect(res.status).toBe(200);
-      expect(res.body.user.email).toBe('authtest@example.com');
+      expect(res.body.user.email).toBe('authtest-login@example.com');
       expect(res.body).toHaveProperty('token');
     });
 
@@ -84,7 +108,7 @@ describe('Auth API', () => {
       const res = await request(app)
         .post('/api/auth/login')
         .send({
-          email: 'authtest@example.com',
+          email: 'authtest-login@example.com',
           password: 'wrongpassword'
         });
 
@@ -101,19 +125,31 @@ describe('Auth API', () => {
 
       expect(res.status).toBe(401);
     });
-  });
 
-  describe('GET /api/auth/me', () => {
-    let token;
-
-    beforeAll(async () => {
+    it('should detect pending application on login', async () => {
+      // authtest@example.com was registered above as a pending application
       const res = await request(app)
         .post('/api/auth/login')
         .send({
           email: 'authtest@example.com',
           password: 'password123'
         });
-      token = res.body.token;
+
+      expect(res.status).toBe(403);
+      expect(res.body.error.code).toBe('PENDING_APPROVAL');
+    });
+  });
+
+  describe('GET /api/auth/me', () => {
+    let token;
+
+    beforeAll(async () => {
+      const user = await createTestUser({
+        name: 'Auth Me User',
+        email: 'authtest-me@example.com',
+        password: 'password123'
+      });
+      token = user.token;
     });
 
     it('should return current user', async () => {
@@ -122,7 +158,7 @@ describe('Auth API', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.user.email).toBe('authtest@example.com');
+      expect(res.body.user.email).toBe('authtest-me@example.com');
     });
 
     it('should reject without token', async () => {

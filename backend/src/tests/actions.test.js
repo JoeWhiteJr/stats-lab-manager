@@ -1,6 +1,7 @@
 const request = require('supertest');
 const { app } = require('../index');
 const db = require('../config/database');
+const { createTestUser } = require('./testHelper');
 
 describe('Actions API', () => {
   let authToken;
@@ -9,23 +10,16 @@ describe('Actions API', () => {
   let testActionId;
 
   beforeAll(async () => {
-    // Clean up test data
     await db.query("DELETE FROM users WHERE email LIKE '%actiontest%'");
 
-    // Register and get token
-    const res = await request(app)
-      .post('/api/auth/register')
-      .send({
-        name: 'Action Test User',
-        email: 'actiontest@example.com',
-        password: 'password123'
-      });
+    const user = await createTestUser({
+      name: 'Action Test User',
+      email: 'actiontest@example.com',
+      role: 'project_lead'
+    });
 
-    authToken = res.body.token;
-    testUserId = res.body.user.id;
-
-    // Make user a project_lead so they can create projects
-    await db.query("UPDATE users SET role = 'project_lead' WHERE id = $1", [testUserId]);
+    authToken = user.token;
+    testUserId = user.id;
 
     // Create a test project
     const projectRes = await request(app)
@@ -231,7 +225,6 @@ describe('Actions API', () => {
     let action1Id, action2Id, action3Id;
 
     beforeAll(async () => {
-      // Create three actions for reordering tests
       const res1 = await request(app)
         .post(`/api/actions/project/${testProjectId}`)
         .set('Authorization', `Bearer ${authToken}`)
@@ -266,7 +259,6 @@ describe('Actions API', () => {
       expect(res.status).toBe(200);
       expect(res.body.message).toBe('Reorder successful');
 
-      // Verify the new order
       const listRes = await request(app)
         .get(`/api/actions/project/${testProjectId}`)
         .set('Authorization', `Bearer ${authToken}`);
