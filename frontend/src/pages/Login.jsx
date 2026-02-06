@@ -24,10 +24,12 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
-    const success = await login(email, password)
+    const result = await login(email, password)
     setIsSubmitting(false)
-    if (success) {
+    if (result.success) {
       navigate('/dashboard')
+    } else if (result.code === 'ACCOUNT_DELETED') {
+      navigate('/access-revoked')
     }
   }
 
@@ -88,6 +90,13 @@ export default function Login() {
               Create one
             </Link>
           </p>
+        </div>
+
+        {/* Home Link */}
+        <div className="mt-6 text-center">
+          <Link to="/" className="text-sm text-text-secondary hover:text-primary-600 transition-colors">
+            ← Back to Home
+          </Link>
         </div>
       </div>
     </div>

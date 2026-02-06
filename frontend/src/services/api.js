@@ -1,6 +1,8 @@
 import axios from 'axios'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+// Base URL for static files (uploads)
+const API_BASE_URL = API_URL.replace('/api', '')
 
 const api = axios.create({
   baseURL: API_URL,
@@ -8,6 +10,17 @@ const api = axios.create({
     'Content-Type': 'application/json'
   }
 })
+
+// Helper to get full URL for uploaded files
+export const getUploadUrl = (path) => {
+  if (!path) return null
+  // If already a full URL, return as-is
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path
+  }
+  // Prepend the backend base URL
+  return `${API_BASE_URL}${path}`
+}
 
 // Add auth token to requests
 api.interceptors.request.use((config) => {
@@ -22,6 +35,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (error.response?.status === 403 && error.response?.data?.error?.code === 'ACCOUNT_DELETED') {
+      localStorage.removeItem('token')
+      window.location.href = '/access-revoked'
+      return Promise.reject(error)
+    }
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
       window.location.href = '/login'
@@ -60,14 +78,30 @@ export const actionsApi = {
   reorder: (items) => api.put('/actions/reorder', { items })
 }
 
+// Categories
+export const categoriesApi = {
+  list: (projectId) => api.get(`/categories/project/${projectId}`),
+  create: (projectId, data) => api.post(`/categories/project/${projectId}`, data),
+  update: (id, data) => api.put(`/categories/${id}`, data),
+  delete: (id) => api.delete(`/categories/${id}`)
+}
+
 // Files
 export const filesApi = {
   list: (projectId) => api.get(`/files/project/${projectId}`),
-  upload: (projectId, file) => {
+  upload: (projectId, file, onUploadProgress) => {
     const formData = new FormData()
     formData.append('file', file)
     return api.post(`/files/project/${projectId}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: onUploadProgress
+        ? (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            )
+            onUploadProgress(percentCompleted)
+          }
+        : undefined
     })
   },
   download: (id) => api.get(`/files/${id}/download`, { responseType: 'blob' }),
@@ -91,6 +125,7 @@ export const meetingsApi = {
     const formData = new FormData()
     formData.append('title', data.title)
     if (data.recorded_at) formData.append('recorded_at', data.recorded_at)
+    if (data.notes) formData.append('notes', data.notes)
     if (audioFile) formData.append('audio', audioFile)
     return api.post(`/meetings/project/${projectId}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
@@ -151,7 +186,16 @@ export const adminApi = {
     api.get('/admin/audit-log', { params: { limit, offset, action, entity_type } }),
   searchUsers: (q, role) =>
     api.get('/admin/users/search', { params: { q, role } }),
-  getApplicationTrends: () => api.get('/admin/applications/trends')
+  getApplicationTrends: () => api.get('/admin/applications/trends'),
+  getPublishedProjects: () => api.get('/admin/published-projects'),
+  publishProject: (data) => api.post('/admin/publish-project', data),
+  updatePublishedProject: (id, data) => api.put(`/admin/published-projects/${id}`, data),
+  unpublishProject: (id) => api.delete(`/admin/published-projects/${id}`)
+}
+
+// Public (no auth)
+export const publicApi = {
+  getProjects: () => api.get('/public/projects')
 }
 
 // Notifications

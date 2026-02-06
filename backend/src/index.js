@@ -7,6 +7,7 @@ const socketService = require('./services/socketService');
 const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/projects');
 const actionRoutes = require('./routes/actions');
+const categoryRoutes = require('./routes/categories');
 const fileRoutes = require('./routes/files');
 const noteRoutes = require('./routes/notes');
 const meetingRoutes = require('./routes/meetings');
@@ -16,6 +17,7 @@ const chatRoutes = require('./routes/chats');
 const adminRoutes = require('./routes/admin');
 const notificationRoutes = require('./routes/notifications');
 const aiRoutes = require('./routes/ai');
+const publicRoutes = require('./routes/public');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -35,6 +37,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/actions', actionRoutes);
+app.use('/api/categories', categoryRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/meetings', meetingRoutes);
@@ -44,6 +47,7 @@ app.use('/api/chats', chatRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/public', publicRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

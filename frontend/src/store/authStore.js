@@ -30,16 +30,19 @@ export const useAuthStore = create((set, get) => ({
       const { data } = await authApi.login({ email, password })
       localStorage.setItem('token', data.token)
       set({ user: { ...data.user, is_super_admin: data.user.is_super_admin || false }, token: data.token })
-      return true
+      return { success: true }
     } catch (error) {
       const errorCode = error.response?.data?.error?.code
       const errorMessage = error.response?.data?.error?.message || 'Login failed'
+      if (errorCode === 'ACCOUNT_DELETED') {
+        return { success: false, code: 'ACCOUNT_DELETED' }
+      }
       if (errorCode === 'PENDING_APPROVAL') {
         set({ error: errorMessage, pendingApproval: true })
       } else {
         set({ error: errorMessage })
       }
-      return false
+      return { success: false }
     }
   },
 
