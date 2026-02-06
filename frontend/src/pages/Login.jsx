@@ -13,7 +13,7 @@ export default function Login() {
 
   useEffect(() => {
     if (token) {
-      navigate('/')
+      navigate('/dashboard')
     }
   }, [token, navigate])
 
@@ -27,7 +27,7 @@ export default function Login() {
     const success = await login(email, password)
     setIsSubmitting(false)
     if (success) {
-      navigate('/')
+      navigate('/dashboard')
     }
   }
 

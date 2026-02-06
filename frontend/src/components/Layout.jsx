@@ -15,12 +15,12 @@ export default function Layout() {
   }
 
   const navItems = [
-    { to: '/', icon: LayoutDashboard, label: 'Lab Dashboard' },
-    { to: '/my-dashboard', icon: User, label: 'My Dashboard' },
-    { to: '/projects', icon: FolderKanban, label: 'Projects' },
-    { to: '/chat', icon: MessageCircle, label: 'Chat' },
-    ...(user?.role === 'admin' ? [{ to: '/admin', icon: Shield, label: 'Admin' }] : []),
-    { to: '/settings', icon: Settings, label: 'Settings' },
+    { to: '/dashboard', icon: LayoutDashboard, label: 'Lab Dashboard' },
+    { to: '/dashboard/my-dashboard', icon: User, label: 'My Dashboard' },
+    { to: '/dashboard/projects', icon: FolderKanban, label: 'Projects' },
+    { to: '/dashboard/chat', icon: MessageCircle, label: 'Chat' },
+    ...(user?.role === 'admin' ? [{ to: '/dashboard/admin', icon: Shield, label: 'Admin' }] : []),
+    { to: '/dashboard/settings', icon: Settings, label: 'Settings' },
   ]
 
   return (

@@ -16,7 +16,7 @@ export default function Register() {
 
   useEffect(() => {
     if (token) {
-      navigate('/')
+      navigate('/dashboard')
     }
   }, [token, navigate])
 
@@ -42,7 +42,7 @@ export default function Register() {
     const success = await register(name, email, password)
     setIsSubmitting(false)
     if (success) {
-      navigate('/')
+      navigate('/dashboard')
     }
   }
 
