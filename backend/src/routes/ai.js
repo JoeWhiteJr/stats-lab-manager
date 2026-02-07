@@ -235,4 +235,172 @@ router.post('/summarize-chat', authenticate, [
   }
 });
 
+// Admin AI Summary - aggregated lab activity summary (admin only)
+router.post('/admin-summary', authenticate, requireRole('admin'), [
+  body('dateRange').optional().isIn(['week', 'month', 'all']).withMessage('dateRange must be week, month, or all')
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: { message: 'Validation failed', details: errors.array() } });
+    }
+
+    const model = getModel();
+    if (!model) {
+      return res.status(503).json({
+        error: { message: 'AI features are not available. GEMINI_API_KEY not configured.' }
+      });
+    }
+
+    const dateRange = req.body.dateRange || 'week';
+
+    let dateFilter = '';
+    if (dateRange === 'week') {
+      dateFilter = "AND a.updated_at >= NOW() - INTERVAL '7 days'";
+    } else if (dateRange === 'month') {
+      dateFilter = "AND a.updated_at >= NOW() - INTERVAL '30 days'";
+    }
+
+    const [projectsRes, completedRes, inProgressRes, pendingRes, teamRes, meetingsRes] = await Promise.all([
+      db.query(`
+        SELECT p.id, p.title, p.status, p.progress, p.description,
+          u.name as creator_name,
+          (SELECT COUNT(*) FROM action_items ai WHERE ai.project_id = p.id AND ai.completed = true) as completed_count,
+          (SELECT COUNT(*) FROM action_items ai WHERE ai.project_id = p.id AND ai.completed = false) as pending_count
+        FROM projects p
+        JOIN users u ON p.created_by = u.id
+        ORDER BY p.updated_at DESC
+      `),
+      db.query(`
+        SELECT a.title, a.updated_at, p.title as project_title, u.name as assigned_name
+        FROM action_items a
+        JOIN projects p ON a.project_id = p.id
+        LEFT JOIN users u ON a.assigned_to = u.id
+        WHERE a.completed = true ${dateFilter}
+        ORDER BY a.updated_at DESC
+        LIMIT 50
+      `),
+      db.query(`
+        SELECT a.title, a.due_date, p.title as project_title, u.name as assigned_name
+        FROM action_items a
+        JOIN projects p ON a.project_id = p.id
+        LEFT JOIN users u ON a.assigned_to = u.id
+        WHERE a.completed = false AND a.assigned_to IS NOT NULL
+        ORDER BY a.due_date ASC NULLS LAST
+        LIMIT 50
+      `),
+      db.query(`
+        SELECT a.title, a.due_date, p.title as project_title
+        FROM action_items a
+        JOIN projects p ON a.project_id = p.id
+        WHERE a.completed = false AND a.assigned_to IS NULL
+        ORDER BY a.due_date ASC NULLS LAST
+        LIMIT 50
+      `),
+      db.query(`
+        SELECT u.name, u.role,
+          (SELECT COUNT(*) FROM action_items a WHERE a.assigned_to = u.id AND a.completed = false) as pending_tasks
+        FROM users u
+        WHERE u.deleted_at IS NULL
+        ORDER BY u.name
+      `),
+      db.query(`
+        SELECT m.title, m.recorded_at, p.title as project_title, u.name as creator_name
+        FROM meetings m
+        JOIN projects p ON m.project_id = p.id
+        JOIN users u ON m.created_by = u.id
+        ORDER BY m.recorded_at DESC NULLS LAST
+        LIMIT 10
+      `)
+    ]);
+
+    const projects = projectsRes.rows;
+    const completed = completedRes.rows;
+    const inProgress = inProgressRes.rows;
+    const pending = pendingRes.rows;
+    const team = teamRes.rows;
+    const meetings = meetingsRes.rows;
+
+    let contextText = `Lab Activity Summary (Date range: ${dateRange})\n\n`;
+
+    contextText += 'PROJECTS OVERVIEW:\n';
+    projects.forEach(p => {
+      contextText += `- "${p.title}" (${p.status}) - ${p.progress || 0}% complete, ${p.completed_count} done / ${p.pending_count} pending tasks. Created by ${p.creator_name}\n`;
+    });
+
+    contextText += `\nCOMPLETED TASKS (${completed.length}):\n`;
+    completed.forEach(a => {
+      contextText += `- "${a.title}" in "${a.project_title}"`;
+      if (a.assigned_name) contextText += ` by ${a.assigned_name}`;
+      contextText += ` (completed: ${new Date(a.updated_at).toLocaleDateString()})\n`;
+    });
+
+    contextText += `\nIN-PROGRESS TASKS (${inProgress.length}):\n`;
+    inProgress.forEach(a => {
+      contextText += `- "${a.title}" in "${a.project_title}"`;
+      if (a.assigned_name) contextText += ` - assigned to ${a.assigned_name}`;
+      if (a.due_date) contextText += ` (due: ${new Date(a.due_date).toLocaleDateString()})`;
+      contextText += '\n';
+    });
+
+    contextText += `\nPENDING/UNASSIGNED TASKS (${pending.length}):\n`;
+    pending.forEach(a => {
+      contextText += `- "${a.title}" in "${a.project_title}"`;
+      if (a.due_date) contextText += ` (due: ${new Date(a.due_date).toLocaleDateString()})`;
+      contextText += '\n';
+    });
+
+    contextText += '\nTEAM MEMBERS:\n';
+    team.forEach(t => {
+      contextText += `- ${t.name} (${t.role}) - ${t.pending_tasks} pending tasks\n`;
+    });
+
+    if (meetings.length > 0) {
+      contextText += '\nRECENT MEETINGS:\n';
+      meetings.forEach(m => {
+        contextText += `- "${m.title}" for "${m.project_title}" by ${m.creator_name}`;
+        if (m.recorded_at) contextText += ` (${new Date(m.recorded_at).toLocaleDateString()})`;
+        contextText += '\n';
+      });
+    }
+
+    const systemText = `You are an AI assistant for a research lab project management tool. Generate a structured lab activity summary with exactly these three sections using markdown headers:
+
+## What Has Been Done
+Summarize completed work, milestones achieved, and accomplishments. Include project names, task details, and who completed them.
+
+## What Is Currently Being Done
+Summarize active/in-progress work. Include who is working on what, upcoming deadlines, and current focus areas.
+
+## What Still Needs To Be Done
+Summarize pending tasks, unassigned work, overdue items, and recommendations. Include priorities and suggestions.
+
+Use bullet points for clarity. Include project names and team member names where relevant. Be professional and concise.`;
+
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: `Please provide a comprehensive lab activity summary based on this data:\n\n${contextText}` }] }],
+      systemInstruction: {
+        parts: [{ text: systemText }]
+      }
+    });
+
+    const summary = result.response.text() || 'Unable to generate summary';
+
+    res.json({
+      summary,
+      dateRange,
+      generatedAt: new Date().toISOString(),
+      usage: {
+        input_tokens: result.response.usageMetadata?.promptTokenCount,
+        output_tokens: result.response.usageMetadata?.candidatesTokenCount
+      }
+    });
+  } catch (error) {
+    if (error.status === 429) {
+      return res.status(429).json({ error: { message: 'AI rate limit exceeded. Please try again later.' } });
+    }
+    next(error);
+  }
+});
+
 module.exports = router;

@@ -222,7 +222,9 @@ export const aiApi = {
   reviewApplication: (applicationId) =>
     api.post('/ai/review-application', { applicationId }),
   summarizeChat: (roomId, messageCount) =>
-    api.post('/ai/summarize-chat', { roomId, messageCount })
+    api.post('/ai/summarize-chat', { roomId, messageCount }),
+  adminSummary: (dateRange) =>
+    api.post('/ai/admin-summary', { dateRange })
 }
 
 export default api

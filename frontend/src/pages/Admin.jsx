@@ -7,11 +7,11 @@ import { usePublishStore } from '../store/publishStore'
 import { usersApi } from '../services/api'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
-import { LayoutDashboard, Users, ScrollText, Trash2, Sparkles, Globe, Eye, Pencil, XCircle } from 'lucide-react'
+import { LayoutDashboard, Users, ScrollText, Trash2, Sparkles, Globe, Eye, Pencil, XCircle, BrainCircuit, Calendar } from 'lucide-react'
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState('dashboard')
-  const { stats, fetchStats } = useAdminStore()
+  const { stats, fetchStats, aiSummary, aiSummaryLoading, aiSummaryError, fetchAiSummary, clearAiSummary } = useAdminStore()
   const { applications, fetchApplications, approveApplication, rejectApplication, requestAiReview, aiReview } = useApplicationStore()
   const { user } = useAuthStore()
   const { projects, fetchProjects } = useProjectStore()
@@ -32,6 +32,7 @@ export default function Admin() {
   const [publishProjectId, setPublishProjectId] = useState(null)
   const [isPublishing, setIsPublishing] = useState(false)
   const [showUnpublishConfirm, setShowUnpublishConfirm] = useState(null)
+  const [summaryDateRange, setSummaryDateRange] = useState('week')
 
   const isSuperAdmin = user?.is_super_admin === true
 
@@ -85,6 +86,30 @@ export default function Admin() {
     setShowReviewModal(true)
     await requestAiReview(app.id)
     setIsReviewing(false)
+  }
+
+  const handleGenerateSummary = () => { fetchAiSummary(summaryDateRange) }
+
+  const parseSummary = (summaryText) => {
+    if (!summaryText) return []
+    const sections = summaryText.split(/^## /m).filter(Boolean)
+    return sections.map((section) => {
+      const lines = section.split('\n')
+      const title = lines[0].trim()
+      const content = lines.slice(1).join('\n').trim()
+      return { title, content }
+    })
+  }
+
+  const getSectionStyle = (title) => {
+    const lower = title.toLowerCase()
+    if (lower.includes('has been done') || lower.includes('completed') || lower.includes('done'))
+      return { border: 'border-green-200', bg: 'bg-green-50', header: 'text-green-800' }
+    if (lower.includes('currently') || lower.includes('in progress') || lower.includes('being done'))
+      return { border: 'border-blue-200', bg: 'bg-blue-50', header: 'text-blue-800' }
+    if (lower.includes('needs to be done') || lower.includes('pending') || lower.includes('still'))
+      return { border: 'border-amber-200', bg: 'bg-amber-50', header: 'text-amber-800' }
+    return { border: 'border-gray-200', bg: 'bg-gray-50', header: 'text-gray-800' }
   }
 
   // Publish helpers
@@ -158,11 +183,65 @@ export default function Admin() {
         ))}
       </div>
       {activeTab === 'dashboard' && (
-        <div className="grid grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl p-6 border"><div className="text-sm text-text-secondary">Users</div><div className="text-3xl font-bold">{stats?.users?.total_users || 0}</div></div>
-          <div className="bg-white rounded-xl p-6 border"><div className="text-sm text-text-secondary">Pending</div><div className="text-3xl font-bold">{stats?.applications?.pending || 0}</div></div>
-          <div className="bg-white rounded-xl p-6 border"><div className="text-sm text-text-secondary">Projects</div><div className="text-3xl font-bold">{stats?.projects?.active || 0}</div></div>
-          <div className="bg-white rounded-xl p-6 border"><div className="text-sm text-text-secondary">Messages</div><div className="text-3xl font-bold">{stats?.chats?.messages_this_week || 0}</div></div>
+        <div>
+          <div className="grid grid-cols-4 gap-4">
+            <div className="bg-white rounded-xl p-6 border"><div className="text-sm text-text-secondary">Users</div><div className="text-3xl font-bold">{stats?.users?.total_users || 0}</div></div>
+            <div className="bg-white rounded-xl p-6 border"><div className="text-sm text-text-secondary">Pending</div><div className="text-3xl font-bold">{stats?.applications?.pending || 0}</div></div>
+            <div className="bg-white rounded-xl p-6 border"><div className="text-sm text-text-secondary">Projects</div><div className="text-3xl font-bold">{stats?.projects?.active || 0}</div></div>
+            <div className="bg-white rounded-xl p-6 border"><div className="text-sm text-text-secondary">Messages</div><div className="text-3xl font-bold">{stats?.chats?.messages_this_week || 0}</div></div>
+          </div>
+          <div className="mt-8 bg-white rounded-xl border border-purple-200 overflow-hidden">
+            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 px-6 py-4 border-b border-purple-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-purple-100 rounded-lg"><BrainCircuit size={24} className="text-purple-600" /></div>
+                  <div>
+                    <h2 className="font-display font-semibold text-lg text-purple-900">AI Lab Activity Summary</h2>
+                    <p className="text-sm text-purple-600">Generate an AI-powered overview of lab activity</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <Calendar size={16} className="text-purple-500" />
+                    <select value={summaryDateRange} onChange={(e) => setSummaryDateRange(e.target.value)} className="px-3 py-1.5 rounded-lg border border-purple-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-300">
+                      <option value="week">This Week</option>
+                      <option value="month">This Month</option>
+                      <option value="all">All Time</option>
+                    </select>
+                  </div>
+                  <button onClick={handleGenerateSummary} disabled={aiSummaryLoading} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                    {aiSummaryLoading ? (<><div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />Generating...</>) : (<><Sparkles size={16} />Generate AI Summary</>)}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="p-6">
+              {aiSummaryError && (<div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg"><p className="text-sm text-red-700">{aiSummaryError}</p></div>)}
+              {aiSummaryLoading && (<div className="flex flex-col items-center justify-center py-12"><div className="animate-spin rounded-full h-10 w-10 border-3 border-purple-200 border-t-purple-600 mb-4" /><p className="text-text-secondary text-sm">Analyzing lab activity and generating summary...</p><p className="text-text-secondary text-xs mt-1">This may take a few seconds</p></div>)}
+              {!aiSummaryLoading && aiSummary && (
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-xs text-text-secondary">Generated {new Date(aiSummary.generatedAt).toLocaleString()} | Range: {aiSummary.dateRange === 'week' ? 'This Week' : aiSummary.dateRange === 'month' ? 'This Month' : 'All Time'}</p>
+                    <button onClick={clearAiSummary} className="text-xs text-text-secondary hover:text-text-primary">Clear</button>
+                  </div>
+                  <div className="space-y-4">
+                    {parseSummary(aiSummary.summary).map((section, index) => {
+                      const style = getSectionStyle(section.title)
+                      return (<div key={index} className={`rounded-lg border ${style.border} ${style.bg} p-4`}><h3 className={`font-semibold text-base mb-2 ${style.header}`}>{section.title}</h3><div className="prose prose-sm max-w-none text-gray-700"><div className="whitespace-pre-wrap text-sm leading-relaxed">{section.content}</div></div></div>)
+                    })}
+                  </div>
+                  {aiSummary.usage && (<p className="text-xs text-text-secondary mt-4">Tokens used: {aiSummary.usage.input_tokens || 0} input / {aiSummary.usage.output_tokens || 0} output</p>)}
+                </div>
+              )}
+              {!aiSummaryLoading && !aiSummary && !aiSummaryError && (
+                <div className="text-center py-10">
+                  <BrainCircuit size={40} className="mx-auto text-purple-300 mb-3" />
+                  <p className="text-text-secondary text-sm">Click "Generate AI Summary" to create an AI-powered overview of your lab's activity.</p>
+                  <p className="text-text-secondary text-xs mt-1">The summary will show what has been done, what is in progress, and what still needs attention.</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
       {activeTab === 'applications' && (
