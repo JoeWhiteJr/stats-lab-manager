@@ -168,6 +168,52 @@ export const useChatStore = create((set, get) => ({
     set((state) => ({ rooms: [room, ...state.rooms] }))
   },
 
+  // Reactions
+  toggleReaction: async (roomId, messageId, emoji) => {
+    try {
+      const { data } = await chatApi.toggleReaction(roomId, messageId, emoji)
+      set((state) => ({
+        messages: state.messages.map((m) =>
+          m.id === messageId ? { ...m, reactions: data.reactions } : m
+        )
+      }))
+      return data
+    } catch (error) {
+      set({ error: error.response?.data?.error?.message || 'Failed to toggle reaction' })
+      return null
+    }
+  },
+
+  onReactionUpdated: ({ messageId, reactions }) => {
+    set((state) => ({
+      messages: state.messages.map((m) =>
+        m.id === messageId ? { ...m, reactions } : m
+      )
+    }))
+  },
+
+  // Audio messages
+  sendAudioMessage: async (roomId, audioFile, duration) => {
+    try {
+      const { data } = await chatApi.uploadAudio(roomId, audioFile, duration)
+      return data.message
+    } catch (error) {
+      set({ error: error.response?.data?.error?.message || 'Failed to send audio message' })
+      return null
+    }
+  },
+
+  // File upload
+  sendFileMessage: async (roomId, file) => {
+    try {
+      const { data } = await chatApi.uploadFile(roomId, file)
+      return data.message
+    } catch (error) {
+      set({ error: error.response?.data?.error?.message || 'Failed to upload file' })
+      return null
+    }
+  },
+
   // AI Features
   summarizeChat: async (roomId, messageCount) => {
     try {

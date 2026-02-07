@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore'
 import { useProjectStore } from '../store/projectStore'
 import { actionsApi } from '../services/api'
 import Button from '../components/Button'
+import { CalendarView } from '../components/calendar/CalendarView'
 import {
   CheckCircle2, Circle, Calendar, Clock, ArrowUpRight,
   FolderKanban, Zap, Target, Award
@@ -180,6 +181,14 @@ export default function MyDashboard() {
             </div>
           )}
         </div>
+      </section>
+
+      {/* My Calendar */}
+      <section>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-display font-bold text-xl text-text-primary">My Calendar</h2>
+        </div>
+        <CalendarView scope="personal" />
       </section>
 
       {/* My Projects */}

@@ -38,6 +38,8 @@ app.use(express.urlencoded({ extended: true }));
 // Other file uploads remain behind authenticated /api/files/:id/download endpoint
 const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, '../uploads');
 app.use('/uploads/covers', express.static(path.join(uploadDir, 'covers')));
+// Serve chat uploads (audio messages, shared files) statically
+app.use('/uploads/chat', express.static(path.join(uploadDir, 'chat')));
 
 // Rate limiting
 const authLimiter = rateLimit({

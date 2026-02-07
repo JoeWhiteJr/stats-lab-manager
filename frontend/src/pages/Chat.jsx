@@ -1,14 +1,28 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useChatStore } from '../store/chatStore'
 import { useAuthStore } from '../store/authStore'
-import { usersApi } from '../services/api'
+import { usersApi, getUploadUrl } from '../services/api'
 import socket from '../services/socket'
 import Modal from '../components/Modal'
 import Button from '../components/Button'
 import Input from '../components/Input'
-import { MessageCircle, Plus, Sparkles, Send, Trash2 } from 'lucide-react'
+import AudioRecorder from '../components/chat/AudioRecorder'
+import ChatFileUpload, { FileAttachment, LinkPreview } from '../components/chat/ChatFileUpload'
+import EmojiPicker from '../components/chat/EmojiPicker'
+import MessageReactions from '../components/chat/MessageReactions'
+import { useChatNotifications } from '../components/chat/useChatNotifications'
+import { MessageCircle, Plus, Sparkles, Send, Trash2, Smile } from 'lucide-react'
 import { format, isToday, isYesterday } from 'date-fns'
+
+// Detect URLs in text
+const URL_REGEX = /https?:\/\/[^\s<]+/g
+
+function extractUrls(text) {
+  if (!text) return []
+  const matches = text.match(URL_REGEX)
+  return matches || []
+}
 
 export default function Chat() {
   const { roomId } = useParams()
@@ -16,7 +30,8 @@ export default function Chat() {
   const {
     rooms, currentRoom, messages, hasMore, isLoading,
     fetchRooms, fetchRoom, fetchMessages, sendMessage, deleteMessage, markRead,
-    clearCurrentRoom, createRoom, summarizeChat
+    clearCurrentRoom, createRoom, summarizeChat,
+    toggleReaction, sendAudioMessage, sendFileMessage
   } = useChatStore()
   const { user } = useAuthStore()
 
@@ -32,12 +47,17 @@ export default function Chat() {
   const [summaryText, setSummaryText] = useState('')
   const [messageText, setMessageText] = useState('')
   const [isSending, setIsSending] = useState(false)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
 
   const messagesEndRef = useRef(null)
   const messagesContainerRef = useRef(null)
   const shouldAutoScroll = useRef(true)
+  const textareaRef = useRef(null)
 
   const isAdmin = user?.role === 'admin'
+
+  // Push notifications hook
+  useChatNotifications()
 
   useEffect(() => { fetchRooms() }, [fetchRooms])
 
@@ -151,11 +171,82 @@ export default function Chat() {
     )
   }
 
+  const handleEmojiSelect = useCallback((emoji) => {
+    setMessageText(prev => prev + emoji)
+    textareaRef.current?.focus()
+  }, [])
+
+  const handleToggleReaction = useCallback((messageId, emoji) => {
+    if (currentRoom) {
+      toggleReaction(currentRoom.id, messageId, emoji)
+    }
+  }, [currentRoom, toggleReaction])
+
+  const handleRecordingComplete = useCallback(async (audioFile, duration) => {
+    if (!currentRoom) return
+    setIsSending(true)
+    await sendAudioMessage(currentRoom.id, audioFile, duration)
+    setIsSending(false)
+  }, [currentRoom, sendAudioMessage])
+
+  const handleFileSelect = useCallback(async (file) => {
+    if (!currentRoom) return
+    setIsSending(true)
+    await sendFileMessage(currentRoom.id, file)
+    setIsSending(false)
+  }, [currentRoom, sendFileMessage])
+
   const formatMessageTime = (dateStr) => {
     const date = new Date(dateStr)
     if (isToday(date)) return format(date, 'h:mm a')
     if (isYesterday(date)) return 'Yesterday ' + format(date, 'h:mm a')
     return format(date, 'MMM d, h:mm a')
+  }
+
+  const renderMessageContent = (msg) => {
+    const isDeleted = !!msg.deleted_at
+
+    if (isDeleted) {
+      return <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+    }
+
+    // Audio message
+    if (msg.type === 'audio' && msg.audio_url) {
+      const audioSrc = getUploadUrl(msg.audio_url)
+      return (
+        <div>
+          <audio controls className="max-w-[250px]" preload="metadata">
+            <source src={audioSrc} type="audio/webm" />
+            Your browser does not support audio playback.
+          </audio>
+          {msg.audio_duration > 0 && (
+            <p className="text-xs opacity-75 mt-1">
+              {Math.floor(msg.audio_duration / 60)}:{(msg.audio_duration % 60).toString().padStart(2, '0')}
+            </p>
+          )}
+        </div>
+      )
+    }
+
+    // File message
+    if (msg.type === 'file' && msg.file_url) {
+      return (
+        <div>
+          <FileAttachment fileUrl={msg.file_url} fileName={msg.file_name} type={msg.type} />
+        </div>
+      )
+    }
+
+    // Text message with URL detection
+    const urls = extractUrls(msg.content)
+    return (
+      <div>
+        <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+        {urls.map((url, i) => (
+          <LinkPreview key={i} url={url} />
+        ))}
+      </div>
+    )
   }
 
   return (
@@ -278,7 +369,7 @@ export default function Chat() {
                                 : 'bg-gray-100 text-text-primary rounded-bl-md'
                           }`}
                         >
-                          <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                          {renderMessageContent(msg)}
                         </div>
                         {!isOwn && !isDeleted && (isAdmin || msg.sender_id === user?.id) && (
                           <button
@@ -290,6 +381,14 @@ export default function Chat() {
                           </button>
                         )}
                       </div>
+                      {/* Message reactions */}
+                      {!isDeleted && (
+                        <MessageReactions
+                          reactions={msg.reactions || []}
+                          currentUserId={user?.id}
+                          onToggleReaction={(emoji) => handleToggleReaction(msg.id, emoji)}
+                        />
+                      )}
                       <p className={`text-[10px] text-text-secondary mt-0.5 px-1 ${isOwn ? 'text-right' : ''}`}>
                         {formatMessageTime(msg.created_at)}
                       </p>
@@ -303,7 +402,32 @@ export default function Chat() {
             {/* Message input */}
             <div className="px-4 py-3 border-t border-gray-200 bg-white">
               <form onSubmit={handleSendMessage} className="flex items-end gap-2">
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    className="p-2.5 rounded-xl text-text-secondary hover:text-primary-600 hover:bg-primary-50 transition-colors"
+                    title="Insert emoji"
+                  >
+                    <Smile size={18} />
+                  </button>
+                  {showEmojiPicker && (
+                    <EmojiPicker
+                      onSelect={handleEmojiSelect}
+                      onClose={() => setShowEmojiPicker(false)}
+                    />
+                  )}
+                </div>
+                <ChatFileUpload
+                  onFileSelect={handleFileSelect}
+                  disabled={isSending}
+                />
+                <AudioRecorder
+                  onRecordingComplete={handleRecordingComplete}
+                  disabled={isSending}
+                />
                 <textarea
+                  ref={textareaRef}
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
                   onKeyDown={handleKeyDown}
