@@ -106,6 +106,10 @@ export function CalendarView({ scope }: CalendarViewProps) {
     moveEvent(id, start_time, end_time);
   }, [moveEvent]);
 
+  const handleTimeRangeSelect = useCallback((startTime: Date, endTime: Date) => {
+    if (canCreate) openCreateModal(startTime, endTime);
+  }, [canCreate, openCreateModal]);
+
   const handleSwitchToDaily = useCallback((date: Date) => {
     setSelectedDate(date);
     setCurrentView('daily');
@@ -199,6 +203,7 @@ export function CalendarView({ scope }: CalendarViewProps) {
             onTimeClick={handleTimeClick}
             onEditEvent={handleEditEvent}
             onMoveEvent={handleMoveEvent}
+            onTimeRangeSelect={handleTimeRangeSelect}
             scope={scope}
           />
         )}
@@ -211,6 +216,7 @@ export function CalendarView({ scope }: CalendarViewProps) {
             onTimeClick={handleTimeClick}
             onEditEvent={handleEditEvent}
             onMoveEvent={handleMoveEvent}
+            onTimeRangeSelect={handleTimeRangeSelect}
             onSelectDate={setSelectedDate}
             scope={scope}
           />

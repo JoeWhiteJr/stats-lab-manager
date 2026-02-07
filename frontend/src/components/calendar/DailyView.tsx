@@ -1,9 +1,10 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { EventBlock } from './EventBlock';
 import type { CalendarEvent, DeadlineEvent } from './types';
 import { TIME_CONFIG } from './types';
+import { useGridDragToCreate } from '../../hooks/useGridDragToCreate';
 
 interface DailyViewProps {
   selectedDate: Date;
@@ -13,16 +14,26 @@ interface DailyViewProps {
   onTimeClick: (time: Date) => void;
   onEditEvent: (event: CalendarEvent) => void;
   onMoveEvent: (id: string, start_time: string, end_time: string) => void;
+  onTimeRangeSelect?: (startTime: Date, endTime: Date) => void;
   scope: 'lab' | 'personal';
 }
 
 export function DailyView({
   selectedDate, events, deadlines, hourHeight,
-  onTimeClick, onEditEvent, onMoveEvent,
+  onTimeClick, onEditEvent, onMoveEvent, onTimeRangeSelect,
 }: DailyViewProps) {
   const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 5 } });
   const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } });
   const sensors = useSensors(mouseSensor, touchSensor);
+
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  const { dragState, justDraggedRef, onMouseDown, getPreviewStyle } = useGridDragToCreate({
+    hourHeight,
+    gridRef,
+    onRangeSelected: onTimeRangeSelect || (() => {}),
+    baseDate: selectedDate,
+  });
 
   const hours = useMemo(() => {
     const h: number[] = [];
@@ -44,6 +55,8 @@ export function DailyView({
 
   const handleTimeClick = useCallback(
     (e: React.MouseEvent, hour: number) => {
+      if (justDraggedRef.current) return;
+
       const target = e.currentTarget as HTMLElement;
       const rect = target.getBoundingClientRect();
       const clickY = e.clientY - rect.top;
@@ -53,7 +66,7 @@ export function DailyView({
       clickTime.setHours(hour, minuteOffset, 0, 0);
       onTimeClick(clickTime);
     },
-    [selectedDate, onTimeClick, hourHeight]
+    [selectedDate, onTimeClick, hourHeight, justDraggedRef]
   );
 
   const handleDragEnd = useCallback(
@@ -85,6 +98,8 @@ export function DailyView({
     ? (now.getHours() + now.getMinutes() / 60 - TIME_CONFIG.START_HOUR) * hourHeight
     : -1;
 
+  const previewStyle = getPreviewStyle();
+
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div className="flex relative" style={{ height: gridHeight }}>
@@ -104,15 +119,24 @@ export function DailyView({
         </div>
 
         {/* Time Grid */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative" ref={gridRef}>
           {hours.map((hour) => (
             <div
               key={hour}
               onClick={(e) => handleTimeClick(e, hour)}
+              onMouseDown={(e) => onMouseDown(e)}
               className="absolute left-0 right-0 border-t border-gray-100 cursor-pointer hover:bg-indigo-50/30"
               style={{ top: (hour - TIME_CONFIG.START_HOUR) * hourHeight, height: hourHeight }}
             />
           ))}
+
+          {/* Drag preview */}
+          {previewStyle && (
+            <div
+              className="absolute left-1 right-1 rounded-lg border-2 border-dashed border-indigo-400 bg-indigo-50/50 pointer-events-none z-30"
+              style={{ top: previewStyle.top, height: previewStyle.height }}
+            />
+          )}
 
           {/* Events */}
           {dayEvents.map((event) => (
@@ -121,6 +145,7 @@ export function DailyView({
               event={event}
               hourHeight={hourHeight}
               onEdit={onEditEvent}
+              onResize={onMoveEvent}
             />
           ))}
 

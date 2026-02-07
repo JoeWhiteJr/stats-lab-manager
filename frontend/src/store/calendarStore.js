@@ -23,6 +23,7 @@ export const useCalendarStore = create((set, get) => ({
   editingEvent: null,
   isCreateModalOpen: false,
   createModalTime: null,
+  createModalEndTime: null,
   isLoading: false,
   error: null,
 
@@ -44,20 +45,23 @@ export const useCalendarStore = create((set, get) => ({
   })),
 
   // === Modal actions ===
-  openCreateModal: (time = null) => set({
+  openCreateModal: (time = null, endTime = null) => set({
     isCreateModalOpen: true,
     createModalTime: time,
+    createModalEndTime: endTime,
     editingEvent: null,
   }),
   closeCreateModal: () => set({
     isCreateModalOpen: false,
     createModalTime: null,
+    createModalEndTime: null,
     editingEvent: null,
   }),
   setEditingEvent: (event) => set({
     editingEvent: event,
     isCreateModalOpen: true,
     createModalTime: null,
+    createModalEndTime: null,
   }),
 
   // === Data actions ===

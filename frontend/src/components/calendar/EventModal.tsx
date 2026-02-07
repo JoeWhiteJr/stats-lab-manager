@@ -18,7 +18,7 @@ interface EventModalProps {
 export function EventModal({ scope, onClose }: EventModalProps) {
   const { user } = useAuthStore();
   const {
-    editingEvent, createModalTime,
+    editingEvent, createModalTime, createModalEndTime,
     categories, createEvent, updateEvent, deleteEvent, createCategory,
   } = useCalendarStore();
 
@@ -29,7 +29,7 @@ export function EventModal({ scope, onClose }: EventModalProps) {
   // Form state
   const isEditing = !!editingEvent;
   const defaultStart = createModalTime || new Date();
-  const defaultEnd = new Date(defaultStart.getTime() + 60 * 60 * 1000); // +1 hour
+  const defaultEnd = createModalEndTime || new Date(defaultStart.getTime() + 60 * 60 * 1000); // +1 hour
 
   const [title, setTitle] = useState(editingEvent?.title || '');
   const [description, setDescription] = useState(editingEvent?.description || '');

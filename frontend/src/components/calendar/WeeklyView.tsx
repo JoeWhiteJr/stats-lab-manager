@@ -1,7 +1,9 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useRef } from 'react';
 import { startOfWeek, addDays, isSameDay, isToday, format } from 'date-fns';
+import { EventBlock } from './EventBlock';
 import type { CalendarEvent, DeadlineEvent } from './types';
 import { TIME_CONFIG } from './types';
+import { useGridDragToCreate } from '../../hooks/useGridDragToCreate';
 
 interface WeeklyViewProps {
   selectedDate: Date;
@@ -11,13 +13,14 @@ interface WeeklyViewProps {
   onTimeClick: (time: Date) => void;
   onEditEvent: (event: CalendarEvent) => void;
   onMoveEvent: (id: string, start_time: string, end_time: string) => void;
+  onTimeRangeSelect?: (startTime: Date, endTime: Date) => void;
   onSelectDate: (date: Date) => void;
   scope: 'lab' | 'personal';
 }
 
 export function WeeklyView({
   selectedDate, events, deadlines, hourHeight,
-  onTimeClick, onEditEvent, onSelectDate,
+  onTimeClick, onEditEvent, onMoveEvent, onTimeRangeSelect, onSelectDate,
 }: WeeklyViewProps) {
   const weekStart = useMemo(() => startOfWeek(selectedDate, { weekStartsOn: 0 }), [selectedDate]);
   const weekDays = useMemo(() => {
@@ -41,16 +44,6 @@ export function WeeklyView({
 
   const gridHeight = (TIME_CONFIG.END_HOUR - TIME_CONFIG.START_HOUR + 1) * hourHeight;
 
-  const getBlockStyle = (startTime: string, endTime: string) => {
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    const startHour = start.getHours() + start.getMinutes() / 60;
-    const endHour = end.getHours() + end.getMinutes() / 60;
-    const top = (startHour - TIME_CONFIG.START_HOUR) * hourHeight;
-    const height = Math.max((endHour - startHour) * hourHeight, hourHeight / 4);
-    return { top, height };
-  };
-
   const formatHour = (hour: number) => {
     if (hour === 0) return '12a';
     if (hour < 12) return `${hour}a`;
@@ -58,8 +51,31 @@ export function WeeklyView({
     return `${hour - 12}p`;
   };
 
+  // Refs for each day column to support drag-to-create
+  const columnRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // We use the first column ref as the gridRef for the hook, but we need per-column Y coords
+  // Instead, use a wrapper ref for the entire grid area
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  const getDateForColumn = useCallback(
+    (columnIndex: number): Date | null => {
+      return weekDays[columnIndex] || null;
+    },
+    [weekDays]
+  );
+
+  const { justDraggedRef, onMouseDown, getPreviewStyle } = useGridDragToCreate({
+    hourHeight,
+    gridRef,
+    onRangeSelected: onTimeRangeSelect || (() => {}),
+    getDateForColumn,
+    baseDate: selectedDate,
+  });
+
   const handleColumnClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>, day: Date) => {
+      if (justDraggedRef.current) return;
+
       const target = e.currentTarget as HTMLElement;
       const rect = target.getBoundingClientRect();
       const clickY = e.clientY - rect.top;
@@ -71,11 +87,13 @@ export function WeeklyView({
       clickTime.setHours(hour, minutes, 0, 0);
       onTimeClick(clickTime);
     },
-    [hourHeight, onTimeClick]
+    [hourHeight, onTimeClick, justDraggedRef]
   );
 
   // Current time indicator
   const now = new Date();
+
+  const previewStyle = getPreviewStyle();
 
   return (
     <div className="flex flex-col bg-white">
@@ -112,7 +130,7 @@ export function WeeklyView({
 
       {/* Time Grid */}
       <div className="flex-1 overflow-auto">
-        <div className="flex relative" style={{ height: gridHeight }}>
+        <div className="flex relative" ref={gridRef} style={{ height: gridHeight }}>
           {/* Hour Labels */}
           <div className="w-14 flex-shrink-0 relative">
             {hours.map((hour) => (
@@ -134,7 +152,9 @@ export function WeeklyView({
             return (
               <div
                 key={dayIndex}
+                ref={(el) => { columnRefs.current[dayIndex] = el; }}
                 onClick={(e) => handleColumnClick(e, date)}
+                onMouseDown={(e) => onMouseDown(e, dayIndex)}
                 className={`flex-1 relative border-l border-gray-100 cursor-pointer ${selected ? 'bg-indigo-50/30' : ''}`}
               >
                 {/* Hour lines */}
@@ -146,29 +166,24 @@ export function WeeklyView({
                   />
                 ))}
 
-                {/* Events */}
-                {blocks.map((block) => {
-                  const { top, height } = getBlockStyle(block.start_time, block.end_time);
-                  const color = block.category_color || '#6366f1';
-                  const isCompact = height < 40;
+                {/* Drag preview for this column */}
+                {previewStyle && previewStyle.columnIndex === dayIndex && (
+                  <div
+                    className="absolute left-0.5 right-0.5 rounded-lg border-2 border-dashed border-indigo-400 bg-indigo-50/50 pointer-events-none z-30"
+                    style={{ top: previewStyle.top, height: previewStyle.height }}
+                  />
+                )}
 
-                  return (
-                    <button
-                      key={block.id}
-                      onClick={(e) => { e.stopPropagation(); onEditEvent(block); }}
-                      className="absolute left-0.5 right-0.5 rounded-lg px-1 py-0.5 text-left overflow-hidden transition-all hover:shadow-md"
-                      style={{
-                        top, height,
-                        backgroundColor: `${color}20`,
-                        borderLeft: `2px solid ${color}`,
-                      }}
-                    >
-                      <div className={`font-medium text-gray-900 truncate ${isCompact ? 'text-[0.6rem]' : 'text-xs'}`}>
-                        {block.title}
-                      </div>
-                    </button>
-                  );
-                })}
+                {/* Events */}
+                {blocks.map((block) => (
+                  <EventBlock
+                    key={block.id}
+                    event={block}
+                    hourHeight={hourHeight}
+                    onEdit={onEditEvent}
+                    onResize={onMoveEvent}
+                  />
+                ))}
 
                 {/* Current time line for today */}
                 {today && (() => {
