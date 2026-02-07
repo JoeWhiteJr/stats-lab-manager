@@ -80,9 +80,21 @@ router.put('/:id', authenticate, sanitizeBody('content'), [
 
     const { title, content } = req.body;
 
-    const existing = await db.query('SELECT id FROM notes WHERE id = $1', [req.params.id]);
+    const existing = await db.query('SELECT id, project_id FROM notes WHERE id = $1', [req.params.id]);
     if (existing.rows.length === 0) {
       return res.status(404).json({ error: { message: 'Note not found' } });
+    }
+
+    // Verify project access
+    const projectAccess = await db.query(
+      `SELECT id FROM projects WHERE id = $1 AND (
+        created_by = $2 OR
+        EXISTS (SELECT 1 FROM action_items ai JOIN action_item_assignees aia ON aia.action_item_id = ai.id WHERE ai.project_id = $1 AND aia.user_id = $2)
+      )`,
+      [existing.rows[0].project_id, req.user.id]
+    );
+    if (projectAccess.rows.length === 0 && req.user.role !== 'admin') {
+      return res.status(403).json({ error: { message: 'Access denied' } });
     }
 
     const updates = [];
@@ -113,11 +125,25 @@ router.put('/:id', authenticate, sanitizeBody('content'), [
 // Delete note
 router.delete('/:id', authenticate, async (req, res, next) => {
   try {
-    const result = await db.query('DELETE FROM notes WHERE id = $1 RETURNING id', [req.params.id]);
-
-    if (result.rows.length === 0) {
+    // Verify the note exists and get its project_id
+    const existing = await db.query('SELECT project_id FROM notes WHERE id = $1', [req.params.id]);
+    if (existing.rows.length === 0) {
       return res.status(404).json({ error: { message: 'Note not found' } });
     }
+
+    // Verify project access
+    const projectAccess = await db.query(
+      `SELECT id FROM projects WHERE id = $1 AND (
+        created_by = $2 OR
+        EXISTS (SELECT 1 FROM action_items ai JOIN action_item_assignees aia ON aia.action_item_id = ai.id WHERE ai.project_id = $1 AND aia.user_id = $2)
+      )`,
+      [existing.rows[0].project_id, req.user.id]
+    );
+    if (projectAccess.rows.length === 0 && req.user.role !== 'admin') {
+      return res.status(403).json({ error: { message: 'Access denied' } });
+    }
+
+    await db.query('DELETE FROM notes WHERE id = $1', [req.params.id]);
 
     res.json({ message: 'Note deleted successfully' });
   } catch (error) {

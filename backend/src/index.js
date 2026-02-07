@@ -46,7 +46,12 @@ app.use(cors({
     if (!origin) return callback(null, true);
     const allowed = process.env.CORS_ORIGIN;
     if (!allowed || allowed === '*') {
-      // When wildcard or unset, allow any origin but mirror it back
+      if (process.env.NODE_ENV === 'production') {
+        // In production, reject wildcard/unset CORS -- require explicit origins
+        logger.warn('CORS_ORIGIN is wildcard or unset in production. Rejecting unknown origin: ' + origin);
+        return callback(null, false);
+      }
+      // In non-production, allow any origin but mirror it back
       // (credentials: true requires a specific origin, not '*')
       return callback(null, origin);
     }

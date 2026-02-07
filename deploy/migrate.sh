@@ -18,7 +18,7 @@ for migration in "$PROJECT_DIR"/database/migrations/*.sql; do
     if [ -f "$migration" ]; then
         filename=$(basename "$migration")
         echo "Running migration: $filename"
-        docker exec -i statslab-db psql -U statslab -d statslab < "$migration" 2>/dev/null || true
+        docker exec -i statslab-db psql -U statslab -d statslab < "$migration" || true
     fi
 done
 

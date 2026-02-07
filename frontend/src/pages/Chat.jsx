@@ -28,17 +28,21 @@ function extractUrls(text) {
 
 function AuthenticatedAudio({ audioUrl }) {
   const [blobUrl, setBlobUrl] = useState(null)
+  const blobUrlRef = useRef(null)
   const isChatUpload = audioUrl && audioUrl.startsWith('/uploads/chat/')
 
   useEffect(() => {
     if (isChatUpload) {
       let cancelled = false
       fetchAuthenticatedBlobUrl(audioUrl).then((url) => {
-        if (!cancelled && url) setBlobUrl(url)
+        if (!cancelled && url) {
+          blobUrlRef.current = url
+          setBlobUrl(url)
+        }
       })
       return () => {
         cancelled = true
-        if (blobUrl) URL.revokeObjectURL(blobUrl)
+        if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current)
       }
     }
   }, [audioUrl, isChatUpload])

@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import DOMPurify from 'dompurify'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 
@@ -72,7 +73,7 @@ export function RichTextContent({ content, className = '' }) {
   return (
     <div
       className={`prose prose-sm max-w-none ${className}`}
-      dangerouslySetInnerHTML={{ __html: content }}
+      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
     />
   )
 }

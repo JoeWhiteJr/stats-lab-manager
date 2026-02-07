@@ -50,17 +50,20 @@ router.get('/', authenticate, async (req, res, next) => {
 
     let query = `
       SELECT p.*, u.name as creator_name,
-        (SELECT COUNT(*) FROM action_items WHERE project_id = p.id) as total_actions,
-        (SELECT COUNT(*) FROM action_items WHERE project_id = p.id AND completed = true) as completed_actions,
-        CASE
-          WHEN (SELECT COUNT(*) FROM action_items WHERE project_id = p.id) = 0 THEN 0
-          ELSE ROUND(
-            (SELECT COUNT(*) FROM action_items WHERE project_id = p.id AND completed = true)::numeric /
-            (SELECT COUNT(*) FROM action_items WHERE project_id = p.id)::numeric * 100
-          )
+        COALESCE(ai_stats.total_actions, 0) as total_actions,
+        COALESCE(ai_stats.completed_actions, 0) as completed_actions,
+        CASE WHEN COALESCE(ai_stats.total_actions, 0) = 0 THEN 0
+          ELSE ROUND(COALESCE(ai_stats.completed_actions, 0)::numeric / ai_stats.total_actions::numeric * 100)
         END as calculated_progress
       FROM projects p
       JOIN users u ON p.created_by = u.id
+      LEFT JOIN (
+        SELECT project_id,
+          COUNT(*) as total_actions,
+          COUNT(*) FILTER (WHERE completed = true) as completed_actions
+        FROM action_items
+        GROUP BY project_id
+      ) ai_stats ON ai_stats.project_id = p.id
     `;
     const params = [];
 
@@ -88,17 +91,20 @@ router.get('/:id', authenticate, async (req, res, next) => {
   try {
     const result = await db.query(`
       SELECT p.*, u.name as creator_name,
-        (SELECT COUNT(*) FROM action_items WHERE project_id = p.id) as total_actions,
-        (SELECT COUNT(*) FROM action_items WHERE project_id = p.id AND completed = true) as completed_actions,
-        CASE
-          WHEN (SELECT COUNT(*) FROM action_items WHERE project_id = p.id) = 0 THEN 0
-          ELSE ROUND(
-            (SELECT COUNT(*) FROM action_items WHERE project_id = p.id AND completed = true)::numeric /
-            (SELECT COUNT(*) FROM action_items WHERE project_id = p.id)::numeric * 100
-          )
+        COALESCE(ai_stats.total_actions, 0) as total_actions,
+        COALESCE(ai_stats.completed_actions, 0) as completed_actions,
+        CASE WHEN COALESCE(ai_stats.total_actions, 0) = 0 THEN 0
+          ELSE ROUND(COALESCE(ai_stats.completed_actions, 0)::numeric / ai_stats.total_actions::numeric * 100)
         END as calculated_progress
       FROM projects p
       JOIN users u ON p.created_by = u.id
+      LEFT JOIN (
+        SELECT project_id,
+          COUNT(*) as total_actions,
+          COUNT(*) FILTER (WHERE completed = true) as completed_actions
+        FROM action_items
+        GROUP BY project_id
+      ) ai_stats ON ai_stats.project_id = p.id
       WHERE p.id = $1
     `, [req.params.id]);
 

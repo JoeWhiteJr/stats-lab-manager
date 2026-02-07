@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const db = require('../config/database');
 
@@ -15,6 +16,13 @@ const authenticate = async (req, res, next) => {
 
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, jwtSecret);
+
+    // Check token blocklist
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const blocked = await db.query('SELECT 1 FROM token_blocklist WHERE token_hash = $1', [tokenHash]);
+    if (blocked.rows.length > 0) {
+      return res.status(401).json({ error: { message: 'Token has been revoked' } });
+    }
 
     const result = await db.query(
       'SELECT id, email, name, role, is_super_admin, deleted_at, avatar_url FROM users WHERE id = $1',

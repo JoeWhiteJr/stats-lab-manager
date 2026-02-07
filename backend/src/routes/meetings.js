@@ -125,9 +125,23 @@ router.put('/:id', authenticate, sanitizeBody('notes'), [
 
     const { title, transcript, summary, notes } = req.body;
 
-    const existing = await db.query('SELECT id FROM meetings WHERE id = $1', [req.params.id]);
+    const existing = await db.query('SELECT id, project_id FROM meetings WHERE id = $1', [req.params.id]);
     if (existing.rows.length === 0) {
       return res.status(404).json({ error: { message: 'Meeting not found' } });
+    }
+
+    // Verify project access
+    if (req.user.role !== 'admin') {
+      const projectAccess = await db.query(
+        `SELECT id FROM projects WHERE id = $1 AND (
+          created_by = $2 OR
+          EXISTS (SELECT 1 FROM action_items ai JOIN action_item_assignees aia ON aia.action_item_id = ai.id WHERE ai.project_id = $1 AND aia.user_id = $2)
+        )`,
+        [existing.rows[0].project_id, req.user.id]
+      );
+      if (projectAccess.rows.length === 0) {
+        return res.status(403).json({ error: { message: 'Access denied' } });
+      }
     }
 
     const updates = [];
@@ -272,6 +286,20 @@ router.delete('/:id', authenticate, async (req, res, next) => {
     }
 
     const meeting = result.rows[0];
+
+    // Verify project access
+    if (req.user.role !== 'admin') {
+      const projectAccess = await db.query(
+        `SELECT id FROM projects WHERE id = $1 AND (
+          created_by = $2 OR
+          EXISTS (SELECT 1 FROM action_items ai JOIN action_item_assignees aia ON aia.action_item_id = ai.id WHERE ai.project_id = $1 AND aia.user_id = $2)
+        )`,
+        [meeting.project_id, req.user.id]
+      );
+      if (projectAccess.rows.length === 0) {
+        return res.status(403).json({ error: { message: 'Access denied' } });
+      }
+    }
 
     await db.query('DELETE FROM meetings WHERE id = $1', [req.params.id]);
 

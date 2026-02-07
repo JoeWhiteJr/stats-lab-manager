@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
@@ -28,7 +29,7 @@ router.post('/login', [
     const { email, password } = req.body;
 
     const result = await db.query(
-      'SELECT id, email, password_hash, name, role, is_super_admin, avatar_url FROM users WHERE email = $1',
+      'SELECT id, email, password_hash, name, role, is_super_admin, avatar_url FROM users WHERE email = $1 AND deleted_at IS NULL',
       [email]
     );
 
@@ -62,9 +63,23 @@ router.get('/me', authenticate, (req, res) => {
   res.json({ user: req.user });
 });
 
-// Logout (client-side token removal, but we can add token blacklisting later)
-router.post('/logout', authenticate, (req, res) => {
-  res.json({ message: 'Logged out successfully' });
+// Logout with token blocklist
+router.post('/logout', authenticate, async (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (token) {
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      const decoded = jwt.decode(token);
+      const expiresAt = decoded?.exp ? new Date(decoded.exp * 1000) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+      await db.query(
+        'INSERT INTO token_blocklist (token_hash, expires_at) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+        [tokenHash, expiresAt]
+      );
+    }
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Request password reset
@@ -94,8 +109,8 @@ router.post('/forgot-password', [
       [user.rows[0].id, token, expiresAt]
     );
 
-    // In a real app, this would send an email. For now, log the token.
-    console.log(`Password reset token for ${email}: ${token}`);
+    // TODO: Send password reset email to the user
+    // Token is stored in DB and will be validated on reset
 
     res.json({ message: 'If an account exists with that email, a reset link has been generated.' });
   } catch (error) {
@@ -116,25 +131,34 @@ router.post('/reset-password', [
 
     const { token, password } = req.body;
 
-    const result = await db.query(
-      'SELECT * FROM password_reset_tokens WHERE token = $1 AND used_at IS NULL AND expires_at > NOW()',
-      [token]
-    );
+    const client = await db.getClient();
+    try {
+      await client.query('BEGIN');
 
-    if (result.rows.length === 0) {
-      return res.status(400).json({ error: { message: 'Invalid or expired reset token' } });
+      const result = await client.query(
+        'SELECT * FROM password_reset_tokens WHERE token = $1 AND used_at IS NULL AND expires_at > NOW() FOR UPDATE',
+        [token]
+      );
+
+      if (result.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(400).json({ error: { message: 'Invalid or expired reset token' } });
+      }
+
+      const resetToken = result.rows[0];
+      const hashedPassword = await bcrypt.hash(password, 12);
+
+      await client.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hashedPassword, resetToken.user_id]);
+      await client.query('UPDATE password_reset_tokens SET used_at = NOW() WHERE id = $1', [resetToken.id]);
+
+      await client.query('COMMIT');
+      res.json({ message: 'Password has been reset successfully. You can now log in.' });
+    } catch (txError) {
+      await client.query('ROLLBACK');
+      throw txError;
+    } finally {
+      client.release();
     }
-
-    const resetToken = result.rows[0];
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    // Update password
-    await db.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hashedPassword, resetToken.user_id]);
-
-    // Mark token as used
-    await db.query('UPDATE password_reset_tokens SET used_at = NOW() WHERE id = $1', [resetToken.id]);
-
-    res.json({ message: 'Password has been reset successfully. You can now log in.' });
   } catch (error) {
     next(error);
   }

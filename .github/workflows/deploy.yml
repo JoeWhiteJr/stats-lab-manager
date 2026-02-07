@@ -1,7 +1,9 @@
 name: Deploy
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -9,6 +11,7 @@ jobs:
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.2.0
@@ -24,7 +27,7 @@ jobs:
             docker compose -f docker-compose.ec2.yml up -d --build --remove-orphans
             sleep 10
             for f in database/migrations/*.sql; do
-              docker exec -i statslab-db psql -U statslab -d statslab < "$f" 2>/dev/null || true
+              docker exec -i statslab-db psql -U statslab -d statslab < "$f" || true
             done
             docker system prune -f
             sleep 5

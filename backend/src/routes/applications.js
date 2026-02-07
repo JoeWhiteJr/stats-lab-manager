@@ -170,12 +170,11 @@ router.put('/:id/approve', authenticate, requireRole('admin'), [
     );
 
     const response = {
-      message: 'Application approved successfully',
+      message: tempPassword
+        ? 'Application approved. User account created. Temporary password has been set.'
+        : 'Application approved. User account created.',
       user: userResult.rows[0]
     };
-    if (tempPassword) {
-      response.temporaryPassword = tempPassword;
-    }
     res.json(response);
   } catch (error) {
     await client.query('ROLLBACK');
@@ -327,7 +326,7 @@ router.post('/bulk', authenticate, requireRole('admin'), [
 
           const successEntry = { id, userId: userResult.rows[0].id };
           if (tempPassword) {
-            successEntry.temporaryPassword = tempPassword;
+            successEntry.message = 'Temporary password has been set.';
           }
           results.success.push(successEntry);
         } else {

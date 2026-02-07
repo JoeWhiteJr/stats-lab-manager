@@ -64,6 +64,7 @@ export default function ChatFileUpload({ onFileSelect, disabled }) {
 export function FileAttachment({ fileUrl, fileName, type }) {
   const isChatUpload = fileUrl && fileUrl.startsWith('/uploads/chat/')
   const [blobUrl, setBlobUrl] = useState(null)
+  const blobUrlRef = useRef(null)
   const directUrl = getUploadUrl(fileUrl)
   const isImage = type === 'file' && fileName && /\.(jpg|jpeg|png|gif|webp)$/i.test(fileName)
 
@@ -71,11 +72,14 @@ export function FileAttachment({ fileUrl, fileName, type }) {
     if (isChatUpload && fileUrl) {
       let cancelled = false
       fetchAuthenticatedBlobUrl(fileUrl).then((url) => {
-        if (!cancelled && url) setBlobUrl(url)
+        if (!cancelled && url) {
+          blobUrlRef.current = url
+          setBlobUrl(url)
+        }
       })
       return () => {
         cancelled = true
-        if (blobUrl) URL.revokeObjectURL(blobUrl)
+        if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current)
       }
     }
   }, [fileUrl, isChatUpload])

@@ -59,7 +59,7 @@ echo "    Database is ready. Running migrations..."
 
 for f in database/migrations/*.sql; do
     echo "    Running $(basename "$f")..."
-    docker exec -i statslab-db psql -U statslab -d statslab < "$f" 2>/dev/null || true
+    docker exec -i statslab-db psql -U statslab -d statslab < "$f" || true
 done
 echo "    Migrations complete."
 

@@ -7,7 +7,7 @@ const { body, query, validationResult } = require('express-validator');
 const db = require('../config/database');
 const { authenticate, requireRole } = require('../middleware/auth');
 const socketService = require('../services/socketService');
-const { createNotification } = require('./notifications');
+const { createNotification, createNotificationForUsers } = require('./notifications');
 
 const router = express.Router();
 
@@ -311,17 +311,18 @@ router.post('/:id/messages', authenticate, [
     const senderName = result.rows[0].sender_name;
     const preview = content.length > 50 ? content.substring(0, 50) + '...' : content;
 
-    for (const member of members.rows) {
-      const notification = await createNotification(
-        member.user_id,
+    const otherMemberIds = members.rows.map(m => m.user_id);
+    if (otherMemberIds.length > 0) {
+      const notifications = await createNotificationForUsers(
+        otherMemberIds,
         'chat_message',
         `${senderName} in ${roomName}`,
         preview,
         req.params.id,
         'chat_room'
       );
-      if (notification) {
-        socketService.emitToUser(member.user_id, 'notification', notification);
+      for (const notification of notifications) {
+        socketService.emitToUser(notification.user_id, 'notification', notification);
       }
     }
 
@@ -505,17 +506,18 @@ router.post('/:id/audio', authenticate, chatUpload.single('audio'), async (req, 
     const senderName = result.rows[0].sender_name;
     const roomName = (await db.query('SELECT name FROM chat_rooms WHERE id = $1', [req.params.id])).rows[0]?.name || 'Chat';
 
-    for (const member of members.rows) {
-      const notification = await createNotification(
-        member.user_id,
+    const otherMemberIds = members.rows.map(m => m.user_id);
+    if (otherMemberIds.length > 0) {
+      const notifications = await createNotificationForUsers(
+        otherMemberIds,
         'chat_message',
         `${senderName} in ${roomName}`,
         'Sent an audio message',
         req.params.id,
         'chat_room'
       );
-      if (notification) {
-        socketService.emitToUser(member.user_id, 'notification', notification);
+      for (const notification of notifications) {
+        socketService.emitToUser(notification.user_id, 'notification', notification);
       }
     }
 
@@ -565,17 +567,18 @@ router.post('/:id/upload', authenticate, chatUpload.single('file'), async (req, 
     const senderName = result.rows[0].sender_name;
     const roomName = (await db.query('SELECT name FROM chat_rooms WHERE id = $1', [req.params.id])).rows[0]?.name || 'Chat';
 
-    for (const member of members.rows) {
-      const notification = await createNotification(
-        member.user_id,
+    const otherMemberIds = members.rows.map(m => m.user_id);
+    if (otherMemberIds.length > 0) {
+      const notifications = await createNotificationForUsers(
+        otherMemberIds,
         'chat_message',
         `${senderName} in ${roomName}`,
         `Shared a file: ${fileName}`,
         req.params.id,
         'chat_room'
       );
-      if (notification) {
-        socketService.emitToUser(member.user_id, 'notification', notification);
+      for (const notification of notifications) {
+        socketService.emitToUser(notification.user_id, 'notification', notification);
       }
     }
 
@@ -773,8 +776,10 @@ router.get('/:id', authenticate, async (req, res, next) => {
 
 // Serve chat uploads with authentication
 router.get('/uploads/:filename', authenticate, (req, res, next) => {
-  const uploadDir = process.env.UPLOAD_DIR || require('path').join(__dirname, '../../uploads');
-  const filePath = require('path').join(uploadDir, 'chat', req.params.filename);
+  const pathModule = require('path');
+  const uploadDir = process.env.UPLOAD_DIR || pathModule.join(__dirname, '../../uploads');
+  const safeName = pathModule.basename(req.params.filename);
+  const filePath = pathModule.join(uploadDir, 'chat', safeName);
   const fs = require('fs');
 
   if (!fs.existsSync(filePath)) {
