@@ -11,7 +11,8 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-RUN addgroup -g 1001 -S nodejs && \
+RUN apk add --no-cache su-exec && \
+    addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
@@ -20,8 +21,10 @@ COPY --from=builder --chown=nodejs:nodejs /app/package.json ./
 
 RUN mkdir -p /app/uploads && chown nodejs:nodejs /app/uploads
 
-USER nodejs
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 EXPOSE 3001
 
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["node", "src/index.js"]
