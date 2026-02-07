@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Trash2, Calendar, User, Users, Tag, ChevronDown, ChevronRight, CornerDownRight } from 'lucide-react'
+import { GripVertical, Trash2, Pencil, Calendar, User, Users, Tag, ChevronDown, ChevronRight, CornerDownRight } from 'lucide-react'
 import { format } from 'date-fns'
 import CategoryBadge from './CategoryBadge'
 
@@ -9,6 +9,7 @@ export default function ActionItem({
   action,
   onToggle,
   onDelete,
+  onEdit,
   onUpdateCategory,
   users = [],
   categories = [],
@@ -216,6 +217,17 @@ export default function ActionItem({
           </div>
         </div>
 
+        {onEdit && (
+          <button
+            onClick={() => onEdit(action)}
+            className={`p-1.5 rounded text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-all ${
+              isHovered ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            <Pencil size={16} />
+          </button>
+        )}
+
         <button
           onClick={() => {
             if (isSubtask && onDeleteSubtask) {
@@ -241,6 +253,7 @@ export default function ActionItem({
               action={subtask}
               onToggle={onToggleSubtask || onToggle}
               onDelete={onDeleteSubtask || onDelete}
+              onEdit={onEdit}
               onUpdateCategory={onUpdateCategory}
               users={users}
               categories={categories}

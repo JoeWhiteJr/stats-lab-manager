@@ -56,6 +56,10 @@ export default function ProjectDetail() {
   const [showActionModal, setShowActionModal] = useState(false)
   const [newAction, setNewAction] = useState({ title: '', due_date: '', assigned_to: '', assignee_ids: [], category_id: '', parent_task_id: '' })
 
+  // Edit action state
+  const [editingAction, setEditingAction] = useState(null)
+  const [editForm, setEditForm] = useState({ title: '', due_date: '', assignee_ids: [], category_id: '' })
+
   // Note modals
   const [showNoteModal, setShowNoteModal] = useState(false)
   const [editingNote, setEditingNote] = useState(null)
@@ -161,6 +165,33 @@ export default function ProjectDetail() {
     })
     setShowActionModal(false)
     setNewAction({ title: '', due_date: '', assigned_to: '', assignee_ids: [], category_id: '', parent_task_id: '' })
+  }
+
+  // Handle editing an action
+  const handleEditAction = (action) => {
+    setEditingAction(action)
+    setEditForm({
+      title: action.title || '',
+      due_date: action.due_date ? action.due_date.split('T')[0] : '',
+      assignee_ids: action.assignees?.map(a => a.user_id) || [],
+      category_id: action.category_id || ''
+    })
+  }
+
+  const handleSaveEdit = async (e) => {
+    e.preventDefault()
+    if (!editForm.title.trim()) return
+    try {
+      await updateAction(editingAction.id, {
+        title: editForm.title.trim(),
+        due_date: editForm.due_date || null,
+        assignee_ids: editForm.assignee_ids,
+        category_id: editForm.category_id || null
+      })
+      setEditingAction(null)
+    } catch (error) {
+      console.error('Failed to update action:', error)
+    }
   }
 
   // Handle drag-and-drop to make subtask
@@ -634,6 +665,7 @@ export default function ProjectDetail() {
                             onToggleSubtask={(actionId, completed) => updateAction(actionId, { completed })}
                             onDelete={deleteAction}
                             onDeleteSubtask={deleteAction}
+                            onEdit={handleEditAction}
                             onUpdateCategory={updateAction}
                             onDrop={handleMakeSubtask}
                           />
@@ -960,6 +992,67 @@ export default function ProjectDetail() {
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="secondary" onClick={() => setShowActionModal(false)}>Cancel</Button>
             <Button type="submit">Add Task</Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Action Modal */}
+      <Modal isOpen={!!editingAction} onClose={() => setEditingAction(null)} title="Edit Task">
+        <form onSubmit={handleSaveEdit} className="space-y-4">
+          <Input
+            label="Title"
+            value={editForm.title}
+            onChange={(e) => setEditForm({...editForm, title: e.target.value})}
+            required
+          />
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">Due Date</label>
+            <input
+              type="date"
+              value={editForm.due_date}
+              onChange={(e) => setEditForm({...editForm, due_date: e.target.value})}
+              className="w-full px-4 py-2.5 rounded-organic border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300"
+            />
+          </div>
+          {categories.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1.5">Category</label>
+              <select
+                value={editForm.category_id}
+                onChange={(e) => setEditForm({...editForm, category_id: e.target.value})}
+                className="w-full px-4 py-2.5 rounded-organic border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300"
+              >
+                <option value="">No category</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+          <div>
+            <label className="block text-sm font-medium text-text-primary mb-1.5">Assignees</label>
+            <div className="max-h-32 overflow-y-auto border border-gray-300 rounded-organic">
+              {teamMembers.map(u => (
+                <label key={u.id} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editForm.assignee_ids.includes(u.id)}
+                    onChange={() => {
+                      const ids = editForm.assignee_ids.includes(u.id)
+                        ? editForm.assignee_ids.filter(id => id !== u.id)
+                        : [...editForm.assignee_ids, u.id]
+                      setEditForm({...editForm, assignee_ids: ids})
+                    }}
+                    className="rounded border-gray-300 text-primary-600"
+                  />
+                  <span className="text-sm">{u.name}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="button" variant="secondary" onClick={() => setEditingAction(null)}>Cancel</Button>
+            <Button type="submit">Save Changes</Button>
           </div>
         </form>
       </Modal>

@@ -3,7 +3,7 @@ import { useAuthStore } from '../store/authStore'
 import { usersApi } from '../services/api'
 import Button from '../components/Button'
 import Input from '../components/Input'
-import { User, Shield } from 'lucide-react'
+import { User, Shield, Bell } from 'lucide-react'
 
 export default function Settings() {
   const { user, updateUser } = useAuthStore()
@@ -19,11 +19,26 @@ export default function Settings() {
   const [isSavingPassword, setIsSavingPassword] = useState(false)
   const [passwordMessage, setPasswordMessage] = useState({ type: '', text: '' })
 
+  // Notification preferences state
+  const [preferences, setPreferences] = useState(null)
+  const [loadingPrefs, setLoadingPrefs] = useState(false)
+  const [prefsMessage, setPrefsMessage] = useState({ type: '', text: '' })
+
   useEffect(() => {
     if (user) {
       setProfileData({ name: user.name, email: user.email })
     }
   }, [user])
+
+  useEffect(() => {
+    if (activeSection === 'notifications') {
+      setLoadingPrefs(true)
+      usersApi.getPreferences()
+        .then(({ data }) => setPreferences(data.preferences))
+        .catch(() => setPreferences(null))
+        .finally(() => setLoadingPrefs(false))
+    }
+  }, [activeSection])
 
   const handleSaveProfile = async (e) => {
     e.preventDefault()
@@ -41,6 +56,18 @@ export default function Settings() {
       })
     }
     setIsSavingProfile(false)
+  }
+
+  const handleTogglePref = async (key) => {
+    const newVal = !preferences[key]
+    setPreferences(prev => ({ ...prev, [key]: newVal }))
+    try {
+      await usersApi.updatePreferences({ [key]: newVal })
+    } catch (error) {
+      // Revert on error
+      setPreferences(prev => ({ ...prev, [key]: !newVal }))
+      setPrefsMessage({ type: 'error', text: 'Failed to update preference' })
+    }
   }
 
   const handleChangePassword = async (e) => {
@@ -78,6 +105,7 @@ export default function Settings() {
   const sections = [
     { id: 'profile', label: 'Profile', icon: User },
     { id: 'security', label: 'Security', icon: Shield },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
   ]
 
   return (
@@ -192,6 +220,90 @@ export default function Settings() {
                   Change Password
                 </Button>
               </form>
+            </div>
+          )}
+
+          {/* Notifications */}
+          {activeSection === 'notifications' && (
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <h2 className="font-display font-semibold text-lg mb-2">Notification Preferences</h2>
+              <p className="text-sm text-text-secondary mb-6">Choose how you want to be notified.</p>
+
+              {loadingPrefs ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+                </div>
+              ) : preferences ? (
+                <div className="space-y-6">
+                  {/* In-App Notifications */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-text-primary mb-3">In-App Notifications</h3>
+                    <div className="space-y-3">
+                      {[
+                        { key: 'in_app_chat', label: 'Chat Messages', desc: 'New messages in your chat rooms' },
+                        { key: 'in_app_mentions', label: 'Mentions', desc: 'When someone mentions you' },
+                        { key: 'in_app_applications', label: 'Applications', desc: 'New application submissions' },
+                        { key: 'in_app_system', label: 'System', desc: 'System announcements and updates' },
+                      ].map(({ key, label, desc }) => (
+                        <div key={key} className="flex items-center justify-between py-2">
+                          <div>
+                            <p className="text-sm font-medium text-text-primary">{label}</p>
+                            <p className="text-xs text-text-secondary">{desc}</p>
+                          </div>
+                          <button
+                            onClick={() => handleTogglePref(key)}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                              preferences[key] ? 'bg-primary-500' : 'bg-gray-300'
+                            }`}
+                          >
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              preferences[key] ? 'translate-x-6' : 'translate-x-1'
+                            }`} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Email Notifications */}
+                  <div className="border-t border-gray-200 pt-6">
+                    <h3 className="text-sm font-semibold text-text-primary mb-1">Email Notifications</h3>
+                    <p className="text-xs text-text-secondary mb-3">Email notifications are coming soon.</p>
+                    <div className="space-y-3 opacity-60">
+                      {[
+                        { key: 'email_chat', label: 'Chat Messages' },
+                        { key: 'email_mentions', label: 'Mentions' },
+                        { key: 'email_applications', label: 'Applications' },
+                        { key: 'email_system', label: 'System' },
+                      ].map(({ key, label }) => (
+                        <div key={key} className="flex items-center justify-between py-2">
+                          <p className="text-sm font-medium text-text-primary">{label}</p>
+                          <button
+                            onClick={() => handleTogglePref(key)}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                              preferences[key] ? 'bg-primary-500' : 'bg-gray-300'
+                            }`}
+                          >
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              preferences[key] ? 'translate-x-6' : 'translate-x-1'
+                            }`} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {prefsMessage.text && (
+                    <div className={`p-3 rounded-lg text-sm ${
+                      prefsMessage.type === 'error' ? 'bg-red-50 border border-red-200 text-red-600' : 'bg-green-50 border border-green-200 text-green-700'
+                    }`}>
+                      {prefsMessage.text}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-text-secondary text-sm">Failed to load preferences.</p>
+              )}
             </div>
           )}
         </div>

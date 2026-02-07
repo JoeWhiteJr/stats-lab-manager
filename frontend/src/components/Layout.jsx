@@ -1,13 +1,30 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
-import { LayoutDashboard, User, FolderKanban, Settings, LogOut, Menu, X, MessageCircle, Shield, ExternalLink } from 'lucide-react'
-import { useState } from 'react'
+import { useThemeStore } from '../store/themeStore'
+import { LayoutDashboard, User, FolderKanban, Settings, LogOut, Menu, X, MessageCircle, Shield, ExternalLink, Search, Sun, Moon } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import NotificationBell from './NotificationBell'
+import SearchModal from './SearchModal'
+import Breadcrumbs from './Breadcrumbs'
 
 export default function Layout() {
   const { user, logout } = useAuthStore()
+  const { theme, toggleTheme } = useThemeStore()
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+
+  // Cmd+K / Ctrl+K to open search
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setSearchOpen(prev => !prev)
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   const handleLogout = async () => {
     await logout()
@@ -24,35 +41,54 @@ export default function Layout() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background dark:bg-gray-900">
       {/* Mobile header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-50">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 z-50">
         <div className="flex items-center">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 rounded-lg hover:bg-gray-100"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
           >
-            {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+            {sidebarOpen ? <X size={24} className="dark:text-gray-200" /> : <Menu size={24} className="dark:text-gray-200" />}
           </button>
-          <span className="ml-3 font-display font-semibold text-lg text-primary-600">Stats Lab</span>
+          <span className="ml-3 font-display font-semibold text-lg text-primary-600 dark:text-primary-400">Stats Lab</span>
         </div>
-        <NotificationBell />
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+        </div>
       </div>
 
       {/* Desktop header */}
-      <div className="hidden lg:flex fixed top-0 left-64 right-0 h-16 bg-white border-b border-gray-200 items-center justify-end px-6 z-40">
-        <NotificationBell />
+      <div className="hidden lg:flex fixed top-0 left-64 right-0 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 items-center justify-between px-6 z-40">
+        <button
+          onClick={() => setSearchOpen(true)}
+          className="flex items-center gap-2 px-3 py-1.5 text-sm text-text-secondary dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+        >
+          <Search size={16} />
+          <span>Search...</span>
+          <kbd className="ml-4 text-xs bg-white dark:bg-gray-600 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-500">⌘K</kbd>
+        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-text-secondary dark:text-gray-400"
+            title={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+          >
+            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          </button>
+          <NotificationBell />
+        </div>
       </div>
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 z-40 transform transition-transform lg:translate-x-0 ${
+        className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-40 transform transition-transform lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="p-6 border-b border-gray-100">
-          <h1 className="font-display font-bold text-xl text-primary-600">Stats Lab</h1>
-          <p className="text-sm text-text-secondary mt-1">Research Manager</p>
+        <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+          <h1 className="font-display font-bold text-xl text-primary-600 dark:text-primary-400">Stats Lab</h1>
+          <p className="text-sm text-text-secondary dark:text-gray-400 mt-1">Research Manager</p>
         </div>
 
         <nav className="p-4 space-y-1">
@@ -65,8 +101,8 @@ export default function Layout() {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-3 rounded-organic text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-primary-50 text-primary-700'
-                    : 'text-text-secondary hover:bg-gray-50 hover:text-text-primary'
+                    ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                    : 'text-text-secondary dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-text-primary dark:hover:text-gray-200'
                 }`
               }
             >
@@ -79,27 +115,34 @@ export default function Layout() {
         <div className="absolute bottom-20 left-0 right-0 px-4">
           <a
             href="/"
-            className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:text-primary-600 hover:bg-gray-50 rounded-organic transition-colors"
+            className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-organic transition-colors"
           >
             <ExternalLink size={16} />
             View Public Site
           </a>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3 px-4 py-3">
-            <div className="w-9 h-9 rounded-full bg-primary-100 flex items-center justify-center">
-              <span className="text-primary-700 font-medium text-sm">
+            <div className="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900/50 flex items-center justify-center">
+              <span className="text-primary-700 dark:text-primary-300 font-medium text-sm">
                 {user?.name?.charAt(0)?.toUpperCase() || 'U'}
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-text-primary truncate">{user?.name}</p>
-              <p className="text-xs text-text-secondary capitalize">{user?.role?.replace(/_/g, ' ')}</p>
+              <p className="text-sm font-medium text-text-primary dark:text-gray-200 truncate">{user?.name}</p>
+              <p className="text-xs text-text-secondary dark:text-gray-400 capitalize">{user?.role?.replace(/_/g, ' ')}</p>
             </div>
             <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-text-secondary dark:text-gray-400 lg:hidden"
+              title={theme === 'light' ? 'Dark mode' : 'Light mode'}
+            >
+              {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
+            </button>
+            <button
               onClick={handleLogout}
-              className="p-2 rounded-lg hover:bg-gray-100 text-text-secondary hover:text-red-600"
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-text-secondary dark:text-gray-400 hover:text-red-600"
               title="Logout"
             >
               <LogOut size={18} />
@@ -119,9 +162,13 @@ export default function Layout() {
       {/* Main content */}
       <main className="lg:ml-64 pt-16 min-h-screen">
         <div className="p-6 lg:p-8">
+          <Breadcrumbs />
           <Outlet />
         </div>
       </main>
+
+      {/* Search Modal */}
+      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   )
 }

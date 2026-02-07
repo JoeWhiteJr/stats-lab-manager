@@ -81,10 +81,14 @@ export default function Chat() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
+  const [typingUsers, setTypingUsers] = useState([])
+  const [onlineUserIds, setOnlineUserIds] = useState([])
+
   const messagesEndRef = useRef(null)
   const messagesContainerRef = useRef(null)
   const shouldAutoScroll = useRef(true)
   const textareaRef = useRef(null)
+  const typingTimeoutRef = useRef(null)
 
   const isAdmin = user?.role === 'admin'
 
@@ -112,6 +116,29 @@ export default function Chat() {
     }
     shouldAutoScroll.current = true
   }, [messages])
+
+  // Subscribe to typing events when room changes
+  useEffect(() => {
+    if (roomId) {
+      const unsub = socket.subscribeToTyping(roomId, (users) => {
+        // Filter out current user
+        setTypingUsers(users.filter(u => u.id !== user?.id))
+      })
+      return unsub
+    } else {
+      setTypingUsers([])
+    }
+  }, [roomId, user?.id])
+
+  // Subscribe to online status
+  useEffect(() => {
+    const unsub = socket.subscribeToOnlineStatus((userIds) => {
+      setOnlineUserIds(userIds)
+    })
+    // Get initial state
+    setOnlineUserIds(socket.getOnlineUsers())
+    return unsub
+  }, [])
 
   const handleOpenCreate = async () => {
     setCreateError('')
@@ -148,10 +175,27 @@ export default function Chat() {
     }
   }
 
+  const handleTyping = () => {
+    if (currentRoom) {
+      socket.startTyping(currentRoom.id)
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.stopTyping(currentRoom.id)
+      }, 2000)
+    }
+  }
+
   const handleSendMessage = async (e) => {
     e.preventDefault()
     const text = messageText.trim()
     if (!text || !currentRoom || isSending) return
+
+    // Stop typing indicator on send
+    socket.stopTyping(currentRoom.id)
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current)
+      typingTimeoutRef.current = null
+    }
 
     setIsSending(true)
     setMessageText('')
@@ -313,7 +357,12 @@ export default function Chat() {
                 className={`block px-4 py-3 hover:bg-gray-50 border-b border-gray-100 ${currentRoom?.id === room.id ? 'bg-primary-50' : ''}`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="font-medium text-sm truncate">{room.name || 'Chat'}</div>
+                  <div className="font-medium text-sm truncate flex items-center gap-1.5">
+                    {room.name || 'Chat'}
+                    {onlineUserIds.some(uid => room.members?.some(m => m.user_id === uid && uid !== user?.id)) && (
+                      <span className="w-2 h-2 rounded-full bg-green-400 flex-shrink-0"></span>
+                    )}
+                  </div>
                   {room.unread_count > 0 && (
                     <span className="ml-2 px-1.5 py-0.5 text-xs bg-primary-500 text-white rounded-full min-w-[20px] text-center">
                       {room.unread_count}
@@ -340,6 +389,10 @@ export default function Chat() {
                 <h2 className="font-semibold">{currentRoom.name || 'Chat'}</h2>
                 <p className="text-xs text-text-secondary">
                   {currentRoom.members?.length || 0} members
+                  {(() => {
+                    const onlineCount = currentRoom.members?.filter(m => onlineUserIds.includes(m.user_id)).length || 0
+                    return onlineCount > 0 ? ` \u00b7 ${onlineCount} online` : ''
+                  })()}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -451,6 +504,18 @@ export default function Chat() {
 
             {/* Message input */}
             <div className="px-4 py-3 border-t border-gray-200 bg-white">
+              {typingUsers.length > 0 && (
+                <div className="px-4 py-1.5 text-xs text-text-secondary flex items-center gap-1.5">
+                  <span className="flex gap-0.5">
+                    <span className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-1.5 h-1.5 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                  </span>
+                  <span>
+                    {typingUsers.map(u => u.name.split(' ')[0]).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...
+                  </span>
+                </div>
+              )}
               <form onSubmit={handleSendMessage} className="flex items-end gap-2">
                 <div className="relative">
                   <button
@@ -479,7 +544,7 @@ export default function Chat() {
                 <textarea
                   ref={textareaRef}
                   value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
+                  onChange={(e) => { setMessageText(e.target.value); handleTyping() }}
                   onKeyDown={handleKeyDown}
                   placeholder="Type a message..."
                   rows={1}

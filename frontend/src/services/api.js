@@ -301,4 +301,9 @@ export const calendarApi = {
   getDeadlines: (start, end) => api.get('/calendar/events/deadlines', { params: { start, end } }),
 }
 
+// Search
+export const searchApi = {
+  search: (q) => api.get('/search', { params: { q } })
+}
+
 export default api

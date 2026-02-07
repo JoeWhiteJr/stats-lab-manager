@@ -21,6 +21,7 @@ const notificationRoutes = require('./routes/notifications');
 const aiRoutes = require('./routes/ai');
 const publicRoutes = require('./routes/public');
 const calendarRoutes = require('./routes/calendar');
+const searchRoutes = require('./routes/search');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -89,6 +90,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/search', searchRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

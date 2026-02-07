@@ -2,10 +2,10 @@ import { forwardRef } from 'react'
 
 const variants = {
   primary: 'bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-300',
-  secondary: 'bg-gray-100 text-text-primary hover:bg-gray-200 focus:ring-gray-300',
-  outline: 'border border-gray-300 text-text-primary hover:bg-gray-50 focus:ring-gray-300',
+  secondary: 'bg-gray-100 dark:bg-gray-700 text-text-primary dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 focus:ring-gray-300',
+  outline: 'border border-gray-300 dark:border-gray-600 text-text-primary dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-gray-300',
   danger: 'bg-red-500 text-white hover:bg-red-600 focus:ring-red-300',
-  ghost: 'text-text-secondary hover:bg-gray-100 hover:text-text-primary',
+  ghost: 'text-text-secondary dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-text-primary dark:hover:text-gray-200',
   white: 'bg-white text-primary-600 hover:bg-white/90 shadow-lg shadow-primary-900/20 focus:ring-primary-300'
 }
 
