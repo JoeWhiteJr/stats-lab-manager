@@ -50,6 +50,10 @@ export const connect = (token) => {
     useChatStore.getState().onNewRoom(room)
   })
 
+  socket.on('reaction_updated', (data) => {
+    useChatStore.getState().onReactionUpdated(data)
+  })
+
   socket.on('room_updated', (room) => {
     const state = useChatStore.getState()
     if (state.currentRoom?.id === room.id) {

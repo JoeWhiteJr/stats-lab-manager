@@ -170,7 +170,26 @@ export const chatApi = {
     api.post(`/chats/${roomId}/members`, { userIds }),
   removeMember: (roomId, userId) =>
     api.delete(`/chats/${roomId}/members/${userId}`),
-  markRead: (roomId) => api.put(`/chats/${roomId}/read`)
+  markRead: (roomId) => api.put(`/chats/${roomId}/read`),
+  toggleReaction: (roomId, messageId, emoji) =>
+    api.post(`/chats/${roomId}/messages/${messageId}/reactions`, { emoji }),
+  getReactions: (roomId, messageId) =>
+    api.get(`/chats/${roomId}/messages/${messageId}/reactions`),
+  uploadAudio: (roomId, audioFile, duration) => {
+    const formData = new FormData()
+    formData.append('audio', audioFile)
+    formData.append('duration', String(duration || 0))
+    return api.post(`/chats/${roomId}/audio`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  },
+  uploadFile: (roomId, file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post(`/chats/${roomId}/upload`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  }
 }
 
 // Applications
@@ -223,6 +242,22 @@ export const aiApi = {
     api.post('/ai/review-application', { applicationId }),
   summarizeChat: (roomId, messageCount) =>
     api.post('/ai/summarize-chat', { roomId, messageCount })
+}
+
+// Calendar
+export const calendarApi = {
+  listEvents: (params) => api.get('/calendar/events', { params }),
+  getEvent: (id) => api.get(`/calendar/events/${id}`),
+  createEvent: (data) => api.post('/calendar/events', data),
+  updateEvent: (id, data) => api.put(`/calendar/events/${id}`, data),
+  deleteEvent: (id) => api.delete(`/calendar/events/${id}`),
+  moveEvent: (id, data) => api.patch(`/calendar/events/${id}/move`, data),
+  listCategories: (scope) => api.get('/calendar/categories', { params: { scope } }),
+  createCategory: (data) => api.post('/calendar/categories', data),
+  updateCategory: (id, data) => api.put(`/calendar/categories/${id}`, data),
+  deleteCategory: (id) => api.delete(`/calendar/categories/${id}`),
+  rsvp: (eventId, status) => api.post(`/calendar/events/${eventId}/attend`, { status }),
+  getDeadlines: (start, end) => api.get('/calendar/events/deadlines', { params: { start, end } }),
 }
 
 export default api

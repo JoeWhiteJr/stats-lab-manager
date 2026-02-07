@@ -19,6 +19,7 @@ const adminRoutes = require('./routes/admin');
 const notificationRoutes = require('./routes/notifications');
 const aiRoutes = require('./routes/ai');
 const publicRoutes = require('./routes/public');
+const calendarRoutes = require('./routes/calendar');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -38,6 +39,8 @@ app.use(express.urlencoded({ extended: true }));
 // Other file uploads remain behind authenticated /api/files/:id/download endpoint
 const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, '../uploads');
 app.use('/uploads/covers', express.static(path.join(uploadDir, 'covers')));
+// Serve chat uploads (audio messages, shared files) statically
+app.use('/uploads/chat', express.static(path.join(uploadDir, 'chat')));
 
 // Rate limiting
 const authLimiter = rateLimit({
@@ -61,6 +64,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/public', publicRoutes);
+app.use('/api/calendar', calendarRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

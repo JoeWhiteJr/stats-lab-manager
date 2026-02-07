@@ -1,4 +1,8 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
 const { body, query, validationResult } = require('express-validator');
 const db = require('../config/database');
 const { authenticate, requireRole } = require('../middleware/auth');
@@ -6,6 +10,46 @@ const socketService = require('../services/socketService');
 const { createNotification } = require('./notifications');
 
 const router = express.Router();
+
+// Configure multer for chat file/audio uploads
+const chatUploadDir = path.join(process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads'), 'chat');
+if (!fs.existsSync(chatUploadDir)) {
+  fs.mkdirSync(chatUploadDir, { recursive: true });
+}
+
+const chatStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, chatUploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  }
+});
+
+const chatUpload = multer({
+  storage: chatStorage,
+  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+      'application/pdf', 'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-excel',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'text/plain', 'text/csv',
+      'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/mp4',
+      'video/mp4', 'video/webm'
+    ];
+    if (allowedTypes.includes(file.mimetype) ||
+        file.mimetype.startsWith('audio/') ||
+        file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('File type not allowed'), false);
+    }
+  }
+});
 
 // Get user's chat rooms
 router.get('/', authenticate, async (req, res, next) => {
@@ -165,9 +209,19 @@ router.get('/:id/messages', authenticate, [
     const limit = parseInt(req.query.limit) || 50;
     const before = req.query.before;
 
-    let query = `
+    let messagesQuery = `
       SELECT m.*, u.name as sender_name,
-        CASE WHEN m.deleted_at IS NOT NULL THEN 'Message deleted' ELSE m.content END as content
+        CASE WHEN m.deleted_at IS NOT NULL THEN 'Message deleted' ELSE m.content END as content,
+        COALESCE(
+          (SELECT json_agg(json_build_object(
+            'id', mr.id, 'emoji', mr.emoji, 'user_id', mr.user_id,
+            'user_name', ru.name
+          ))
+          FROM message_reactions mr
+          JOIN users ru ON mr.user_id = ru.id
+          WHERE mr.message_id = m.id),
+          '[]'::json
+        ) as reactions
       FROM messages m
       JOIN users u ON m.sender_id = u.id
       WHERE m.room_id = $1
@@ -177,15 +231,15 @@ router.get('/:id/messages', authenticate, [
     if (before) {
       const beforeMsg = await db.query('SELECT created_at FROM messages WHERE id = $1', [before]);
       if (beforeMsg.rows.length > 0) {
-        query += ' AND m.created_at < $2';
+        messagesQuery += ' AND m.created_at < $2';
         params.push(beforeMsg.rows[0].created_at);
       }
     }
 
-    query += ` ORDER BY m.created_at DESC LIMIT $${params.length + 1}`;
+    messagesQuery += ` ORDER BY m.created_at DESC LIMIT $${params.length + 1}`;
     params.push(limit);
 
-    const result = await db.query(query, params);
+    const result = await db.query(messagesQuery, params);
 
     res.json({
       messages: result.rows.reverse(),
@@ -291,6 +345,226 @@ router.delete('/:id/messages/:messageId', authenticate, async (req, res, next) =
     });
 
     res.json({ message: 'Message deleted' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Toggle reaction on a message
+router.post('/:id/messages/:messageId/reactions', authenticate, [
+  body('emoji').trim().notEmpty()
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: { message: 'Validation failed', details: errors.array() } });
+    }
+
+    // Check membership
+    const membership = await db.query(
+      'SELECT user_id FROM chat_members WHERE room_id = $1 AND user_id = $2',
+      [req.params.id, req.user.id]
+    );
+    if (membership.rows.length === 0) {
+      return res.status(403).json({ error: { message: 'Not a member of this chat' } });
+    }
+
+    // Check message exists
+    const message = await db.query(
+      'SELECT id FROM messages WHERE id = $1 AND room_id = $2',
+      [req.params.messageId, req.params.id]
+    );
+    if (message.rows.length === 0) {
+      return res.status(404).json({ error: { message: 'Message not found' } });
+    }
+
+    const { emoji } = req.body;
+
+    // Check if reaction already exists (toggle)
+    const existing = await db.query(
+      'SELECT id FROM message_reactions WHERE message_id = $1 AND user_id = $2 AND emoji = $3',
+      [req.params.messageId, req.user.id, emoji]
+    );
+
+    let action;
+    if (existing.rows.length > 0) {
+      // Remove reaction
+      await db.query(
+        'DELETE FROM message_reactions WHERE message_id = $1 AND user_id = $2 AND emoji = $3',
+        [req.params.messageId, req.user.id, emoji]
+      );
+      action = 'removed';
+    } else {
+      // Add reaction
+      await db.query(
+        'INSERT INTO message_reactions (message_id, user_id, emoji) VALUES ($1, $2, $3)',
+        [req.params.messageId, req.user.id, emoji]
+      );
+      action = 'added';
+    }
+
+    // Get updated reactions for this message
+    const reactions = await db.query(
+      `SELECT mr.id, mr.emoji, mr.user_id, u.name as user_name
+       FROM message_reactions mr
+       JOIN users u ON mr.user_id = u.id
+       WHERE mr.message_id = $1`,
+      [req.params.messageId]
+    );
+
+    // Emit reaction update to room
+    socketService.emitToRoom(req.params.id, 'reaction_updated', {
+      messageId: req.params.messageId,
+      reactions: reactions.rows
+    });
+
+    res.json({ action, reactions: reactions.rows });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get reactions for a message
+router.get('/:id/messages/:messageId/reactions', authenticate, async (req, res, next) => {
+  try {
+    // Check membership
+    const membership = await db.query(
+      'SELECT user_id FROM chat_members WHERE room_id = $1 AND user_id = $2',
+      [req.params.id, req.user.id]
+    );
+    if (membership.rows.length === 0) {
+      return res.status(403).json({ error: { message: 'Not a member of this chat' } });
+    }
+
+    const reactions = await db.query(
+      `SELECT mr.id, mr.emoji, mr.user_id, u.name as user_name
+       FROM message_reactions mr
+       JOIN users u ON mr.user_id = u.id
+       WHERE mr.message_id = $1`,
+      [req.params.messageId]
+    );
+
+    res.json({ reactions: reactions.rows });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Upload audio message
+router.post('/:id/audio', authenticate, chatUpload.single('audio'), async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: { message: 'No audio file provided' } });
+    }
+
+    // Check membership
+    const membership = await db.query(
+      'SELECT user_id FROM chat_members WHERE room_id = $1 AND user_id = $2',
+      [req.params.id, req.user.id]
+    );
+    if (membership.rows.length === 0) {
+      return res.status(403).json({ error: { message: 'Not a member of this chat' } });
+    }
+
+    const audioUrl = `/uploads/chat/${req.file.filename}`;
+    const duration = parseInt(req.body.duration) || 0;
+
+    const result = await db.query(
+      `INSERT INTO messages (room_id, sender_id, content, type, audio_url, audio_duration)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *, (SELECT name FROM users WHERE id = $2) as sender_name`,
+      [req.params.id, req.user.id, 'Audio message', 'audio', audioUrl, duration]
+    );
+
+    // Update room's updated_at
+    await db.query('UPDATE chat_rooms SET updated_at = CURRENT_TIMESTAMP WHERE id = $1', [req.params.id]);
+
+    // Emit to room
+    socketService.emitToRoom(req.params.id, 'new_message', result.rows[0]);
+
+    // Create notifications for other members
+    const members = await db.query(
+      'SELECT user_id FROM chat_members WHERE room_id = $1 AND user_id != $2',
+      [req.params.id, req.user.id]
+    );
+    const senderName = result.rows[0].sender_name;
+    const roomName = (await db.query('SELECT name FROM chat_rooms WHERE id = $1', [req.params.id])).rows[0]?.name || 'Chat';
+
+    for (const member of members.rows) {
+      const notification = await createNotification(
+        member.user_id,
+        'chat_message',
+        `${senderName} in ${roomName}`,
+        'Sent an audio message',
+        req.params.id,
+        'chat_room'
+      );
+      if (notification) {
+        socketService.emitToUser(member.user_id, 'notification', notification);
+      }
+    }
+
+    res.status(201).json({ message: result.rows[0] });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Upload file in chat
+router.post('/:id/upload', authenticate, chatUpload.single('file'), async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: { message: 'No file provided' } });
+    }
+
+    // Check membership
+    const membership = await db.query(
+      'SELECT user_id FROM chat_members WHERE room_id = $1 AND user_id = $2',
+      [req.params.id, req.user.id]
+    );
+    if (membership.rows.length === 0) {
+      return res.status(403).json({ error: { message: 'Not a member of this chat' } });
+    }
+
+    const fileUrl = `/uploads/chat/${req.file.filename}`;
+    const fileName = req.file.originalname;
+
+    const result = await db.query(
+      `INSERT INTO messages (room_id, sender_id, content, type, file_url, file_name)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *, (SELECT name FROM users WHERE id = $2) as sender_name`,
+      [req.params.id, req.user.id, fileName, 'file', fileUrl, fileName]
+    );
+
+    // Update room's updated_at
+    await db.query('UPDATE chat_rooms SET updated_at = CURRENT_TIMESTAMP WHERE id = $1', [req.params.id]);
+
+    // Emit to room
+    socketService.emitToRoom(req.params.id, 'new_message', result.rows[0]);
+
+    // Create notifications for other members
+    const members = await db.query(
+      'SELECT user_id FROM chat_members WHERE room_id = $1 AND user_id != $2',
+      [req.params.id, req.user.id]
+    );
+    const senderName = result.rows[0].sender_name;
+    const roomName = (await db.query('SELECT name FROM chat_rooms WHERE id = $1', [req.params.id])).rows[0]?.name || 'Chat';
+
+    for (const member of members.rows) {
+      const notification = await createNotification(
+        member.user_id,
+        'chat_message',
+        `${senderName} in ${roomName}`,
+        `Shared a file: ${fileName}`,
+        req.params.id,
+        'chat_room'
+      );
+      if (notification) {
+        socketService.emitToUser(member.user_id, 'notification', notification);
+      }
+    }
+
+    res.status(201).json({ message: result.rows[0] });
   } catch (error) {
     next(error);
   }
