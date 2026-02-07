@@ -18,14 +18,29 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script_stop: true
           script: |
+            # Ensure swap is active (prevents OOM during Vite build)
+            if [ ! -f /swapfile ]; then
+              sudo fallocate -l 2G /swapfile
+              sudo chmod 600 /swapfile
+              sudo mkswap /swapfile
+              sudo swapon /swapfile
+              echo "/swapfile none swap sw 0 0" | sudo tee -a /etc/fstab
+            else
+              sudo swapon /swapfile 2>/dev/null || true
+            fi
+
             cd /opt/stats-lab-manager
             git pull origin main
             docker compose -f docker-compose.ec2.yml up -d --build --remove-orphans
+
+            # Wait for DB health check
+            until docker exec statslab-db pg_isready -U statslab -q 2>/dev/null; do sleep 2; done
+
             # Run migrations
-            sleep 5
             for f in database/migrations/*.sql; do
               docker exec -i statslab-db psql -U statslab -d statslab < "$f" 2>/dev/null || true
             done
+
             docker system prune -f
             # Check backend health
             sleep 5
