@@ -155,7 +155,8 @@ export const usersApi = {
   updateRole: (id, role) => api.put(`/users/${id}/role`, { role }),
   delete: (id) => api.delete(`/users/${id}`),
   getPreferences: () => api.get('/users/preferences'),
-  updatePreferences: (data) => api.put('/users/preferences', data)
+  updatePreferences: (data) => api.put('/users/preferences', data),
+  getStreak: () => api.get('/users/streak'),
 }
 
 // Chat
@@ -173,6 +174,7 @@ export const chatApi = {
   removeMember: (roomId, userId) =>
     api.delete(`/chats/${roomId}/members/${userId}`),
   markRead: (roomId) => api.put(`/chats/${roomId}/read`),
+  deleteRoom: (roomId) => api.delete(`/chats/${roomId}`),
   // Reactions
   toggleReaction: (roomId, messageId, emoji) =>
     api.post(`/chats/${roomId}/messages/${messageId}/reactions`, { emoji }),

@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const db = require('../config/database');
 const { authenticate, requireProjectAccess } = require('../middleware/auth');
+const { logActivity } = require('./users');
 
 const router = express.Router();
 
@@ -347,6 +348,11 @@ router.put('/:id', authenticate, [
         `UPDATE action_items SET ${updates.join(', ')} WHERE id = $${paramCount}`,
         values
       );
+    }
+
+    // Log task completion activity for streak tracking
+    if (completed === true) {
+      logActivity(req.user.id, 'task_completed');
     }
 
     // Fetch with category info

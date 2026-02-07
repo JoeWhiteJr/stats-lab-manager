@@ -6,6 +6,20 @@ const { authenticate, requireRole, requireSuperAdmin } = require('../middleware/
 
 const router = express.Router();
 
+// Helper: log user activity for streak tracking
+async function logActivity(userId, type) {
+  try {
+    await db.query(
+      `INSERT INTO user_activity_log (user_id, activity_date, activity_type)
+       VALUES ($1, CURRENT_DATE, $2)
+       ON CONFLICT (user_id, activity_date, activity_type) DO NOTHING`,
+      [userId, type]
+    );
+  } catch (error) {
+    console.error('Failed to log activity:', error);
+  }
+}
+
 // Get all users (admin only)
 router.get('/', authenticate, requireRole('admin'), async (req, res, next) => {
   try {
@@ -112,6 +126,43 @@ router.put('/preferences', authenticate, [
     delete prefs.updated_at;
 
     res.json({ preferences: prefs, message: 'Preferences updated' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get user activity streak
+router.get('/streak', authenticate, async (req, res, next) => {
+  try {
+    const result = await db.query(
+      `SELECT DISTINCT activity_date FROM user_activity_log
+       WHERE user_id = $1 AND activity_date <= CURRENT_DATE
+       ORDER BY activity_date DESC`,
+      [req.user.id]
+    );
+
+    const rows = result.rows;
+    if (rows.length === 0) return res.json({ streak: 0, lastActive: null });
+
+    let streak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < rows.length; i++) {
+      const activityDate = new Date(rows[i].activity_date);
+      activityDate.setHours(0, 0, 0, 0);
+
+      const expectedDate = new Date(today);
+      expectedDate.setDate(today.getDate() - i);
+
+      if (activityDate.getTime() === expectedDate.getTime()) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+
+    res.json({ streak, lastActive: rows[0].activity_date });
   } catch (error) {
     next(error);
   }
@@ -275,3 +326,4 @@ router.delete('/:id', authenticate, requireRole('admin'), async (req, res, next)
 });
 
 module.exports = router;
+module.exports.logActivity = logActivity;

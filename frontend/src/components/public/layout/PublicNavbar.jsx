@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { TrendingUp, Search, Menu, X, LogIn } from 'lucide-react';
+import { TrendingUp, Search, Menu, X, LogIn, LayoutDashboard, LogOut } from 'lucide-react';
+import { useAuthStore } from '../../../store/authStore';
+import Avatar from '../../Avatar';
 import { navigation, siteInfo } from '../../../data/publicSiteData';
 import SearchModal from '../shared/SearchModal';
 import useSearchModal from '../../../hooks/useSearchModal';
@@ -8,7 +10,10 @@ import useSearchModal from '../../../hooks/useSearchModal';
 export default function PublicNavbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const location = useLocation();
+  const { user, token, logout: authLogout } = useAuthStore();
+  const isLoggedIn = !!(user && token);
 
   const {
     isOpen: isSearchOpen,
@@ -32,6 +37,14 @@ export default function PublicNavbar() {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    const handleClickOutside = () => setShowUserMenu(false);
+    if (showUserMenu) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showUserMenu]);
 
   // Keyboard shortcut to open search (Cmd/Ctrl + K)
   useEffect(() => {
@@ -107,15 +120,60 @@ export default function PublicNavbar() {
                   )}
                 </li>
               ))}
-              {/* Member Login */}
+              {/* Auth section */}
               <li>
-                <Link
-                  to="/login"
-                  className="ml-2 px-4 py-2 flex items-center gap-2 text-gray-500 hover:text-pub-blue-700 rounded-lg font-medium transition-colors"
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span>Login</span>
-                </Link>
+                {isLoggedIn ? (
+                  <div className="flex items-center gap-2 ml-2">
+                    <Link
+                      to="/dashboard"
+                      className="px-4 py-2 bg-pub-blue-600 text-white rounded-lg font-medium hover:bg-pub-blue-700 transition-colors flex items-center gap-2"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      Dashboard
+                    </Link>
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowUserMenu(!showUserMenu)}
+                        className="rounded-full hover:ring-2 hover:ring-pub-blue-200 transition-all"
+                      >
+                        <Avatar name={user?.name} size="sm" />
+                      </button>
+                      {showUserMenu && (
+                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                          <Link
+                            to="/dashboard"
+                            onClick={() => setShowUserMenu(false)}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          >
+                            Dashboard
+                          </Link>
+                          <Link
+                            to="/dashboard/settings"
+                            onClick={() => setShowUserMenu(false)}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          >
+                            Settings
+                          </Link>
+                          <button
+                            onClick={() => { authLogout(); setShowUserMenu(false); }}
+                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                          >
+                            <LogOut className="w-3.5 h-3.5" />
+                            Logout
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="ml-2 px-4 py-2 flex items-center gap-2 text-gray-500 hover:text-pub-blue-700 rounded-lg font-medium transition-colors"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>Login</span>
+                  </Link>
+                )}
               </li>
             </ul>
 
@@ -175,15 +233,34 @@ export default function PublicNavbar() {
                     )}
                   </li>
                 ))}
-                {/* Member Login */}
+                {/* Auth section mobile */}
                 <li>
-                  <Link
-                    to="/login"
-                    className="flex items-center gap-2 px-4 py-3 text-gray-500 hover:text-pub-blue-700 rounded-lg font-medium transition-colors border-t border-gray-100 mt-2 pt-4"
-                  >
-                    <LogIn className="w-4 h-4" />
-                    <span>Member Login</span>
-                  </Link>
+                  {isLoggedIn ? (
+                    <>
+                      <Link
+                        to="/dashboard"
+                        className="flex items-center gap-2 px-4 py-3 bg-pub-blue-600 text-white rounded-lg font-medium mt-2 text-center justify-center"
+                      >
+                        <LayoutDashboard className="w-4 h-4" />
+                        Back to Dashboard
+                      </Link>
+                      <button
+                        onClick={() => { authLogout(); setIsMobileMenuOpen(false); }}
+                        className="flex items-center gap-2 px-4 py-3 text-red-500 rounded-lg font-medium transition-colors w-full mt-1"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Logout</span>
+                      </button>
+                    </>
+                  ) : (
+                    <Link
+                      to="/login"
+                      className="flex items-center gap-2 px-4 py-3 text-gray-500 hover:text-pub-blue-700 rounded-lg font-medium transition-colors border-t border-gray-100 mt-2 pt-4"
+                    >
+                      <LogIn className="w-4 h-4" />
+                      <span>Member Login</span>
+                    </Link>
+                  )}
                 </li>
               </ul>
             </div>

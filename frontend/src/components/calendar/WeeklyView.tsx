@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { startOfWeek, addDays, isSameDay, isToday, format } from 'date-fns';
 import type { CalendarEvent, DeadlineEvent } from './types';
 import { TIME_CONFIG } from './types';
@@ -57,6 +57,22 @@ export function WeeklyView({
     if (hour === 12) return '12p';
     return `${hour - 12}p`;
   };
+
+  const handleColumnClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>, day: Date) => {
+      const target = e.currentTarget as HTMLElement;
+      const rect = target.getBoundingClientRect();
+      const clickY = e.clientY - rect.top;
+      const fractionalHour = clickY / hourHeight;
+      const hour = Math.floor(fractionalHour) + TIME_CONFIG.START_HOUR;
+      const minutes = Math.round((fractionalHour % 1) * 60);
+
+      const clickTime = new Date(day);
+      clickTime.setHours(hour, minutes, 0, 0);
+      onTimeClick(clickTime);
+    },
+    [hourHeight, onTimeClick]
+  );
 
   // Current time indicator
   const now = new Date();
@@ -118,7 +134,8 @@ export function WeeklyView({
             return (
               <div
                 key={dayIndex}
-                className={`flex-1 relative border-l border-gray-100 ${selected ? 'bg-indigo-50/30' : ''}`}
+                onClick={(e) => handleColumnClick(e, date)}
+                className={`flex-1 relative border-l border-gray-100 cursor-pointer ${selected ? 'bg-indigo-50/30' : ''}`}
               >
                 {/* Hour lines */}
                 {hours.map((hour) => (
@@ -138,7 +155,7 @@ export function WeeklyView({
                   return (
                     <button
                       key={block.id}
-                      onClick={() => onEditEvent(block)}
+                      onClick={(e) => { e.stopPropagation(); onEditEvent(block); }}
                       className="absolute left-0.5 right-0.5 rounded-lg px-1 py-0.5 text-left overflow-hidden transition-all hover:shadow-md"
                       style={{
                         top, height,

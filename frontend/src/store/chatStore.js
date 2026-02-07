@@ -94,6 +94,21 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
+  deleteRoom: async (roomId) => {
+    try {
+      await chatApi.deleteRoom(roomId)
+      set((state) => ({
+        rooms: state.rooms.filter((r) => r.id !== roomId),
+        currentRoom: state.currentRoom?.id === roomId ? null : state.currentRoom,
+        messages: state.currentRoom?.id === roomId ? [] : state.messages,
+      }))
+      return true
+    } catch (error) {
+      set({ error: error.response?.data?.error?.message || 'Failed to delete room' })
+      return false
+    }
+  },
+
   // Members
   addMembers: async (roomId, userIds) => {
     try {
@@ -166,6 +181,14 @@ export const useChatStore = create((set, get) => ({
 
   onNewRoom: (room) => {
     set((state) => ({ rooms: [room, ...state.rooms] }))
+  },
+
+  onRoomDeleted: ({ roomId }) => {
+    set((state) => ({
+      rooms: state.rooms.filter((r) => r.id !== roomId),
+      currentRoom: state.currentRoom?.id === roomId ? null : state.currentRoom,
+      messages: state.currentRoom?.id === roomId ? [] : state.messages,
+    }))
   },
 
   // Reactions

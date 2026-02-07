@@ -83,6 +83,7 @@ router.get('/', authenticate, async (req, res, next) => {
       FROM chat_rooms cr
       JOIN chat_members cm ON cr.id = cm.room_id
       WHERE cm.user_id = $1
+        AND cr.deleted_at IS NULL
       ORDER BY (
         SELECT MAX(m.created_at) FROM messages m WHERE m.room_id = cr.id
       ) DESC NULLS LAST
@@ -681,6 +682,38 @@ router.put('/:id/read', authenticate, async (req, res, next) => {
     );
 
     res.json({ message: 'Marked as read' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Delete chat room (admin only, soft delete)
+router.delete('/:id', authenticate, async (req, res, next) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ error: { message: 'Only admins can delete chat rooms' } });
+    }
+
+    const room = await db.query('SELECT id FROM chat_rooms WHERE id = $1 AND deleted_at IS NULL', [req.params.id]);
+    if (room.rows.length === 0) {
+      return res.status(404).json({ error: { message: 'Chat room not found' } });
+    }
+
+    await db.query(
+      'UPDATE chat_rooms SET deleted_at = CURRENT_TIMESTAMP, deleted_by = $1 WHERE id = $2',
+      [req.user.id, req.params.id]
+    );
+
+    // Notify all members that the room has been deleted
+    const members = await db.query(
+      'SELECT user_id FROM chat_members WHERE room_id = $1',
+      [req.params.id]
+    );
+    for (const member of members.rows) {
+      socketService.emitToUser(member.user_id, 'room_deleted', { roomId: req.params.id });
+    }
+
+    res.json({ message: 'Chat room deleted' });
   } catch (error) {
     next(error);
   }

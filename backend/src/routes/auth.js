@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const db = require('../config/database');
 const { authenticate, generateToken } = require('../middleware/auth');
+const { logActivity } = require('./users');
 
 const router = express.Router();
 
@@ -42,6 +43,9 @@ router.post('/login', [
     }
 
     const token = generateToken(user.id);
+
+    // Log login activity for streak tracking
+    logActivity(user.id, 'login');
 
     res.json({
       user: { id: user.id, email: user.email, name: user.name, role: user.role, is_super_admin: user.is_super_admin },

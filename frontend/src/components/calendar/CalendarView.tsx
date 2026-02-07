@@ -223,6 +223,7 @@ export function CalendarView({ scope }: CalendarViewProps) {
             onSelectDate={setSelectedDate}
             onSwitchToDaily={handleSwitchToDaily}
             onEditEvent={handleEditEvent}
+            onTimeClick={handleTimeClick}
             scope={scope}
           />
         )}

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { CheckCircle2, Circle, Calendar } from 'lucide-react'
 import { format } from 'date-fns'
+import { getUploadUrl } from '../services/api'
 
 export default function ProjectCard({ project, showActions = true }) {
   const statusColors = {
@@ -30,7 +31,7 @@ export default function ProjectCard({ project, showActions = true }) {
       <div className="h-32 bg-gradient-to-br from-primary-100 to-secondary-100 relative overflow-hidden">
         {project.header_image ? (
           <img
-            src={project.header_image}
+            src={getUploadUrl(project.header_image)}
             alt=""
             className="w-full h-full object-cover"
           />

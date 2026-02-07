@@ -31,7 +31,7 @@ export default function Chat() {
     rooms, currentRoom, messages, hasMore, isLoading,
     fetchRooms, fetchRoom, fetchMessages, sendMessage, deleteMessage, markRead,
     clearCurrentRoom, createRoom, summarizeChat,
-    toggleReaction, sendAudioMessage, sendFileMessage
+    toggleReaction, sendAudioMessage, sendFileMessage, deleteRoom
   } = useChatStore()
   const { user } = useAuthStore()
 
@@ -48,6 +48,7 @@ export default function Chat() {
   const [messageText, setMessageText] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const messagesEndRef = useRef(null)
   const messagesContainerRef = useRef(null)
@@ -150,6 +151,15 @@ export default function Chat() {
       setShowSummaryModal(true)
     }
     setIsSummarizing(false)
+  }
+
+  const handleDeleteRoom = async () => {
+    if (!currentRoom) return
+    const success = await deleteRoom(currentRoom.id)
+    if (success) {
+      setShowDeleteConfirm(false)
+      navigate('/dashboard/chat')
+    }
   }
 
   const handleDeleteMessage = async (messageId) => {
@@ -305,15 +315,28 @@ export default function Chat() {
                   {currentRoom.members?.length || 0} members
                 </p>
               </div>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleSummarize}
-                loading={isSummarizing}
-              >
-                <Sparkles size={16} className="mr-1.5" />
-                Summarize
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleSummarize}
+                  loading={isSummarizing}
+                >
+                  <Sparkles size={16} className="mr-1.5" />
+                  Summarize
+                </Button>
+                {isAdmin && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 size={16} className="mr-1.5" />
+                    Delete
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* Messages area */}
@@ -522,6 +545,19 @@ export default function Chat() {
         </div>
         <div className="flex justify-end pt-4">
           <Button variant="secondary" onClick={() => setShowSummaryModal(false)}>Close</Button>
+        </div>
+      </Modal>
+
+      {/* Delete Room Confirmation Modal */}
+      <Modal isOpen={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Delete Chat Room">
+        <p className="text-text-secondary mb-4">
+          Are you sure you want to delete this chat room? This action will hide the room from all members.
+        </p>
+        <div className="flex justify-end gap-3">
+          <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
+          <Button onClick={handleDeleteRoom} className="bg-red-600 hover:bg-red-700 text-white">
+            Delete Room
+          </Button>
         </div>
       </Modal>
     </div>

@@ -1,6 +1,6 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
-import { LayoutDashboard, User, FolderKanban, Settings, LogOut, Menu, X, MessageCircle, Shield } from 'lucide-react'
+import { LayoutDashboard, User, FolderKanban, Settings, LogOut, Menu, X, MessageCircle, Shield, ExternalLink } from 'lucide-react'
 import { useState } from 'react'
 import NotificationBell from './NotificationBell'
 
@@ -75,6 +75,16 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
+
+        <div className="absolute bottom-20 left-0 right-0 px-4">
+          <a
+            href="/"
+            className="flex items-center gap-2 px-4 py-2.5 text-sm text-text-secondary hover:text-primary-600 hover:bg-gray-50 rounded-organic transition-colors"
+          >
+            <ExternalLink size={16} />
+            View Public Site
+          </a>
+        </div>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100">
           <div className="flex items-center gap-3 px-4 py-3">

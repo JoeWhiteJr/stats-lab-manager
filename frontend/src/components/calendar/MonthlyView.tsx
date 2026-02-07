@@ -10,12 +10,13 @@ interface MonthlyViewProps {
   onSelectDate: (date: Date) => void;
   onSwitchToDaily: (date: Date) => void;
   onEditEvent: (event: CalendarEvent) => void;
+  onTimeClick?: (time: Date) => void;
   scope: 'lab' | 'personal';
 }
 
 export function MonthlyView({
   selectedDate, events, deadlines,
-  onSelectDate, onSwitchToDaily, onEditEvent,
+  onSelectDate, onSwitchToDaily, onEditEvent, onTimeClick,
 }: MonthlyViewProps) {
   const calendarDays = useMemo(() => {
     const monthStart = startOfMonth(selectedDate);
@@ -43,7 +44,13 @@ export function MonthlyView({
 
   const handleDayClick = (day: Date) => {
     onSelectDate(day);
-    onSwitchToDaily(day);
+    if (onTimeClick) {
+      const noon = new Date(day);
+      noon.setHours(12, 0, 0, 0);
+      onTimeClick(noon);
+    } else {
+      onSwitchToDaily(day);
+    }
   };
 
   return (

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useProjectStore } from '../store/projectStore'
-import { actionsApi } from '../services/api'
+import { actionsApi, usersApi } from '../services/api'
 import Button from '../components/Button'
 import { CalendarView } from '../components/calendar/CalendarView'
 import {
@@ -16,6 +16,7 @@ export default function MyDashboard() {
   const { projects, fetchProjects, isLoading } = useProjectStore()
   const [myTasks, setMyTasks] = useState([])
   const [loadingTasks, setLoadingTasks] = useState(true)
+  const [streak, setStreak] = useState(0)
 
   const loadMyTasks = useCallback(async () => {
     setLoadingTasks(true)
@@ -31,6 +32,10 @@ export default function MyDashboard() {
   useEffect(() => {
     fetchProjects()
     loadMyTasks()
+    // Load streak
+    usersApi.getStreak().then(({ data }) => {
+      setStreak(data.streak || 0)
+    }).catch(() => setStreak(0))
   }, [fetchProjects, loadMyTasks])
 
   // Filter projects where user is creator or has assigned tasks
@@ -45,9 +50,24 @@ export default function MyDashboard() {
     return 'Good evening'
   }
 
-  const completedToday = 0 // Would come from real data
-  const pendingTasks = 0 // Would come from real data
-  const streak = 5 // Gamification element
+  const handleToggleTask = async (taskId, currentCompleted) => {
+    // Optimistic update
+    setMyTasks(prev => prev.map(t =>
+      t.id === taskId ? { ...t, completed: !currentCompleted } : t
+    ))
+    try {
+      await actionsApi.update(taskId, { completed: !currentCompleted })
+    } catch (error) {
+      // Revert on failure
+      setMyTasks(prev => prev.map(t =>
+        t.id === taskId ? { ...t, completed: currentCompleted } : t
+      ))
+      console.error('Failed to toggle task:', error)
+    }
+  }
+
+  const completedToday = myTasks.filter(t => t.completed).length
+  const pendingTasks = myTasks.filter(t => !t.completed).length
 
   return (
     <div className="space-y-8">
@@ -146,11 +166,18 @@ export default function MyDashboard() {
                 key={task.id}
                 className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
               >
-                <button className="flex-shrink-0 w-5 h-5 rounded-md border-2 border-gray-300 hover:border-primary-400">
-                  <Circle size={20} className="text-gray-300" />
+                <button
+                  onClick={() => handleToggleTask(task.id, task.completed)}
+                  className="flex-shrink-0"
+                >
+                  {task.completed ? (
+                    <CheckCircle2 size={22} className="text-green-500" />
+                  ) : (
+                    <Circle size={22} className="text-gray-300 hover:text-primary-400" />
+                  )}
                 </button>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-text-primary truncate">{task.title}</p>
+                  <p className={`font-medium truncate ${task.completed ? 'line-through text-text-secondary' : 'text-text-primary'}`}>{task.title}</p>
                   <p className="text-sm text-text-secondary">{task.project_title}</p>
                 </div>
                 {task.due_date && (

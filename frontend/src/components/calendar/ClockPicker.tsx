@@ -10,6 +10,7 @@ type ClockMode = 'hour' | 'minute';
 
 export function ClockPicker({ value, onChange, label }: ClockPickerProps) {
   const [mode, setMode] = useState<ClockMode>('hour');
+  const [hoverAngle, setHoverAngle] = useState<number | null>(null);
   const clockRef = useRef<HTMLDivElement>(null);
 
   const hours = value.getHours();
@@ -59,6 +60,36 @@ export function ClockPicker({ value, onChange, label }: ClockPickerProps) {
     [mode, value, onChange, isPM]
   );
 
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const clock = clockRef.current;
+      if (!clock) return;
+
+      const rect = clock.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const x = e.clientX - rect.left - centerX;
+      const y = e.clientY - rect.top - centerY;
+
+      let angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
+      if (angle < 0) angle += 360;
+
+      if (mode === 'hour') {
+        const hour = Math.round(angle / 30);
+        setHoverAngle((hour === 0 ? 12 : hour) / 12 * 360 - 90);
+      } else {
+        let minute = Math.round(angle / 6);
+        if (minute === 60) minute = 0;
+        setHoverAngle(minute / 60 * 360 - 90);
+      }
+    },
+    [mode]
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    setHoverAngle(null);
+  }, []);
+
   const togglePeriod = () => {
     const newTime = new Date(value);
     newTime.setHours(isPM ? hours - 12 : hours + 12);
@@ -103,6 +134,8 @@ export function ClockPicker({ value, onChange, label }: ClockPickerProps) {
       <div
         ref={clockRef}
         onClick={handleClockClick}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         className="relative w-56 h-56 mx-auto rounded-full cursor-pointer bg-gray-50"
         style={{ boxShadow: 'inset 0 2px 8px rgba(0, 0, 0, 0.08)' }}
       >
@@ -115,9 +148,37 @@ export function ClockPicker({ value, onChange, label }: ClockPickerProps) {
           style={{
             width: mode === 'hour' ? '60px' : '80px',
             transform: `rotate(${mode === 'hour' ? hourAngle : minuteAngle}deg)`,
+            transition: 'transform 200ms ease',
             zIndex: 5,
           }}
         />
+
+        {/* Hand tip dot */}
+        <div
+          className="absolute rounded-full bg-indigo-500"
+          style={{
+            width: '10px',
+            height: '10px',
+            top: '50%',
+            left: '50%',
+            transform: `rotate(${mode === 'hour' ? hourAngle : minuteAngle}deg) translateX(${mode === 'hour' ? 55 : 75}px) translateY(-5px)`,
+            transition: 'transform 200ms ease',
+            zIndex: 6,
+          }}
+        />
+
+        {/* Preview hand on hover */}
+        {hoverAngle !== null && (
+          <div
+            className="absolute top-1/2 left-1/2 origin-left h-0.5 rounded-full bg-indigo-300"
+            style={{
+              width: mode === 'hour' ? '60px' : '80px',
+              transform: `rotate(${hoverAngle}deg)`,
+              zIndex: 4,
+              opacity: 0.5,
+            }}
+          />
+        )}
 
         {/* Numbers/Marks */}
         {mode === 'hour'
