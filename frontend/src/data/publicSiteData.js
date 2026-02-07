@@ -19,10 +19,12 @@ export const siteInfo = {
     officeHours: 'Monday - Friday: 9:00 AM - 5:00 PM',
     googleMapsUrl: 'https://maps.google.com/?q=800+W+University+Parkway,+Orem,+UT+84058',
   },
+  // Social links - set to empty strings until real URLs are available.
+  // The footer conditionally renders these only when a valid URL is provided.
   social: {
-    linkedin: '#',
-    twitter: '#',
-    github: '#',
+    linkedin: '',
+    twitter: '',
+    github: '',
   },
 };
 
@@ -44,6 +46,8 @@ export const heroData = {
   secondaryCta: { label: 'Get In Touch', path: '/contact' },
 };
 
+// TODO: These stats are hardcoded and should be updated periodically or
+// ideally fetched from the API once a public stats endpoint is available.
 export const statsData = [
   { number: '7+', label: 'Active Projects' },
   { number: '22+', label: 'Team Members' },

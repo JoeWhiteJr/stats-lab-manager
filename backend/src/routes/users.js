@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const db = require('../config/database');
-const { authenticate, requireRole, requireSuperAdmin } = require('../middleware/auth');
+const { authenticate, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -16,7 +16,7 @@ async function logActivity(userId, type) {
       [userId, type]
     );
   } catch (error) {
-    console.error('Failed to log activity:', error);
+    // Activity logging is best-effort; swallow errors silently
   }
 }
 
@@ -317,7 +317,7 @@ router.delete('/:id', authenticate, requireRole('admin'), async (req, res, next)
       return res.status(403).json({ error: { message: 'Only super admin can delete admin users' } });
     }
 
-    const result = await db.query('UPDATE users SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL RETURNING id', [req.params.id]);
+    await db.query('UPDATE users SET deleted_at = NOW() WHERE id = $1 AND deleted_at IS NULL RETURNING id', [req.params.id]);
 
     res.json({ message: 'User deleted successfully' });
   } catch (error) {

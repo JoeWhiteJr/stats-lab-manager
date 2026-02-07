@@ -10,10 +10,10 @@ const icons = {
 }
 
 const styles = {
-  success: 'bg-green-50 border-green-200 text-green-800',
-  error: 'bg-red-50 border-red-200 text-red-800',
-  warning: 'bg-amber-50 border-amber-200 text-amber-800',
-  info: 'bg-primary-50 border-primary-200 text-primary-800',
+  success: 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700 text-green-800 dark:text-green-300',
+  error: 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-700 text-red-800 dark:text-red-300',
+  warning: 'bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700 text-amber-800 dark:text-amber-300',
+  info: 'bg-primary-50 dark:bg-primary-900/30 border-primary-200 dark:border-primary-700 text-primary-800 dark:text-primary-300',
 }
 
 const iconStyles = {
@@ -51,7 +51,7 @@ function ToastItem({ toast: t, onRemove }) {
       <p className="text-sm font-medium flex-1">{t.message}</p>
       <button
         onClick={handleRemove}
-        className="flex-shrink-0 p-0.5 rounded hover:bg-black/5 transition-colors"
+        className="flex-shrink-0 p-0.5 rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
       >
         <X size={14} />
       </button>

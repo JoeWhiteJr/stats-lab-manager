@@ -5,8 +5,6 @@ import { useNotificationStore } from '../store/notificationStore'
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'http://localhost:3001'
 
 let socket = null
-let reconnectAttempts = 0
-const MAX_RECONNECT_ATTEMPTS = 5
 
 let onlineUsers = new Set()
 let onlineStatusListeners = []
@@ -19,14 +17,13 @@ export const connect = (token) => {
   socket = io(SOCKET_URL, {
     auth: { token },
     reconnection: true,
-    reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
+    reconnectionAttempts: 5,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000
   })
 
   socket.on('connect', () => {
     console.log('Socket connected')
-    reconnectAttempts = 0
   })
 
   socket.on('disconnect', (reason) => {
@@ -35,7 +32,6 @@ export const connect = (token) => {
 
   socket.on('connect_error', (error) => {
     console.error('Socket connection error:', error.message)
-    reconnectAttempts++
   })
 
   socket.on('new_message', (message) => {

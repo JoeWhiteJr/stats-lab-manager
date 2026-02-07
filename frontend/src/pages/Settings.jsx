@@ -26,6 +26,10 @@ export default function Settings() {
   const [prefsMessage, setPrefsMessage] = useState({ type: '', text: '' })
 
   useEffect(() => {
+    document.title = 'Settings - Stats Lab'
+  }, [])
+
+  useEffect(() => {
     if (user) {
       setProfileData({ name: user.name, email: user.email })
     }
@@ -112,8 +116,8 @@ export default function Settings() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="font-display font-bold text-2xl text-text-primary">Settings</h1>
-        <p className="mt-1 text-text-secondary">Manage your account and preferences.</p>
+        <h1 className="font-display font-bold text-2xl text-text-primary dark:text-gray-100">Settings</h1>
+        <p className="mt-1 text-text-secondary dark:text-gray-400">Manage your account and preferences.</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
@@ -125,8 +129,8 @@ export default function Settings() {
               onClick={() => setActiveSection(id)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-organic text-sm font-medium transition-colors ${
                 activeSection === id
-                  ? 'bg-primary-50 text-primary-700'
-                  : 'text-text-secondary hover:bg-gray-100 hover:text-text-primary'
+                  ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                  : 'text-text-secondary dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-text-primary dark:hover:text-gray-100'
               }`}
             >
               <Icon size={18} />
@@ -139,21 +143,21 @@ export default function Settings() {
         <div className="flex-1">
           {/* Profile */}
           {activeSection === 'profile' && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="font-display font-semibold text-lg mb-6">Profile Information</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="font-display font-semibold text-lg mb-6 text-text-primary dark:text-gray-100">Profile Information</h2>
               <form onSubmit={handleSaveProfile} className="space-y-5">
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden">
+                  <div className="w-16 h-16 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center overflow-hidden">
                     {user?.avatar_url ? (
                       <img src={getUploadUrl(user.avatar_url)} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-primary-700 font-bold text-xl">
+                      <span className="text-primary-700 dark:text-primary-300 font-bold text-xl">
                         {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                       </span>
                     )}
                   </div>
                   <div>
-                    <label className="cursor-pointer inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-organic bg-gray-100 hover:bg-gray-200 text-text-primary transition-colors">
+                    <label className="cursor-pointer inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-organic bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-text-primary dark:text-gray-100 transition-colors">
                       {avatarUploading ? 'Uploading...' : 'Change Photo'}
                       <input
                         type="file"
@@ -174,7 +178,7 @@ export default function Settings() {
                         }}
                       />
                     </label>
-                    <p className="text-xs text-text-secondary mt-1">Max 5MB, JPG/PNG</p>
+                    <p className="text-xs text-text-secondary dark:text-gray-400 mt-1">Max 5MB, JPG/PNG</p>
                   </div>
                 </div>
                 <Input
@@ -191,8 +195,8 @@ export default function Settings() {
                   required
                 />
                 <div>
-                  <label className="block text-sm font-medium text-text-primary mb-1.5">Role</label>
-                  <p className="px-4 py-2.5 rounded-organic border border-gray-200 bg-gray-50 text-text-secondary capitalize">
+                  <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">Role</label>
+                  <p className="px-4 py-2.5 rounded-organic border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-text-secondary dark:text-gray-400 capitalize">
                     {user?.role?.replace('_', ' ')}
                   </p>
                 </div>
@@ -200,8 +204,8 @@ export default function Settings() {
                 {profileMessage.text && (
                   <div className={`p-3 rounded-lg text-sm ${
                     profileMessage.type === 'success'
-                      ? 'bg-green-50 border border-green-200 text-green-700'
-                      : 'bg-red-50 border border-red-200 text-red-600'
+                      ? 'bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300'
+                      : 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400'
                   }`}>
                     {profileMessage.text}
                   </div>
@@ -216,8 +220,8 @@ export default function Settings() {
 
           {/* Security */}
           {activeSection === 'security' && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="font-display font-semibold text-lg mb-6">Change Password</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="font-display font-semibold text-lg mb-6 text-text-primary dark:text-gray-100">Change Password</h2>
               <form onSubmit={handleChangePassword} className="space-y-5">
                 <Input
                   label="Current password"
@@ -245,8 +249,8 @@ export default function Settings() {
                 {passwordMessage.text && (
                   <div className={`p-3 rounded-lg text-sm ${
                     passwordMessage.type === 'success'
-                      ? 'bg-green-50 border border-green-200 text-green-700'
-                      : 'bg-red-50 border border-red-200 text-red-600'
+                      ? 'bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300'
+                      : 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400'
                   }`}>
                     {passwordMessage.text}
                   </div>
@@ -261,9 +265,9 @@ export default function Settings() {
 
           {/* Notifications */}
           {activeSection === 'notifications' && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="font-display font-semibold text-lg mb-2">Notification Preferences</h2>
-              <p className="text-sm text-text-secondary mb-6">Choose how you want to be notified.</p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="font-display font-semibold text-lg mb-2 text-text-primary dark:text-gray-100">Notification Preferences</h2>
+              <p className="text-sm text-text-secondary dark:text-gray-400 mb-6">Choose how you want to be notified.</p>
 
               {loadingPrefs ? (
                 <div className="flex justify-center py-8">
@@ -273,7 +277,7 @@ export default function Settings() {
                 <div className="space-y-6">
                   {/* In-App Notifications */}
                   <div>
-                    <h3 className="text-sm font-semibold text-text-primary mb-3">In-App Notifications</h3>
+                    <h3 className="text-sm font-semibold text-text-primary dark:text-gray-100 mb-3">In-App Notifications</h3>
                     <div className="space-y-3">
                       {[
                         { key: 'in_app_chat', label: 'Chat Messages', desc: 'New messages in your chat rooms' },
@@ -283,13 +287,13 @@ export default function Settings() {
                       ].map(({ key, label, desc }) => (
                         <div key={key} className="flex items-center justify-between py-2">
                           <div>
-                            <p className="text-sm font-medium text-text-primary">{label}</p>
-                            <p className="text-xs text-text-secondary">{desc}</p>
+                            <p className="text-sm font-medium text-text-primary dark:text-gray-100">{label}</p>
+                            <p className="text-xs text-text-secondary dark:text-gray-400">{desc}</p>
                           </div>
                           <button
                             onClick={() => handleTogglePref(key)}
                             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              preferences[key] ? 'bg-primary-500' : 'bg-gray-300'
+                              preferences[key] ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-600'
                             }`}
                           >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -302,10 +306,10 @@ export default function Settings() {
                   </div>
 
                   {/* Email Notifications */}
-                  <div className="border-t border-gray-200 pt-6">
-                    <h3 className="text-sm font-semibold text-text-primary mb-1">Email Notifications</h3>
-                    <p className="text-xs text-text-secondary mb-3">Email notifications are coming soon.</p>
-                    <div className="space-y-3 opacity-60">
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                    <h3 className="text-sm font-semibold text-text-primary dark:text-gray-100 mb-1">Email Notifications</h3>
+                    <p className="text-xs text-text-secondary dark:text-gray-400 mb-3">Email notifications are coming soon.</p>
+                    <div className="space-y-3 opacity-60 pointer-events-none">
                       {[
                         { key: 'email_chat', label: 'Chat Messages' },
                         { key: 'email_mentions', label: 'Mentions' },
@@ -313,11 +317,12 @@ export default function Settings() {
                         { key: 'email_system', label: 'System' },
                       ].map(({ key, label }) => (
                         <div key={key} className="flex items-center justify-between py-2">
-                          <p className="text-sm font-medium text-text-primary">{label}</p>
+                          <p className="text-sm font-medium text-text-primary dark:text-gray-100">{label}</p>
                           <button
-                            onClick={() => handleTogglePref(key)}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              preferences[key] ? 'bg-primary-500' : 'bg-gray-300'
+                            disabled
+                            aria-disabled="true"
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-not-allowed ${
+                              preferences[key] ? 'bg-primary-500' : 'bg-gray-300 dark:bg-gray-600'
                             }`}
                           >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
@@ -331,14 +336,14 @@ export default function Settings() {
 
                   {prefsMessage.text && (
                     <div className={`p-3 rounded-lg text-sm ${
-                      prefsMessage.type === 'error' ? 'bg-red-50 border border-red-200 text-red-600' : 'bg-green-50 border border-green-200 text-green-700'
+                      prefsMessage.type === 'error' ? 'bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400' : 'bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300'
                     }`}>
                       {prefsMessage.text}
                     </div>
                   )}
                 </div>
               ) : (
-                <p className="text-text-secondary text-sm">Failed to load preferences.</p>
+                <p className="text-text-secondary dark:text-gray-400 text-sm">Failed to load preferences.</p>
               )}
             </div>
           )}

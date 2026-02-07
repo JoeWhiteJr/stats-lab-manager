@@ -30,6 +30,10 @@ export default function MyDashboard() {
   }, [])
 
   useEffect(() => {
+    document.title = 'My Dashboard - Stats Lab'
+  }, [])
+
+  useEffect(() => {
     fetchProjects()
     loadMyTasks()
     // Load streak
@@ -101,70 +105,70 @@ export default function MyDashboard() {
 
       {/* Personal Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
-              <CheckCircle2 size={24} className="text-green-600" />
+            <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+              <CheckCircle2 size={24} className="text-green-600 dark:text-green-300" />
             </div>
-            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
+            <span className="text-xs font-medium text-green-600 dark:text-green-300 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded-full">
               Done
             </span>
           </div>
-          <p className="text-4xl font-display font-bold text-text-primary">{completedCount}</p>
-          <p className="text-text-secondary mt-1">Tasks Completed</p>
+          <p className="text-4xl font-display font-bold text-text-primary dark:text-gray-100">{completedCount}</p>
+          <p className="text-text-secondary dark:text-gray-400 mt-1">Tasks Completed</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
-              <Target size={24} className="text-amber-600" />
+            <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+              <Target size={24} className="text-amber-600 dark:text-amber-300" />
             </div>
-            <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded-full">
+            <span className="text-xs font-medium text-amber-600 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded-full">
               Pending
             </span>
           </div>
-          <p className="text-4xl font-display font-bold text-text-primary">{pendingTasks}</p>
-          <p className="text-text-secondary mt-1">Tasks Remaining</p>
+          <p className="text-4xl font-display font-bold text-text-primary dark:text-gray-100">{pendingTasks}</p>
+          <p className="text-text-secondary dark:text-gray-400 mt-1">Tasks Remaining</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 rounded-xl bg-primary-100 flex items-center justify-center">
-              <Award size={24} className="text-primary-600" />
+            <div className="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+              <Award size={24} className="text-primary-600 dark:text-primary-300" />
             </div>
-            <span className="text-xs font-medium text-primary-600 bg-primary-50 px-2 py-1 rounded-full">
+            <span className="text-xs font-medium text-primary-600 dark:text-primary-300 bg-primary-50 dark:bg-primary-900/30 px-2 py-1 rounded-full">
               This Week
             </span>
           </div>
-          <p className="text-4xl font-display font-bold text-text-primary">{myProjects.length}</p>
-          <p className="text-text-secondary mt-1">Active Projects</p>
+          <p className="text-4xl font-display font-bold text-text-primary dark:text-gray-100">{myProjects.length}</p>
+          <p className="text-text-secondary dark:text-gray-400 mt-1">Active Projects</p>
         </div>
       </div>
 
       {/* My Tasks */}
       <section>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="font-display font-bold text-xl text-text-primary">My Tasks</h2>
+          <h2 className="font-display font-bold text-xl text-text-primary dark:text-gray-100">My Tasks</h2>
           <Link
             to="/dashboard/projects"
-            className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 text-sm font-medium"
+            className="inline-flex items-center gap-1 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium"
           >
             View all projects
             <ArrowUpRight size={16} />
           </Link>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
           {loadingTasks ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto"></div>
-              <p className="text-text-secondary mt-3">Loading your tasks...</p>
+              <p className="text-text-secondary dark:text-gray-400 mt-3">Loading your tasks...</p>
             </div>
           ) : myTasks.length > 0 ? (
             myTasks.map((task) => (
               <div
                 key={task.id}
-                className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 <button
                   onClick={() => handleToggleTask(task.id, task.completed)}
@@ -173,20 +177,20 @@ export default function MyDashboard() {
                   {task.completed ? (
                     <CheckCircle2 size={22} className="text-green-500" />
                   ) : (
-                    <Circle size={22} className="text-gray-300 hover:text-primary-400" />
+                    <Circle size={22} className="text-gray-300 dark:text-gray-600 hover:text-primary-400" />
                   )}
                 </button>
                 <div className="flex-1 min-w-0">
-                  <p className={`font-medium truncate ${task.completed ? 'line-through text-text-secondary' : 'text-text-primary'}`}>{task.title}</p>
-                  <p className="text-sm text-text-secondary">{task.project_title}</p>
+                  <p className={`font-medium truncate ${task.completed ? 'line-through text-text-secondary dark:text-gray-400' : 'text-text-primary dark:text-gray-100'}`}>{task.title}</p>
+                  <p className="text-sm text-text-secondary dark:text-gray-400">{task.project_title}</p>
                 </div>
                 {task.due_date && (
                   <span className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
                     isPast(parseISO(task.due_date))
-                      ? 'bg-red-100 text-red-700'
+                      ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                       : isToday(parseISO(task.due_date))
-                      ? 'bg-amber-100 text-amber-700'
-                      : 'bg-gray-100 text-gray-600'
+                      ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                   }`}>
                     <Calendar size={12} />
                     {format(parseISO(task.due_date), 'MMM d')}
@@ -196,13 +200,13 @@ export default function MyDashboard() {
             ))
           ) : (
             <div className="p-12 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-green-100 to-secondary-100 flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-green-100 dark:from-green-900/30 to-secondary-100 dark:to-secondary-900/30 flex items-center justify-center">
                 <CheckCircle2 size={28} className="text-green-500" />
               </div>
-              <h3 className="font-display font-semibold text-lg text-text-primary mb-2">
+              <h3 className="font-display font-semibold text-lg text-text-primary dark:text-gray-100 mb-2">
                 All caught up!
               </h3>
-              <p className="text-text-secondary max-w-sm mx-auto">
+              <p className="text-text-secondary dark:text-gray-400 max-w-sm mx-auto">
                 You don't have any pending tasks assigned to you. Check out your projects to add new tasks.
               </p>
             </div>
@@ -213,7 +217,7 @@ export default function MyDashboard() {
       {/* My Calendar */}
       <section>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="font-display font-bold text-xl text-text-primary">My Calendar</h2>
+          <h2 className="font-display font-bold text-xl text-text-primary dark:text-gray-100">My Calendar</h2>
         </div>
         <CalendarView scope="personal" />
       </section>
@@ -221,16 +225,16 @@ export default function MyDashboard() {
       {/* My Projects */}
       <section>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="font-display font-bold text-xl text-text-primary">My Projects</h2>
+          <h2 className="font-display font-bold text-xl text-text-primary dark:text-gray-100">My Projects</h2>
         </div>
 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-xl border border-gray-200 p-5 animate-pulse">
-                <div className="h-4 bg-gray-100 rounded w-3/4 mb-3" />
-                <div className="h-3 bg-gray-100 rounded w-1/2 mb-4" />
-                <div className="h-2 bg-gray-100 rounded w-full" />
+              <div key={i} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 animate-pulse">
+                <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded w-3/4 mb-3" />
+                <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded w-1/2 mb-4" />
+                <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded w-full" />
               </div>
             ))}
           </div>
@@ -240,23 +244,23 @@ export default function MyDashboard() {
               <Link
                 key={project.id}
                 to={`/dashboard/projects/${project.id}`}
-                className="group bg-white rounded-xl border border-gray-200 p-5 hover:border-primary-300 hover:shadow-lg hover:shadow-primary-100/50 transition-all duration-300"
+                className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:border-primary-300 dark:hover:border-primary-600 hover:shadow-lg hover:shadow-primary-100/50 transition-all duration-300"
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center group-hover:bg-primary-200 transition-colors">
-                    <FolderKanban size={18} className="text-primary-600" />
+                  <div className="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center group-hover:bg-primary-200 dark:group-hover:bg-primary-900/50 transition-colors">
+                    <FolderKanban size={18} className="text-primary-600 dark:text-primary-300" />
                   </div>
                   <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                     project.status === 'active'
-                      ? 'bg-secondary-100 text-secondary-700'
+                      ? 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300'
                       : project.status === 'completed'
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-gray-100 text-gray-600'
+                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                      : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                   }`}>
                     {project.status}
                   </span>
                 </div>
-                <h3 className="font-medium text-text-primary group-hover:text-primary-700 line-clamp-1 mb-2">
+                <h3 className="font-medium text-text-primary dark:text-gray-100 group-hover:text-primary-700 dark:group-hover:text-primary-300 line-clamp-1 mb-2">
                   {project.title}
                 </h3>
                 {(() => {
@@ -265,11 +269,11 @@ export default function MyDashboard() {
                   const progress = total === 0 ? 0 : Math.round((completed / total) * 100)
                   return (
                     <>
-                      <div className="flex items-center justify-between text-sm text-text-secondary">
+                      <div className="flex items-center justify-between text-sm text-text-secondary dark:text-gray-400">
                         <span>{completed}/{total} tasks</span>
                         <span>{progress}%</span>
                       </div>
-                      <div className="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="mt-2 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-gradient-to-r from-primary-400 to-primary-500 rounded-full transition-all duration-500"
                           style={{ width: `${progress}%` }}
@@ -282,14 +286,14 @@ export default function MyDashboard() {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 flex items-center justify-center">
-              <FolderKanban size={28} className="text-gray-400" />
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+              <FolderKanban size={28} className="text-gray-400 dark:text-gray-500" />
             </div>
-            <h3 className="font-display font-semibold text-lg text-text-primary mb-2">
+            <h3 className="font-display font-semibold text-lg text-text-primary dark:text-gray-100 mb-2">
               No projects yet
             </h3>
-            <p className="text-text-secondary max-w-sm mx-auto">
+            <p className="text-text-secondary dark:text-gray-400 max-w-sm mx-auto">
               You haven't been assigned to any projects yet.
             </p>
           </div>

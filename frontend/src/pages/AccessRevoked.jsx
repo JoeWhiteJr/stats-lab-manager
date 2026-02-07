@@ -1,10 +1,15 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ShieldX } from 'lucide-react'
 import Button from '../components/Button'
 
 export default function AccessRevoked() {
+  useEffect(() => {
+    document.title = 'Access Revoked - Stats Lab'
+  }, [])
+
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background dark:bg-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
@@ -12,15 +17,15 @@ export default function AccessRevoked() {
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-8 text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center">
               <ShieldX className="w-7 h-7 text-red-500" />
             </div>
           </div>
 
-          <h2 className="text-xl font-semibold text-text-primary mb-2">Access Revoked</h2>
-          <p className="text-text-secondary text-sm mb-6">
+          <h2 className="text-xl font-semibold text-text-primary dark:text-gray-100 mb-2">Access Revoked</h2>
+          <p className="text-text-secondary dark:text-gray-400 text-sm mb-6">
             Your account has been deactivated by an administrator. If you believe this is an error, please contact the lab admin to restore your access.
           </p>
 
@@ -28,8 +33,8 @@ export default function AccessRevoked() {
             <Link to="/">
               <Button className="w-full">Back to Home</Button>
             </Link>
-            <p className="text-sm text-text-secondary">
-              <Link to="/login" className="text-primary-600 hover:text-primary-700 font-medium">
+            <p className="text-sm text-text-secondary dark:text-gray-400">
+              <Link to="/login" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium">
                 Try a different account
               </Link>
             </p>

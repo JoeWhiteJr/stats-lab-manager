@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, Trash2, Pencil, Calendar, User, Users, Tag, ChevronDown, ChevronRight, CornerDownRight, MessageSquare, Send as SendIcon } from 'lucide-react'
@@ -55,15 +55,19 @@ export default function ActionItem({
     setShowCategoryPicker(false)
   }
 
+  const fetchComments = useCallback(() => {
+    setLoadingComments(true)
+    commentsApi.list(action.id)
+      .then(({ data }) => setComments(data.comments || []))
+      .catch(() => { /* failed to load comments */ })
+      .finally(() => setLoadingComments(false))
+  }, [action.id])
+
   useEffect(() => {
     if (showComments && comments.length === 0) {
-      setLoadingComments(true)
-      commentsApi.list(action.id)
-        .then(({ data }) => setComments(data.comments || []))
-        .catch(() => {})
-        .finally(() => setLoadingComments(false))
+      fetchComments()
     }
-  }, [showComments])
+  }, [showComments, comments.length, fetchComments])
 
   // Handle drop on this task (to make subtask)
   const handleDragOver = (e) => {
@@ -94,11 +98,11 @@ export default function ActionItem({
         ref={setNodeRef}
         style={style}
         className={`group flex items-start gap-3 p-3 rounded-lg border transition-colors ${
-          isSubtask ? 'ml-8 border-l-2 border-l-primary-200' : ''
+          isSubtask ? 'ml-8 border-l-2 border-l-primary-200 dark:border-l-primary-700' : ''
         } ${
           action.completed
-            ? 'bg-gray-50 border-gray-200'
-            : 'bg-white border-gray-200 hover:border-primary-200'
+            ? 'bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700'
+            : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-primary-200 dark:hover:border-primary-700'
         }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -110,7 +114,7 @@ export default function ActionItem({
         <button
           {...attributes}
           {...listeners}
-          className="p-1 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing"
+          className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-grab active:cursor-grabbing"
         >
           <GripVertical size={16} />
         </button>
@@ -130,7 +134,7 @@ export default function ActionItem({
           className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded-md border-2 transition-colors ${
             action.completed
               ? 'bg-secondary-500 border-secondary-500'
-              : 'border-gray-300 hover:border-primary-400'
+              : 'border-gray-300 dark:border-gray-600 hover:border-primary-400'
           }`}
         >
           {action.completed && (
@@ -145,12 +149,12 @@ export default function ActionItem({
             {!isSubtask && subtasks.length > 0 && (
               <button
                 onClick={() => setShowSubtasks(!showSubtasks)}
-                className="p-0.5 text-gray-400 hover:text-gray-600"
+                className="p-0.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
               >
                 {showSubtasks ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
               </button>
             )}
-            <p className={`text-sm ${action.completed ? 'text-text-secondary line-through' : 'text-text-primary'}`}>
+            <p className={`text-sm ${action.completed ? 'text-text-secondary dark:text-gray-400 line-through' : 'text-text-primary dark:text-gray-100'}`}>
               {action.title}
             </p>
             {action.category_name && (
@@ -161,7 +165,7 @@ export default function ActionItem({
               />
             )}
             {!isSubtask && subtasks.length > 0 && (
-              <span className="text-xs text-text-secondary bg-gray-100 px-1.5 py-0.5 rounded">
+              <span className="text-xs text-text-secondary dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">
                 {subtasks.filter(s => s.completed).length}/{subtasks.length} subtasks
               </span>
             )}
@@ -170,8 +174,8 @@ export default function ActionItem({
             {action.due_date && (
               <span className={`flex items-center gap-1 text-xs ${
                 new Date(action.due_date) < new Date() && !action.completed
-                  ? 'text-red-600'
-                  : 'text-text-secondary'
+                  ? 'text-red-600 dark:text-red-400'
+                  : 'text-text-secondary dark:text-gray-400'
               }`}>
                 <Calendar size={12} />
                 {format(new Date(action.due_date), 'MMM d')}
@@ -179,12 +183,12 @@ export default function ActionItem({
             )}
             {/* Display multiple assignees */}
             {assignees.length > 0 ? (
-              <span className="flex items-center gap-1 text-xs text-text-secondary">
+              <span className="flex items-center gap-1 text-xs text-text-secondary dark:text-gray-400">
                 {assignees.length === 1 ? <User size={12} /> : <Users size={12} />}
                 {assignees.map(a => a.user_name).join(', ')}
               </span>
             ) : assignedUser ? (
-              <span className="flex items-center gap-1 text-xs text-text-secondary">
+              <span className="flex items-center gap-1 text-xs text-text-secondary dark:text-gray-400">
                 <User size={12} />
                 {assignedUser.name}
               </span>
@@ -194,7 +198,7 @@ export default function ActionItem({
               <div className="relative">
                 <button
                   onClick={() => setShowCategoryPicker(!showCategoryPicker)}
-                  className={`flex items-center gap-1 text-xs text-text-secondary hover:text-primary-600 transition-opacity ${
+                  className={`flex items-center gap-1 text-xs text-text-secondary dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-opacity ${
                     isHovered || showCategoryPicker ? 'opacity-100' : 'opacity-0'
                   }`}
                 >
@@ -202,11 +206,11 @@ export default function ActionItem({
                   {action.category_name ? 'Change' : 'Add category'}
                 </button>
                 {showCategoryPicker && (
-                  <div className="absolute top-full left-0 mt-1 z-10 bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[140px]">
+                  <div className="absolute top-full left-0 mt-1 z-10 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 min-w-[140px]">
                     {action.category_id && (
                       <button
                         onClick={() => handleCategorySelect(null)}
-                        className="w-full px-3 py-1.5 text-left text-xs text-text-secondary hover:bg-gray-50"
+                        className="w-full px-3 py-1.5 text-left text-xs text-text-secondary dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700"
                       >
                         Remove category
                       </button>
@@ -215,8 +219,8 @@ export default function ActionItem({
                       <button
                         key={cat.id}
                         onClick={() => handleCategorySelect(cat.id)}
-                        className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 flex items-center gap-2 ${
-                          cat.id === action.category_id ? 'bg-gray-50' : ''
+                        className={`w-full px-3 py-1.5 text-left text-xs hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 ${
+                          cat.id === action.category_id ? 'bg-gray-50 dark:bg-gray-700' : ''
                         }`}
                       >
                         <span
@@ -232,7 +236,7 @@ export default function ActionItem({
             )}
             <button
               onClick={() => setShowComments(!showComments)}
-              className={`flex items-center gap-1 text-xs text-text-secondary hover:text-primary-600 ${showComments ? 'text-primary-600' : ''}`}
+              className={`flex items-center gap-1 text-xs text-text-secondary dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 ${showComments ? 'text-primary-600 dark:text-primary-400' : ''}`}
             >
               <MessageSquare size={12} />
               {commentCount > 0 && <span>{commentCount}</span>}
@@ -243,7 +247,7 @@ export default function ActionItem({
         {onEdit && (
           <button
             onClick={() => onEdit(action)}
-            className={`p-1.5 rounded text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-all ${
+            className={`p-1.5 rounded text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-all ${
               isHovered ? 'opacity-100' : 'opacity-0'
             }`}
           >
@@ -259,7 +263,7 @@ export default function ActionItem({
               onDelete(action.id)
             }
           }}
-          className={`p-1.5 rounded text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all ${
+          className={`p-1.5 rounded text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all ${
             isHovered ? 'opacity-100' : 'opacity-0'
           }`}
         >
@@ -268,20 +272,20 @@ export default function ActionItem({
       </div>
 
       {showComments && (
-        <div className="ml-8 mt-1 p-3 bg-gray-50 rounded-lg border border-gray-100">
+        <div className="ml-8 mt-1 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-100 dark:border-gray-700">
           {loadingComments ? (
-            <p className="text-xs text-text-secondary">Loading...</p>
+            <p className="text-xs text-text-secondary dark:text-gray-400">Loading...</p>
           ) : (
             <>
               {comments.map(c => (
                 <div key={c.id} className="mb-2 last:mb-0">
                   <div className="flex items-baseline gap-2">
-                    <span className="text-xs font-medium text-text-primary">{c.user_name}</span>
-                    <span className="text-[10px] text-text-secondary">
+                    <span className="text-xs font-medium text-text-primary dark:text-gray-100">{c.user_name}</span>
+                    <span className="text-[10px] text-text-secondary dark:text-gray-400">
                       {new Date(c.created_at).toLocaleDateString()}
                     </span>
                   </div>
-                  <p className="text-xs text-text-secondary mt-0.5">{c.content}</p>
+                  <p className="text-xs text-text-secondary dark:text-gray-400 mt-0.5">{c.content}</p>
                 </div>
               ))}
               <form
@@ -293,7 +297,9 @@ export default function ActionItem({
                     setComments(prev => [...prev, data.comment])
                     setCommentCount(prev => prev + 1)
                     setNewComment('')
-                  } catch {}
+                  } catch {
+                    // failed to post comment
+                  }
                 }}
                 className="flex gap-2 mt-2"
               >
@@ -301,7 +307,7 @@ export default function ActionItem({
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Add a comment..."
-                  className="flex-1 text-xs px-2 py-1.5 rounded border border-gray-300 focus:outline-none focus:ring-1 focus:ring-primary-300"
+                  className="flex-1 text-xs px-2 py-1.5 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-text-primary dark:text-gray-100 placeholder:text-text-secondary dark:placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-300"
                 />
                 <button type="submit" className="p-1.5 rounded bg-primary-500 text-white hover:bg-primary-600">
                   <SendIcon size={12} />

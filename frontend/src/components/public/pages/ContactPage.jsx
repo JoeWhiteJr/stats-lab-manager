@@ -19,9 +19,16 @@ export default function ContactPage() {
   const { contact } = siteInfo;
 
   const onSubmit = async (formData) => {
-    // Simulate form submission
-    console.log('Form submitted:', formData);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+    const response = await fetch(`${API_URL}/contact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data?.error?.message || 'Failed to send message');
+    }
   };
 
   const contactItems = [

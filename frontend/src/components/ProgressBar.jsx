@@ -26,13 +26,13 @@ export default function ProgressBar({
     <div className={className}>
       {(label || showValue) && (
         <div className="flex items-center justify-between text-xs mb-1.5">
-          {label && <span className="text-text-secondary">{label}</span>}
+          {label && <span className="text-text-secondary dark:text-gray-400">{label}</span>}
           {showValue && (
-            <span className="font-medium text-text-primary">{Math.round(clamped)}%</span>
+            <span className="font-medium text-text-primary dark:text-gray-100">{Math.round(clamped)}%</span>
           )}
         </div>
       )}
-      <div className={`${heights[size]} bg-gray-100 rounded-full overflow-hidden`}>
+      <div className={`${heights[size]} bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden`}>
         <div
           className={`h-full bg-gradient-to-r ${colorSchemes[color]} rounded-full transition-all duration-500 ease-out`}
           style={{ width: `${clamped}%` }}

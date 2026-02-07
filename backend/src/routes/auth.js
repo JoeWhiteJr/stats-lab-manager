@@ -6,6 +6,7 @@ const { body, validationResult } = require('express-validator');
 const db = require('../config/database');
 const { authenticate, generateToken } = require('../middleware/auth');
 const { logActivity } = require('./users');
+const logger = require('../config/logger');
 
 const router = express.Router();
 
@@ -100,17 +101,19 @@ router.post('/forgot-password', [
       return res.json({ message: 'If an account exists with that email, a reset link has been generated.' });
     }
 
-    // Generate token
-    const token = crypto.randomBytes(32).toString('hex');
+    // Generate token and store its hash (never store raw tokens)
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
     await db.query(
       'INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)',
-      [user.rows[0].id, token, expiresAt]
+      [user.rows[0].id, hashedToken, expiresAt]
     );
 
     // TODO: Send password reset email to the user
-    // Token is stored in DB and will be validated on reset
+    // For now, log the raw token (since there is no email system yet)
+    logger.info({ userId: user.rows[0].id, token: rawToken }, 'Password reset token generated');
 
     res.json({ message: 'If an account exists with that email, a reset link has been generated.' });
   } catch (error) {
@@ -131,13 +134,16 @@ router.post('/reset-password', [
 
     const { token, password } = req.body;
 
+    // Hash the incoming token to compare against stored hash
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
     const client = await db.getClient();
     try {
       await client.query('BEGIN');
 
       const result = await client.query(
         'SELECT * FROM password_reset_tokens WHERE token = $1 AND used_at IS NULL AND expires_at > NOW() FOR UPDATE',
-        [token]
+        [hashedToken]
       );
 
       if (result.rows.length === 0) {

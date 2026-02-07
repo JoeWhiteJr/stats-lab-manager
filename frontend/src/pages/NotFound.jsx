@@ -1,9 +1,14 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { FileQuestion, Home, LayoutDashboard } from 'lucide-react'
 
 export default function NotFound() {
+  useEffect(() => {
+    document.title = 'Page Not Found - Stats Lab'
+  }, [])
+
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background dark:bg-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
@@ -11,16 +16,16 @@ export default function NotFound() {
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-8 text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-14 h-14 rounded-full bg-primary-50 flex items-center justify-center">
+            <div className="w-14 h-14 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center">
               <FileQuestion className="w-7 h-7 text-primary-500" />
             </div>
           </div>
 
-          <h2 className="font-display text-5xl font-bold text-text-primary mb-2">404</h2>
-          <p className="text-lg font-medium text-text-primary mb-1">Page not found</p>
-          <p className="text-text-secondary text-sm mb-8">
+          <h2 className="font-display text-5xl font-bold text-text-primary dark:text-gray-100 mb-2">404</h2>
+          <p className="text-lg font-medium text-text-primary dark:text-gray-100 mb-1">Page not found</p>
+          <p className="text-text-secondary dark:text-gray-400 text-sm mb-8">
             The page you're looking for doesn't exist or has been moved.
           </p>
 
@@ -34,7 +39,7 @@ export default function NotFound() {
             </Link>
             <Link
               to="/dashboard"
-              className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-gray-200 text-text-primary font-medium hover:bg-gray-50 transition-colors"
+              className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-text-primary dark:text-gray-100 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               <LayoutDashboard size={18} />
               Go to Dashboard

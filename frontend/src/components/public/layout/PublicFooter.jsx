@@ -77,39 +77,36 @@ export default function PublicFooter() {
             </ul>
           </div>
 
-          {/* Connect */}
-          <div>
-            <h4 className="font-semibold text-white mb-4">Connect</h4>
-            <div className="flex gap-3">
-              <a
-                href={siteInfo.social.linkedin}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-pub-blue-600 hover:text-white transition-colors"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="w-5 h-5" />
-              </a>
-              <a
-                href={siteInfo.social.twitter}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-pub-blue-600 hover:text-white transition-colors"
-                aria-label="Twitter"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a
-                href={siteInfo.social.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-pub-blue-600 hover:text-white transition-colors"
-                aria-label="GitHub"
-              >
-                <Github className="w-5 h-5" />
-              </a>
-            </div>
-          </div>
+          {/* Connect - only render social links that have real URLs */}
+          {(() => {
+            const socialLinks = [
+              { url: siteInfo.social.linkedin, label: 'LinkedIn', Icon: Linkedin },
+              { url: siteInfo.social.twitter, label: 'Twitter', Icon: Twitter },
+              { url: siteInfo.social.github, label: 'GitHub', Icon: Github },
+            ].filter(link => link.url && link.url !== '#');
+
+            if (socialLinks.length === 0) return null;
+
+            return (
+              <div>
+                <h4 className="font-semibold text-white mb-4">Connect</h4>
+                <div className="flex gap-3">
+                  {socialLinks.map(({ url, label, Icon }) => (
+                    <a
+                      key={label}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-pub-blue-600 hover:text-white transition-colors"
+                      aria-label={label}
+                    >
+                      <Icon className="w-5 h-5" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Bottom Bar */}

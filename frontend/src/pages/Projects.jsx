@@ -22,6 +22,10 @@ export default function Projects() {
   const canCreate = user?.role === 'admin' || user?.role === 'project_lead'
 
   useEffect(() => {
+    document.title = 'Projects - Stats Lab'
+  }, [])
+
+  useEffect(() => {
     fetchProjects()
   }, [fetchProjects])
 
@@ -65,8 +69,8 @@ export default function Projects() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-display font-bold text-2xl text-text-primary">Projects</h1>
-          <p className="mt-1 text-text-secondary">Manage and organize your research projects.</p>
+          <h1 className="font-display font-bold text-2xl text-text-primary dark:text-gray-100">Projects</h1>
+          <p className="mt-1 text-text-secondary dark:text-gray-400">Manage and organize your research projects.</p>
         </div>
         {canCreate && (
           <Button onClick={handleOpenCreateModal}>
@@ -79,13 +83,13 @@ export default function Projects() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1 max-w-md">
-          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary" />
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary dark:text-gray-400" />
           <input
             type="text"
             placeholder="Search projects..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-organic border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400"
+            className="w-full pl-10 pr-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400"
           />
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -95,8 +99,8 @@ export default function Projects() {
               onClick={() => setFilter(status)}
               className={`px-4 py-2 rounded-organic text-sm font-medium capitalize transition-colors ${
                 filter === status
-                  ? 'bg-primary-100 text-primary-700'
-                  : 'bg-white border border-gray-300 text-text-secondary hover:bg-gray-50'
+                  ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300'
+                  : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-text-secondary dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
             >
               {status}
@@ -109,12 +113,12 @@ export default function Projects() {
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 animate-pulse">
-              <div className="h-32 bg-gray-100" />
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 animate-pulse">
+              <div className="h-32 bg-gray-100 dark:bg-gray-700" />
               <div className="p-5 space-y-3">
-                <div className="h-5 bg-gray-100 rounded w-3/4" />
-                <div className="h-4 bg-gray-100 rounded w-full" />
-                <div className="h-2 bg-gray-100 rounded w-full" />
+                <div className="h-5 bg-gray-100 dark:bg-gray-700 rounded w-3/4" />
+                <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded w-full" />
+                <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded w-full" />
               </div>
             </div>
           ))}
@@ -139,12 +143,12 @@ export default function Projects() {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-              <FolderKanban size={36} className="text-gray-400" />
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+              <FolderKanban size={36} className="text-gray-400 dark:text-gray-500" />
             </div>
-            <h3 className="font-display font-semibold text-lg text-text-primary">No projects found</h3>
-            <p className="mt-2 text-text-secondary max-w-sm mx-auto">
+            <h3 className="font-display font-semibold text-lg text-text-primary dark:text-gray-100">No projects found</h3>
+            <p className="mt-2 text-text-secondary dark:text-gray-400 max-w-sm mx-auto">
               {search
                 ? 'Try adjusting your search or filters.'
                 : filter !== 'all' && filter !== 'active'
@@ -168,7 +172,7 @@ export default function Projects() {
         <section>
           <button
             onClick={() => setShowInactive(!showInactive)}
-            className="flex items-center gap-2 text-text-secondary hover:text-text-primary mb-4"
+            className="flex items-center gap-2 text-text-secondary dark:text-gray-400 hover:text-text-primary dark:hover:text-gray-100 mb-4"
           >
             {showInactive ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             <span className="font-medium">Inactive ({inactiveProjects.length})</span>
@@ -188,7 +192,7 @@ export default function Projects() {
         <section>
           <button
             onClick={() => setShowArchived(!showArchived)}
-            className="flex items-center gap-2 text-text-secondary hover:text-text-primary mb-4"
+            className="flex items-center gap-2 text-text-secondary dark:text-gray-400 hover:text-text-primary dark:hover:text-gray-100 mb-4"
           >
             {showArchived ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             <span className="font-medium">Archived ({archivedProjects.length})</span>
@@ -218,7 +222,7 @@ export default function Projects() {
             required
           />
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">
+            <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">
               Description
             </label>
             <textarea
@@ -226,11 +230,11 @@ export default function Projects() {
               onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
               placeholder="Brief overview of the project..."
               rows={4}
-              className="w-full px-4 py-2.5 rounded-organic border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 resize-none"
+              className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 resize-none"
             />
           </div>
           {createError && (
-            <div className="p-3 rounded-lg text-sm bg-red-50 border border-red-200 text-red-600">
+            <div className="p-3 rounded-lg text-sm bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400">
               {createError}
             </div>
           )}

@@ -14,7 +14,7 @@ import FilePreviewModal from '../components/FilePreviewModal'
 import NoteCard from '../components/NoteCard'
 import MeetingCard from '../components/MeetingCard'
 import DatePicker from '../components/DatePicker'
-import RichTextEditor from '../components/RichTextEditor'
+import RichTextEditor, { RichTextContent } from '../components/RichTextEditor'
 import AudioRecorder from '../components/AudioRecorder'
 import CategoryManager from '../components/CategoryManager'
 import {
@@ -73,6 +73,9 @@ export default function ProjectDetail() {
   const [editingMeeting, setEditingMeeting] = useState(null)
   const [showEditMeetingModal, setShowEditMeetingModal] = useState(false)
 
+  // Meeting view modal state
+  const [viewingMeeting, setViewingMeeting] = useState(null)
+
   // File upload state
   const [isDragging, setIsDragging] = useState(false)
   const [previewFile, setPreviewFile] = useState(null)
@@ -105,6 +108,11 @@ export default function ProjectDetail() {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
+
+  // Page title
+  useEffect(() => {
+    document.title = currentProject?.title ? `${currentProject.title} - Stats Lab` : 'Project - Stats Lab'
+  }, [currentProject?.title])
 
   useEffect(() => {
     fetchProject(id)
@@ -364,12 +372,17 @@ export default function ProjectDetail() {
     setShowRecorder(false)
   }
 
+  // Handle viewing a meeting's details
+  const handleViewMeeting = (meeting) => {
+    setViewingMeeting(meeting)
+  }
+
   if (isLoading || !currentProject) {
     return (
       <div className="animate-pulse space-y-6">
-        <div className="h-48 bg-gray-200 rounded-xl" />
-        <div className="h-8 bg-gray-200 rounded w-1/3" />
-        <div className="h-4 bg-gray-200 rounded w-2/3" />
+        <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-xl" />
+        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
       </div>
     )
   }
@@ -379,14 +392,14 @@ export default function ProjectDetail() {
       {/* Back button */}
       <button
         onClick={() => navigate('/dashboard/projects')}
-        className="inline-flex items-center gap-2 text-text-secondary hover:text-text-primary"
+        className="inline-flex items-center gap-2 text-text-secondary dark:text-gray-400 hover:text-text-primary dark:hover:text-gray-100"
       >
         <ArrowLeft size={18} />
         Back to Projects
       </button>
 
       {/* Header image */}
-      <div className="relative h-48 md:h-64 rounded-xl overflow-hidden bg-gradient-to-br from-primary-200 to-secondary-200">
+      <div className="relative h-48 md:h-64 rounded-xl overflow-hidden bg-gradient-to-br from-primary-200 to-secondary-200 dark:from-primary-900 dark:to-secondary-900">
         {currentProject.header_image ? (
           <img src={getUploadUrl(currentProject.header_image)} alt="" className="w-full h-full object-cover" />
         ) : (
@@ -405,7 +418,7 @@ export default function ProjectDetail() {
             />
             <button
               onClick={() => coverInputRef.current?.click()}
-              className="absolute bottom-4 right-4 flex items-center gap-2 px-3 py-2 bg-white/90 backdrop-blur-sm rounded-lg text-sm font-medium text-text-primary hover:bg-white"
+              className="absolute bottom-4 right-4 flex items-center gap-2 px-3 py-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg text-sm font-medium text-text-primary dark:text-gray-100 hover:bg-white dark:hover:bg-gray-700"
             >
               <Image size={16} />
               Change cover
@@ -421,10 +434,10 @@ export default function ProjectDetail() {
         title="Upload Cover Image"
       >
         <div className="space-y-4">
-          <div className="rounded-lg overflow-hidden border border-gray-200">
+          <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
             <img src={coverPreview} alt="Preview" className="w-full h-48 object-cover" />
           </div>
-          <p className="text-sm text-text-secondary">{coverFile?.name}</p>
+          <p className="text-sm text-text-secondary dark:text-gray-400">{coverFile?.name}</p>
           <div className="flex justify-end gap-3">
             <Button variant="secondary" onClick={handleCoverCancel}>Cancel</Button>
             <Button variant="primary" onClick={handleCoverConfirm} loading={isUploadingCover}>
@@ -438,31 +451,31 @@ export default function ProjectDetail() {
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="font-display font-bold text-2xl md:text-3xl text-text-primary">
+            <h1 className="font-display font-bold text-2xl md:text-3xl text-text-primary dark:text-gray-100">
               {currentProject.title}
             </h1>
             <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-              currentProject.status === 'active' ? 'bg-secondary-100 text-secondary-700' :
-              currentProject.status === 'completed' ? 'bg-green-100 text-green-700' :
-              currentProject.status === 'inactive' ? 'bg-amber-100 text-amber-700' :
-              'bg-gray-100 text-gray-600'
+              currentProject.status === 'active' ? 'bg-secondary-100 text-secondary-700 dark:bg-secondary-900/30 dark:text-secondary-300' :
+              currentProject.status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
+              currentProject.status === 'inactive' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
+              'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
             }`}>
               {currentProject.status}
             </span>
           </div>
           {currentProject.description && (
-            <p className="mt-2 text-text-secondary max-w-2xl">{currentProject.description}</p>
+            <p className="mt-2 text-text-secondary dark:text-gray-400 max-w-2xl">{currentProject.description}</p>
           )}
 
           {/* Progress - auto-calculated from tasks */}
           <div className="mt-4 max-w-md">
             <div className="flex items-center justify-between text-sm mb-1.5">
-              <span className="text-text-secondary">Progress</span>
-              <span className="font-medium text-text-primary">
+              <span className="text-text-secondary dark:text-gray-400">Progress</span>
+              <span className="font-medium text-text-primary dark:text-gray-100">
                 {autoProgress}% ({actions.filter(a => a.completed).length}/{actions.length} tasks)
               </span>
             </div>
-            <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-primary-400 to-primary-500 rounded-full transition-all duration-500"
                 style={{ width: `${autoProgress}%` }}
@@ -506,16 +519,16 @@ export default function ProjectDetail() {
                       className="fixed inset-0 z-10"
                       onClick={() => setShowSettingsMenu(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
-                      <div className="px-3 py-2 text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-20">
+                      <div className="px-3 py-2 text-xs font-semibold text-text-secondary dark:text-gray-400 uppercase tracking-wider">
                         Set Status
                       </div>
                       {['active', 'completed', 'inactive', 'archived'].map((status) => (
                         <button
                           key={status}
                           onClick={() => handleStatusChange(status)}
-                          className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between hover:bg-gray-50 ${
-                            currentProject.status === status ? 'bg-gray-50 text-primary-600' : 'text-text-primary'
+                          className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                            currentProject.status === status ? 'bg-gray-50 dark:bg-gray-700 text-primary-600 dark:text-primary-300' : 'text-text-primary dark:text-gray-100'
                           }`}
                         >
                           <span className="capitalize">{status}</span>
@@ -532,7 +545,7 @@ export default function ProjectDetail() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="flex gap-1 -mb-px overflow-x-auto">
           {tabs.map(({ id, label, icon: Icon }) => (
             <button
@@ -540,8 +553,8 @@ export default function ProjectDetail() {
               onClick={() => setActiveTab(id)}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors ${
                 activeTab === id
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-text-secondary hover:text-text-primary hover:border-gray-300'
+                  ? 'border-primary-500 text-primary-600 dark:text-primary-300'
+                  : 'border-transparent text-text-secondary dark:text-gray-400 hover:text-text-primary dark:hover:text-gray-100 hover:border-gray-300 dark:hover:border-gray-600'
               }`}
             >
               <Icon size={18} />
@@ -555,29 +568,29 @@ export default function ProjectDetail() {
       <div className="min-h-[400px]">
         {/* Overview */}
         {activeTab === 'overview' && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="font-display font-semibold text-lg mb-4">Project Overview</h3>
-            <p className="text-text-secondary">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+            <h3 className="font-display font-semibold text-lg dark:text-gray-100 mb-4">Project Overview</h3>
+            <p className="text-text-secondary dark:text-gray-400">
               {currentProject.description || 'No description provided.'}
             </p>
             <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-2xl font-bold text-text-primary">{actions.length}</p>
-                <p className="text-sm text-text-secondary">Total tasks</p>
+              <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <p className="text-2xl font-bold text-text-primary dark:text-gray-100">{actions.length}</p>
+                <p className="text-sm text-text-secondary dark:text-gray-400">Total tasks</p>
               </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-2xl font-bold text-text-primary">
+              <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <p className="text-2xl font-bold text-text-primary dark:text-gray-100">
                   {actions.filter(a => a.completed).length}
                 </p>
-                <p className="text-sm text-text-secondary">Completed</p>
+                <p className="text-sm text-text-secondary dark:text-gray-400">Completed</p>
               </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-2xl font-bold text-text-primary">{files.length}</p>
-                <p className="text-sm text-text-secondary">Files</p>
+              <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <p className="text-2xl font-bold text-text-primary dark:text-gray-100">{files.length}</p>
+                <p className="text-sm text-text-secondary dark:text-gray-400">Files</p>
               </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-2xl font-bold text-text-primary">{notes.length}</p>
-                <p className="text-sm text-text-secondary">Notes</p>
+              <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <p className="text-2xl font-bold text-text-primary dark:text-gray-100">{notes.length}</p>
+                <p className="text-sm text-text-secondary dark:text-gray-400">Notes</p>
               </div>
             </div>
           </div>
@@ -587,7 +600,7 @@ export default function ProjectDetail() {
         {activeTab === 'actions' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="font-display font-semibold text-lg">Action Items</h3>
+              <h3 className="font-display font-semibold text-lg dark:text-gray-100">Action Items</h3>
               <Button size="sm" onClick={() => setShowActionModal(true)}>
                 <Plus size={16} />
                 Add Task
@@ -604,8 +617,8 @@ export default function ProjectDetail() {
                       onClick={() => setCategoryFilter(null)}
                       className={`px-3 py-1.5 text-xs rounded-full font-medium transition-colors ${
                         categoryFilter === null
-                          ? 'bg-primary-100 text-primary-700'
-                          : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
+                          ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                          : 'bg-gray-100 dark:bg-gray-700 text-text-secondary dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
                     >
                       All ({actions.length})
@@ -616,7 +629,7 @@ export default function ProjectDetail() {
                         onClick={() => setCategoryFilter(cat.id)}
                         className={`px-3 py-1.5 text-xs rounded-full font-medium transition-colors ${
                           categoryFilter === cat.id
-                            ? 'ring-2 ring-offset-1 ring-gray-400'
+                            ? 'ring-2 ring-offset-1 ring-gray-400 dark:ring-offset-gray-900'
                             : 'hover:opacity-80'
                         }`}
                         style={{
@@ -631,8 +644,8 @@ export default function ProjectDetail() {
                       onClick={() => setCategoryFilter('uncategorized')}
                       className={`px-3 py-1.5 text-xs rounded-full font-medium transition-colors ${
                         categoryFilter === 'uncategorized'
-                          ? 'bg-gray-200 text-text-primary'
-                          : 'bg-gray-100 text-text-secondary hover:bg-gray-200'
+                          ? 'bg-gray-200 dark:bg-gray-600 text-text-primary dark:text-gray-100'
+                          : 'bg-gray-100 dark:bg-gray-700 text-text-secondary dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
                     >
                       Uncategorized ({actions.filter(a => !a.category_id).length})
@@ -674,21 +687,21 @@ export default function ProjectDetail() {
                     </SortableContext>
                   </DndContext>
                 ) : actions.length > 0 ? (
-                  <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-                    <ListTodo size={40} className="mx-auto text-gray-300 mb-3" />
-                    <p className="text-text-secondary">No tasks in this category.</p>
+                  <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+                    <ListTodo size={40} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+                    <p className="text-text-secondary dark:text-gray-400">No tasks in this category.</p>
                   </div>
                 ) : (
-                  <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-                    <ListTodo size={40} className="mx-auto text-gray-300 mb-3" />
-                    <p className="text-text-secondary">No tasks yet. Add your first action item.</p>
+                  <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+                    <ListTodo size={40} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+                    <p className="text-text-secondary dark:text-gray-400">No tasks yet. Add your first action item.</p>
                   </div>
                 )}
               </div>
 
               {/* Category Manager Panel */}
               <div className="lg:col-span-1">
-                <div className="bg-white rounded-xl border border-gray-200 p-4">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
                   <CategoryManager
                     categories={categories}
                     onCreateCategory={handleCreateCategory}
@@ -705,7 +718,7 @@ export default function ProjectDetail() {
         {activeTab === 'files' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="font-display font-semibold text-lg">Files</h3>
+              <h3 className="font-display font-semibold text-lg dark:text-gray-100">Files</h3>
               <div>
                 <input
                   ref={fileInputRef}
@@ -726,12 +739,12 @@ export default function ProjectDetail() {
 
             {/* Upload Progress Bar */}
             {isUploading && uploadProgress !== null && (
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
+              <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-text-secondary">Uploading file...</span>
-                  <span className="text-sm font-medium text-primary-600">{uploadProgress}%</span>
+                  <span className="text-sm text-text-secondary dark:text-gray-400">Uploading file...</span>
+                  <span className="text-sm font-medium text-primary-600 dark:text-primary-300">{uploadProgress}%</span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-primary-400 to-primary-500 rounded-full transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
@@ -747,12 +760,12 @@ export default function ProjectDetail() {
               onDrop={handleDrop}
               className={`border-2 border-dashed rounded-xl p-6 text-center transition-all ${
                 isDragging
-                  ? 'border-primary-400 bg-primary-50'
-                  : 'border-gray-300 hover:border-gray-400'
+                  ? 'border-primary-400 bg-primary-50 dark:bg-primary-900/30'
+                  : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
               }`}
             >
-              <Upload size={32} className={`mx-auto mb-2 ${isDragging ? 'text-primary-500' : 'text-gray-400'}`} />
-              <p className="text-sm text-text-secondary">
+              <Upload size={32} className={`mx-auto mb-2 ${isDragging ? 'text-primary-500 dark:text-primary-300' : 'text-gray-400 dark:text-gray-500'}`} />
+              <p className="text-sm text-text-secondary dark:text-gray-400">
                 {isDragging ? 'Drop file here' : 'Drag and drop files here, or click Upload'}
               </p>
             </div>
@@ -770,9 +783,9 @@ export default function ProjectDetail() {
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-                <Upload size={40} className="mx-auto text-gray-300 mb-3" />
-                <p className="text-text-secondary">No files uploaded yet.</p>
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+                <Upload size={40} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+                <p className="text-text-secondary dark:text-gray-400">No files uploaded yet.</p>
               </div>
             )}
           </div>
@@ -782,7 +795,7 @@ export default function ProjectDetail() {
         {activeTab === 'notes' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="font-display font-semibold text-lg">Notes</h3>
+              <h3 className="font-display font-semibold text-lg dark:text-gray-100">Notes</h3>
               <Button size="sm" onClick={() => { setEditingNote(null); setNoteData({ title: '', content: '' }); setShowNoteModal(true) }}>
                 <Plus size={16} />
                 Add Note
@@ -800,9 +813,9 @@ export default function ProjectDetail() {
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-                <StickyNote size={40} className="mx-auto text-gray-300 mb-3" />
-                <p className="text-text-secondary">No notes yet. Create your first note.</p>
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+                <StickyNote size={40} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+                <p className="text-text-secondary dark:text-gray-400">No notes yet. Create your first note.</p>
               </div>
             )}
           </div>
@@ -812,7 +825,7 @@ export default function ProjectDetail() {
         {activeTab === 'meetings' && (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="font-display font-semibold text-lg">Meetings</h3>
+              <h3 className="font-display font-semibold text-lg dark:text-gray-100">Meetings</h3>
               <Button size="sm" onClick={() => setShowMeetingModal(true)}>
                 <Plus size={16} />
                 Add Meeting
@@ -824,16 +837,16 @@ export default function ProjectDetail() {
                   <MeetingCard
                     key={meeting.id}
                     meeting={meeting}
-                    onView={() => {}}
+                    onView={handleViewMeeting}
                     onEdit={handleEditMeeting}
                     onDelete={deleteMeeting}
                   />
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
-                <Mic size={40} className="mx-auto text-gray-300 mb-3" />
-                <p className="text-text-secondary">No meetings recorded yet.</p>
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+                <Mic size={40} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+                <p className="text-text-secondary dark:text-gray-400">No meetings recorded yet.</p>
               </div>
             )}
           </div>
@@ -852,29 +865,29 @@ export default function ProjectDetail() {
             />
           ) : (
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">Title</label>
-              <p className="px-4 py-2.5 rounded-organic border border-gray-200 bg-gray-50 text-text-secondary">
+              <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">Title</label>
+              <p className="px-4 py-2.5 rounded-organic border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-text-secondary dark:text-gray-400">
                 {editData.title}
               </p>
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">Description</label>
+            <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">Description</label>
             <textarea
               value={editData.description}
               onChange={(e) => setEditData({ ...editData, description: e.target.value })}
               rows={4}
-              className="w-full px-4 py-2.5 rounded-organic border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 resize-none"
+              className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 resize-none"
             />
           </div>
           {canEditMeta && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-1.5">Status</label>
+                <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">Status</label>
                 <select
                   value={editData.status}
                   onChange={(e) => setEditData({ ...editData, status: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-organic border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300"
+                  className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300"
                 >
                   <option value="active">Active</option>
                   <option value="completed">Completed</option>
@@ -883,8 +896,8 @@ export default function ProjectDetail() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-1.5">Progress</label>
-                <div className="px-4 py-2.5 rounded-organic border border-gray-200 bg-gray-50 text-text-secondary text-sm">
+                <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">Progress</label>
+                <div className="px-4 py-2.5 rounded-organic border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-text-secondary dark:text-gray-400 text-sm">
                   Auto-calculated: {autoProgress}%
                 </div>
               </div>
@@ -899,7 +912,7 @@ export default function ProjectDetail() {
 
       {/* Delete Confirmation Modal */}
       <Modal isOpen={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} title="Delete Project" size="sm">
-        <p className="text-text-secondary">Are you sure you want to delete this project? This action cannot be undone.</p>
+        <p className="text-text-secondary dark:text-gray-400">Are you sure you want to delete this project? This action cannot be undone.</p>
         <div className="flex justify-end gap-3 mt-6">
           <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
           <Button variant="danger" onClick={handleDeleteProject}>Delete Project</Button>
@@ -924,11 +937,11 @@ export default function ProjectDetail() {
               onChange={(e) => setNewAction({ ...newAction, due_date: e.target.value })}
             />
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">Parent Task (optional)</label>
+              <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">Parent Task (optional)</label>
               <select
                 value={newAction.parent_task_id}
                 onChange={(e) => setNewAction({ ...newAction, parent_task_id: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-organic border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300"
+                className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300"
               >
                 <option value="">No parent (top-level task)</option>
                 {parentTasks.map((task) => (
@@ -938,17 +951,17 @@ export default function ProjectDetail() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">
+            <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">
               <span className="flex items-center gap-1.5">
                 <Users size={14} />
                 Assign to (select multiple)
               </span>
             </label>
-            <div className="border border-gray-300 rounded-organic p-2 max-h-40 overflow-y-auto bg-white">
+            <div className="border border-gray-300 dark:border-gray-600 rounded-organic p-2 max-h-40 overflow-y-auto bg-white dark:bg-gray-800">
               {teamMembers.length > 0 ? teamMembers.map((member) => (
                 <label
                   key={member.id}
-                  className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 cursor-pointer"
+                  className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                 >
                   <input
                     type="checkbox"
@@ -960,27 +973,27 @@ export default function ProjectDetail() {
                         setNewAction({ ...newAction, assignee_ids: newAction.assignee_ids.filter(id => id !== member.id) })
                       }
                     }}
-                    className="rounded border-gray-300 text-primary-600 focus:ring-primary-300"
+                    className="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-300"
                   />
-                  <span className="text-sm text-text-primary">{member.name}</span>
+                  <span className="text-sm text-text-primary dark:text-gray-100">{member.name}</span>
                 </label>
               )) : (
-                <p className="text-sm text-text-secondary px-2 py-1">No team members found</p>
+                <p className="text-sm text-text-secondary dark:text-gray-400 px-2 py-1">No team members found</p>
               )}
             </div>
             {newAction.assignee_ids.length > 0 && (
-              <p className="text-xs text-text-secondary mt-1">
+              <p className="text-xs text-text-secondary dark:text-gray-400 mt-1">
                 {newAction.assignee_ids.length} member{newAction.assignee_ids.length !== 1 ? 's' : ''} selected
               </p>
             )}
           </div>
           {categories.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">Category</label>
+              <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">Category</label>
               <select
                 value={newAction.category_id}
                 onChange={(e) => setNewAction({ ...newAction, category_id: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-organic border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300"
+                className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300"
               >
                 <option value="">No category</option>
                 {categories.map((cat) => (
@@ -1006,21 +1019,21 @@ export default function ProjectDetail() {
             required
           />
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">Due Date</label>
+            <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">Due Date</label>
             <input
               type="date"
               value={editForm.due_date}
               onChange={(e) => setEditForm({...editForm, due_date: e.target.value})}
-              className="w-full px-4 py-2.5 rounded-organic border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300"
+              className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300"
             />
           </div>
           {categories.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">Category</label>
+              <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">Category</label>
               <select
                 value={editForm.category_id}
                 onChange={(e) => setEditForm({...editForm, category_id: e.target.value})}
-                className="w-full px-4 py-2.5 rounded-organic border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300"
+                className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300"
               >
                 <option value="">No category</option>
                 {categories.map(cat => (
@@ -1030,10 +1043,10 @@ export default function ProjectDetail() {
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">Assignees</label>
-            <div className="max-h-32 overflow-y-auto border border-gray-300 rounded-organic">
+            <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">Assignees</label>
+            <div className="max-h-32 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-organic">
               {teamMembers.map(u => (
-                <label key={u.id} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                <label key={u.id} className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={editForm.assignee_ids.includes(u.id)}
@@ -1043,9 +1056,9 @@ export default function ProjectDetail() {
                         : [...editForm.assignee_ids, u.id]
                       setEditForm({...editForm, assignee_ids: ids})
                     }}
-                    className="rounded border-gray-300 text-primary-600"
+                    className="rounded border-gray-300 dark:border-gray-600 text-primary-600"
                   />
-                  <span className="text-sm">{u.name}</span>
+                  <span className="text-sm dark:text-gray-100">{u.name}</span>
                 </label>
               ))}
             </div>
@@ -1068,13 +1081,13 @@ export default function ProjectDetail() {
             required
           />
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">Content</label>
+            <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">Content</label>
             <textarea
               value={noteData.content}
               onChange={(e) => setNoteData({ ...noteData, content: e.target.value })}
               rows={8}
               placeholder="Write your note..."
-              className="w-full px-4 py-2.5 rounded-organic border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 resize-none"
+              className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 resize-none"
             />
           </div>
           <div className="flex justify-end gap-3 pt-2">
@@ -1110,7 +1123,7 @@ export default function ProjectDetail() {
           />
 
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">Audio (optional)</label>
+            <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">Audio (optional)</label>
 
             {!showRecorder && !audioFile && (
               <div className="flex gap-3">
@@ -1121,24 +1134,24 @@ export default function ProjectDetail() {
                     className="hidden"
                     onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
                   />
-                  <div className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary-400 hover:bg-primary-50 transition-colors">
-                    <Upload size={18} className="text-text-secondary" />
-                    <span className="text-sm text-text-secondary">Upload audio file</span>
+                  <div className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-colors">
+                    <Upload size={18} className="text-text-secondary dark:text-gray-400" />
+                    <span className="text-sm text-text-secondary dark:text-gray-400">Upload audio file</span>
                   </div>
                 </label>
                 <button
                   type="button"
                   onClick={() => setShowRecorder(true)}
-                  className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-red-400 hover:bg-red-50 transition-colors"
+                  className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
                 >
-                  <Mic size={18} className="text-text-secondary" />
-                  <span className="text-sm text-text-secondary">Record audio</span>
+                  <Mic size={18} className="text-text-secondary dark:text-gray-400" />
+                  <span className="text-sm text-text-secondary dark:text-gray-400">Record audio</span>
                 </button>
               </div>
             )}
 
             {showRecorder && (
-              <div className="border border-gray-200 rounded-lg p-4">
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <AudioRecorder
                   onSave={handleRecordedAudio}
                   onCancel={() => setShowRecorder(false)}
@@ -1147,20 +1160,20 @@ export default function ProjectDetail() {
             )}
 
             {audioFile && !showRecorder && (
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2">
-                  <Mic size={18} className="text-secondary-600" />
-                  <span className="text-sm text-text-primary truncate max-w-[200px]">
+                  <Mic size={18} className="text-secondary-600 dark:text-secondary-400" />
+                  <span className="text-sm text-text-primary dark:text-gray-100 truncate max-w-[200px]">
                     {audioFile.name}
                   </span>
-                  <span className="text-xs text-text-secondary">
+                  <span className="text-xs text-text-secondary dark:text-gray-400">
                     ({(audioFile.size / 1024 / 1024).toFixed(2)} MB)
                   </span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setAudioFile(null)}
-                  className="text-sm text-red-600 hover:text-red-700"
+                  className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                 >
                   Remove
                 </button>
@@ -1212,12 +1225,12 @@ export default function ProjectDetail() {
           {aiSummaryLoading && (
             <div className="flex flex-col items-center justify-center py-12">
               <Loader2 size={36} className="text-primary-500 animate-spin mb-4" />
-              <p className="text-text-secondary">Generating AI summary...</p>
-              <p className="text-xs text-text-secondary mt-1">Analyzing project data, action items, notes, and meetings</p>
+              <p className="text-text-secondary dark:text-gray-400">Generating AI summary...</p>
+              <p className="text-xs text-text-secondary dark:text-gray-400 mt-1">Analyzing project data, action items, notes, and meetings</p>
             </div>
           )}
           {aiSummaryError && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+            <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
               {aiSummaryError}
             </div>
           )}
@@ -1225,26 +1238,26 @@ export default function ProjectDetail() {
             <>
               {/* Stats bar */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="p-3 bg-primary-50 rounded-lg text-center">
-                  <p className="text-lg font-bold text-primary-700">{aiSummary.stats?.totalActions || 0}</p>
-                  <p className="text-xs text-primary-600">Total Tasks</p>
+                <div className="p-3 bg-primary-50 dark:bg-primary-900/30 rounded-lg text-center">
+                  <p className="text-lg font-bold text-primary-700 dark:text-primary-300">{aiSummary.stats?.totalActions || 0}</p>
+                  <p className="text-xs text-primary-600 dark:text-primary-400">Total Tasks</p>
                 </div>
-                <div className="p-3 bg-green-50 rounded-lg text-center">
-                  <p className="text-lg font-bold text-green-700">{aiSummary.stats?.completedActions || 0}</p>
-                  <p className="text-xs text-green-600">Completed</p>
+                <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-lg text-center">
+                  <p className="text-lg font-bold text-green-700 dark:text-green-300">{aiSummary.stats?.completedActions || 0}</p>
+                  <p className="text-xs text-green-600 dark:text-green-400">Completed</p>
                 </div>
-                <div className="p-3 bg-amber-50 rounded-lg text-center">
-                  <p className="text-lg font-bold text-amber-700">{aiSummary.stats?.pendingActions || 0}</p>
-                  <p className="text-xs text-amber-600">Pending</p>
+                <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-lg text-center">
+                  <p className="text-lg font-bold text-amber-700 dark:text-amber-300">{aiSummary.stats?.pendingActions || 0}</p>
+                  <p className="text-xs text-amber-600 dark:text-amber-400">Pending</p>
                 </div>
-                <div className="p-3 bg-secondary-50 rounded-lg text-center">
-                  <p className="text-lg font-bold text-secondary-700">{aiSummary.stats?.notesCount || 0}</p>
-                  <p className="text-xs text-secondary-600">Notes</p>
+                <div className="p-3 bg-secondary-50 dark:bg-secondary-900/30 rounded-lg text-center">
+                  <p className="text-lg font-bold text-secondary-700 dark:text-secondary-300">{aiSummary.stats?.notesCount || 0}</p>
+                  <p className="text-xs text-secondary-600 dark:text-secondary-400">Notes</p>
                 </div>
               </div>
               {/* Summary content */}
-              <div className="prose prose-sm max-w-none bg-gray-50 rounded-lg p-5 border border-gray-200">
-                <div className="whitespace-pre-wrap text-text-primary text-sm leading-relaxed">
+              <div className="prose prose-sm max-w-none bg-gray-50 dark:bg-gray-900 rounded-lg p-5 border border-gray-200 dark:border-gray-700">
+                <div className="whitespace-pre-wrap text-text-primary dark:text-gray-100 text-sm leading-relaxed">
                   {aiSummary.summary}
                 </div>
               </div>
@@ -1262,6 +1275,52 @@ export default function ProjectDetail() {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      {/* Meeting View Modal */}
+      <Modal
+        isOpen={!!viewingMeeting}
+        onClose={() => setViewingMeeting(null)}
+        title={viewingMeeting?.title || 'Meeting Details'}
+        size="lg"
+      >
+        {viewingMeeting && (
+          <div className="space-y-4">
+            {viewingMeeting.recorded_at && (
+              <p className="text-sm text-text-secondary dark:text-gray-400">
+                {new Date(viewingMeeting.recorded_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            )}
+            {viewingMeeting.summary && (
+              <div>
+                <h4 className="text-sm font-semibold text-text-primary dark:text-gray-100 mb-1">Summary</h4>
+                <p className="text-sm text-text-secondary dark:text-gray-400 whitespace-pre-wrap">{viewingMeeting.summary}</p>
+              </div>
+            )}
+            {viewingMeeting.transcript && (
+              <div>
+                <h4 className="text-sm font-semibold text-text-primary dark:text-gray-100 mb-1">Transcript</h4>
+                <div className="max-h-64 overflow-y-auto bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                  <p className="text-sm text-text-secondary dark:text-gray-400 whitespace-pre-wrap">{viewingMeeting.transcript}</p>
+                </div>
+              </div>
+            )}
+            {viewingMeeting.notes && (
+              <div>
+                <h4 className="text-sm font-semibold text-text-primary dark:text-gray-100 mb-1">Notes</h4>
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                  <RichTextContent content={viewingMeeting.notes} className="text-sm" />
+                </div>
+              </div>
+            )}
+            {!viewingMeeting.summary && !viewingMeeting.transcript && !viewingMeeting.notes && (
+              <p className="text-sm text-text-secondary dark:text-gray-400">No additional details available for this meeting.</p>
+            )}
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="outline" onClick={() => setViewingMeeting(null)}>Close</Button>
+            </div>
+          </div>
+        )}
       </Modal>
 
       {/* File Preview Modal */}

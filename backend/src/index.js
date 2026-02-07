@@ -23,6 +23,7 @@ const notificationRoutes = require('./routes/notifications');
 const aiRoutes = require('./routes/ai');
 const publicRoutes = require('./routes/public');
 const calendarRoutes = require('./routes/calendar');
+const contactRoutes = require('./routes/contact');
 const searchRoutes = require('./routes/search');
 const commentRoutes = require('./routes/comments');
 const activityRoutes = require('./routes/activity');
@@ -103,6 +104,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/contact', contactRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/activity', activityRoutes);
@@ -113,7 +115,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   logger.error({ err }, 'Unhandled error');
   res.status(err.status || 500).json({
     error: {

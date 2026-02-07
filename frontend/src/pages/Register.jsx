@@ -17,6 +17,10 @@ export default function Register() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    document.title = 'Register - Stats Lab'
+  }, [])
+
+  useEffect(() => {
     if (token && !registrationSuccess) {
       navigate('/dashboard')
     }
@@ -54,12 +58,12 @@ export default function Register() {
 
   if (registrationSuccess) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background dark:bg-gray-900 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-8 text-center">
             <CheckCircle className="mx-auto h-16 w-16 text-green-500 mb-4" />
-            <h2 className="font-display font-bold text-2xl text-gray-900 mb-2">Thank you for Registering!</h2>
-            <p className="text-text-secondary mb-6">
+            <h2 className="font-display font-bold text-2xl text-gray-900 dark:text-gray-100 mb-2">Thank you for Registering!</h2>
+            <p className="text-text-secondary dark:text-gray-400 mb-6">
               Your account is awaiting admin approval. You'll be able to log in once an administrator reviews your registration.
             </p>
             <Link
@@ -75,16 +79,16 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background dark:bg-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="font-display font-bold text-3xl text-primary-600">Stats Lab</h1>
-          <p className="mt-2 text-text-secondary">Create your account to get started.</p>
+          <p className="mt-2 text-text-secondary dark:text-gray-400">Create your account to get started.</p>
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <Input
               label="Full name"
@@ -123,7 +127,7 @@ export default function Register() {
             />
 
             {displayError && (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-600">
+              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-sm text-red-600 dark:text-red-400">
                 {displayError}
               </div>
             )}
@@ -137,9 +141,9 @@ export default function Register() {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-text-secondary">
+          <p className="mt-6 text-center text-sm text-text-secondary dark:text-gray-400">
             Already have an account?{' '}
-            <Link to="/login" className="text-primary-600 hover:text-primary-700 font-medium">
+            <Link to="/login" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium">
               Sign in
             </Link>
           </p>
@@ -147,7 +151,7 @@ export default function Register() {
 
         {/* Home Link */}
         <div className="mt-6 text-center">
-          <Link to="/" className="text-sm text-text-secondary hover:text-primary-600 transition-colors">
+          <Link to="/" className="text-sm text-text-secondary dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
             ← Back to Home
           </Link>
         </div>

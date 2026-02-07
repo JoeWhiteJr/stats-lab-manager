@@ -1,7 +1,7 @@
-import { useLocation, useParams, Link } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 import { useProjectStore } from '../store/projectStore'
 import { useChatStore } from '../store/chatStore'
-import { ChevronRight, Home } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 
 const routeLabels = {
   'dashboard': 'Dashboard',
@@ -14,7 +14,6 @@ const routeLabels = {
 
 export default function Breadcrumbs() {
   const location = useLocation()
-  const params = useParams()
   const { currentProject } = useProjectStore()
   const { currentRoom } = useChatStore()
 
@@ -71,13 +70,13 @@ export default function Breadcrumbs() {
           <span key={crumb.path} className="flex items-center gap-1.5">
             {index > 0 && <ChevronRight size={14} className="text-gray-400" />}
             {isLast ? (
-              <span className="text-text-primary font-medium truncate max-w-[200px]">
+              <span className="text-text-primary dark:text-gray-100 font-medium truncate max-w-[200px]">
                 {crumb.label}
               </span>
             ) : (
               <Link
                 to={crumb.path}
-                className="text-text-secondary hover:text-primary-600 transition-colors truncate max-w-[200px]"
+                className="text-text-secondary dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors truncate max-w-[200px]"
               >
                 {crumb.label}
               </Link>

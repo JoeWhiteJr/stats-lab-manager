@@ -36,6 +36,10 @@ export default function Admin() {
 
   const isSuperAdmin = user?.is_super_admin === true
 
+  useEffect(() => {
+    document.title = 'Admin - Stats Lab'
+  }, [])
+
   useEffect(() => { fetchStats(); fetchApplications() }, [fetchStats, fetchApplications])
 
   useEffect(() => {
@@ -104,12 +108,12 @@ export default function Admin() {
   const getSectionStyle = (title) => {
     const lower = title.toLowerCase()
     if (lower.includes('has been done') || lower.includes('completed') || lower.includes('done'))
-      return { border: 'border-green-200', bg: 'bg-green-50', header: 'text-green-800' }
+      return { border: 'border-green-200 dark:border-green-700', bg: 'bg-green-50 dark:bg-green-900/30', header: 'text-green-800 dark:text-green-300' }
     if (lower.includes('currently') || lower.includes('in progress') || lower.includes('being done'))
-      return { border: 'border-blue-200', bg: 'bg-blue-50', header: 'text-blue-800' }
+      return { border: 'border-blue-200 dark:border-blue-700', bg: 'bg-blue-50 dark:bg-blue-900/30', header: 'text-blue-800 dark:text-blue-300' }
     if (lower.includes('needs to be done') || lower.includes('pending') || lower.includes('still'))
-      return { border: 'border-amber-200', bg: 'bg-amber-50', header: 'text-amber-800' }
-    return { border: 'border-gray-200', bg: 'bg-gray-50', header: 'text-gray-800' }
+      return { border: 'border-amber-200 dark:border-amber-700', bg: 'bg-amber-50 dark:bg-amber-900/30', header: 'text-amber-800 dark:text-amber-300' }
+    return { border: 'border-gray-200 dark:border-gray-700', bg: 'bg-gray-50 dark:bg-gray-900', header: 'text-gray-800 dark:text-gray-300' }
   }
 
   // Publish helpers
@@ -172,38 +176,60 @@ export default function Admin() {
     setShowUnpublishConfirm(null)
   }
 
+  const pendingApplications = applications.filter(app => app.status === 'pending')
+
   return (
     <div>
-      <h1 className="font-display font-bold text-2xl mb-6">Admin Dashboard</h1>
-      <div className="flex gap-2 border-b mb-6">
+      <h1 className="font-display font-bold text-2xl mb-6 text-text-primary dark:text-gray-100">Admin Dashboard</h1>
+      <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 mb-6">
         {[['dashboard', 'Dashboard', LayoutDashboard], ['applications', 'Applications', Users], ['team', 'Team', Users], ['publish', 'Publish', Globe]].map(([id, label, Icon]) => (
-          <button key={id} onClick={() => setActiveTab(id)} className={`flex items-center gap-2 px-4 py-3 border-b-2 ${activeTab === id ? 'border-primary-500 text-primary-600' : 'border-transparent'}`}>
+          <button key={id} onClick={() => setActiveTab(id)} className={`flex items-center gap-2 px-4 py-3 border-b-2 text-text-secondary dark:text-gray-400 ${activeTab === id ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent'}`}>
             <Icon size={18} />{label}
           </button>
         ))}
       </div>
       {activeTab === 'dashboard' && (
         <div>
-          <div className="grid grid-cols-4 gap-4">
-            <div className="bg-white rounded-xl p-6 border"><div className="text-sm text-text-secondary">Users</div><div className="text-3xl font-bold">{stats?.users?.total_users || 0}</div></div>
-            <div className="bg-white rounded-xl p-6 border"><div className="text-sm text-text-secondary">Pending</div><div className="text-3xl font-bold">{stats?.applications?.pending || 0}</div></div>
-            <div className="bg-white rounded-xl p-6 border"><div className="text-sm text-text-secondary">Projects</div><div className="text-3xl font-bold">{stats?.projects?.active || 0}</div></div>
-            <div className="bg-white rounded-xl p-6 border"><div className="text-sm text-text-secondary">Messages</div><div className="text-3xl font-bold">{stats?.chats?.messages_this_week || 0}</div></div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+              <div className="text-sm text-text-secondary dark:text-gray-400">Users</div>
+              <div className="text-3xl font-bold text-text-primary dark:text-gray-100">
+                {stats ? stats.users?.total_users || 0 : <span className="inline-block h-8 w-16 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />}
+              </div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+              <div className="text-sm text-text-secondary dark:text-gray-400">Pending</div>
+              <div className="text-3xl font-bold text-text-primary dark:text-gray-100">
+                {stats ? stats.applications?.pending || 0 : <span className="inline-block h-8 w-16 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />}
+              </div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+              <div className="text-sm text-text-secondary dark:text-gray-400">Projects</div>
+              <div className="text-3xl font-bold text-text-primary dark:text-gray-100">
+                {stats ? stats.projects?.active || 0 : <span className="inline-block h-8 w-16 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />}
+              </div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+              <div className="text-sm text-text-secondary dark:text-gray-400">Messages</div>
+              <div className="text-3xl font-bold text-text-primary dark:text-gray-100">
+                {stats ? stats.chats?.messages_this_week || 0 : <span className="inline-block h-8 w-16 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />}
+              </div>
+            </div>
           </div>
-          <div className="mt-8 bg-white rounded-xl border border-purple-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-purple-50 to-indigo-50 px-6 py-4 border-b border-purple-200">
+          <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl border border-purple-200 dark:border-purple-700 overflow-hidden">
+            <div className="bg-gradient-to-r from-purple-50 dark:from-purple-900/30 to-indigo-50 dark:to-indigo-900/30 px-6 py-4 border-b border-purple-200 dark:border-purple-700">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-100 rounded-lg"><BrainCircuit size={24} className="text-purple-600" /></div>
+                  <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg"><BrainCircuit size={24} className="text-purple-600 dark:text-purple-300" /></div>
                   <div>
-                    <h2 className="font-display font-semibold text-lg text-purple-900">AI Lab Activity Summary</h2>
-                    <p className="text-sm text-purple-600">Generate an AI-powered overview of lab activity</p>
+                    <h2 className="font-display font-semibold text-lg text-purple-900 dark:text-purple-200">AI Lab Activity Summary</h2>
+                    <p className="text-sm text-purple-600 dark:text-purple-400">Generate an AI-powered overview of lab activity</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-2">
-                    <Calendar size={16} className="text-purple-500" />
-                    <select value={summaryDateRange} onChange={(e) => setSummaryDateRange(e.target.value)} className="px-3 py-1.5 rounded-lg border border-purple-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-purple-300">
+                    <Calendar size={16} className="text-purple-500 dark:text-purple-400" />
+                    <select value={summaryDateRange} onChange={(e) => setSummaryDateRange(e.target.value)} className="px-3 py-1.5 rounded-lg border border-purple-200 dark:border-purple-700 text-sm bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-300">
                       <option value="week">This Week</option>
                       <option value="month">This Month</option>
                       <option value="all">All Time</option>
@@ -216,28 +242,28 @@ export default function Admin() {
               </div>
             </div>
             <div className="p-6">
-              {aiSummaryError && (<div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg"><p className="text-sm text-red-700">{aiSummaryError}</p></div>)}
-              {aiSummaryLoading && (<div className="flex flex-col items-center justify-center py-12"><div className="animate-spin rounded-full h-10 w-10 border-3 border-purple-200 border-t-purple-600 mb-4" /><p className="text-text-secondary text-sm">Analyzing lab activity and generating summary...</p><p className="text-text-secondary text-xs mt-1">This may take a few seconds</p></div>)}
+              {aiSummaryError && (<div className="mb-4 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg"><p className="text-sm text-red-700 dark:text-red-400">{aiSummaryError}</p></div>)}
+              {aiSummaryLoading && (<div className="flex flex-col items-center justify-center py-12"><div className="animate-spin rounded-full h-10 w-10 border-3 border-purple-200 dark:border-purple-700 border-t-purple-600 dark:border-t-purple-400 mb-4" /><p className="text-text-secondary dark:text-gray-400 text-sm">Analyzing lab activity and generating summary...</p><p className="text-text-secondary dark:text-gray-400 text-xs mt-1">This may take a few seconds</p></div>)}
               {!aiSummaryLoading && aiSummary && (
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <p className="text-xs text-text-secondary">Generated {new Date(aiSummary.generatedAt).toLocaleString()} | Range: {aiSummary.dateRange === 'week' ? 'This Week' : aiSummary.dateRange === 'month' ? 'This Month' : 'All Time'}</p>
-                    <button onClick={clearAiSummary} className="text-xs text-text-secondary hover:text-text-primary">Clear</button>
+                    <p className="text-xs text-text-secondary dark:text-gray-400">Generated {new Date(aiSummary.generatedAt).toLocaleString()} | Range: {aiSummary.dateRange === 'week' ? 'This Week' : aiSummary.dateRange === 'month' ? 'This Month' : 'All Time'}</p>
+                    <button onClick={clearAiSummary} className="text-xs text-text-secondary dark:text-gray-400 hover:text-text-primary dark:hover:text-gray-100">Clear</button>
                   </div>
                   <div className="space-y-4">
                     {parseSummary(aiSummary.summary).map((section, index) => {
                       const style = getSectionStyle(section.title)
-                      return (<div key={index} className={`rounded-lg border ${style.border} ${style.bg} p-4`}><h3 className={`font-semibold text-base mb-2 ${style.header}`}>{section.title}</h3><div className="prose prose-sm max-w-none text-gray-700"><div className="whitespace-pre-wrap text-sm leading-relaxed">{section.content}</div></div></div>)
+                      return (<div key={index} className={`rounded-lg border ${style.border} ${style.bg} p-4`}><h3 className={`font-semibold text-base mb-2 ${style.header}`}>{section.title}</h3><div className="prose prose-sm max-w-none text-gray-700 dark:text-gray-300 dark:prose-invert"><div className="whitespace-pre-wrap text-sm leading-relaxed">{section.content}</div></div></div>)
                     })}
                   </div>
-                  {aiSummary.usage && (<p className="text-xs text-text-secondary mt-4">Tokens used: {aiSummary.usage.input_tokens || 0} input / {aiSummary.usage.output_tokens || 0} output</p>)}
+                  {aiSummary.usage && (<p className="text-xs text-text-secondary dark:text-gray-400 mt-4">Tokens used: {aiSummary.usage.input_tokens || 0} input / {aiSummary.usage.output_tokens || 0} output</p>)}
                 </div>
               )}
               {!aiSummaryLoading && !aiSummary && !aiSummaryError && (
                 <div className="text-center py-10">
-                  <BrainCircuit size={40} className="mx-auto text-purple-300 mb-3" />
-                  <p className="text-text-secondary text-sm">Click "Generate AI Summary" to create an AI-powered overview of your lab's activity.</p>
-                  <p className="text-text-secondary text-xs mt-1">The summary will show what has been done, what is in progress, and what still needs attention.</p>
+                  <BrainCircuit size={40} className="mx-auto text-purple-300 dark:text-purple-600 mb-3" />
+                  <p className="text-text-secondary dark:text-gray-400 text-sm">Click "Generate AI Summary" to create an AI-powered overview of your lab's activity.</p>
+                  <p className="text-text-secondary dark:text-gray-400 text-xs mt-1">The summary will show what has been done, what is in progress, and what still needs attention.</p>
                 </div>
               )}
             </div>
@@ -246,12 +272,19 @@ export default function Admin() {
       )}
       {activeTab === 'applications' && (
         <div className="space-y-3">
+          {applications.length === 0 && (
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+              <Users size={40} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+              <h3 className="font-display font-semibold text-lg text-text-primary dark:text-gray-100 mb-1">No pending applications</h3>
+              <p className="text-text-secondary dark:text-gray-400 text-sm">There are no applications to review at this time.</p>
+            </div>
+          )}
           {applications.map((app) => (
-            <div key={app.id} className="bg-white rounded-xl p-4 border flex items-center justify-between">
+            <div key={app.id} className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <div>
-                <div className="font-medium">{app.name}</div>
-                <div className="text-sm text-text-secondary">{app.email}</div>
-                <div className="text-sm text-text-secondary mt-1">{app.message?.slice(0, 100)}...</div>
+                <div className="font-medium text-text-primary dark:text-gray-100">{app.name}</div>
+                <div className="text-sm text-text-secondary dark:text-gray-400">{app.email}</div>
+                <div className="text-sm text-text-secondary dark:text-gray-400 mt-1">{app.message?.slice(0, 100)}...</div>
               </div>
               {app.status === 'pending' && (
                 <div className="flex gap-2">
@@ -263,18 +296,18 @@ export default function Admin() {
                   <button onClick={() => rejectApplication(app.id)} className="px-3 py-1 bg-red-500 text-white rounded-lg text-sm">Reject</button>
                 </div>
               )}
-              {app.status !== 'pending' && <span className={`px-2 py-1 rounded text-xs ${app.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{app.status}</span>}
+              {app.status !== 'pending' && <span className={`px-2 py-1 rounded text-xs ${app.status === 'approved' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'}`}>{app.status}</span>}
             </div>
           ))}
         </div>
       )}
       {activeTab === 'team' && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="font-display font-semibold text-lg mb-6">Team Members</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+          <h2 className="font-display font-semibold text-lg mb-6 text-text-primary dark:text-gray-100">Team Members</h2>
           {isLoadingTeam ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse" />
+                <div key={i} className="h-16 bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse" />
               ))}
             </div>
           ) : (
@@ -282,17 +315,17 @@ export default function Admin() {
               {teamMembers.map((member) => (
                 <div
                   key={member.id}
-                  className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-gray-300"
+                  className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
-                      <span className="text-primary-700 font-medium">
+                    <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                      <span className="text-primary-700 dark:text-primary-300 font-medium">
                         {member.name.charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <div>
-                      <p className="font-medium text-text-primary">{member.name}</p>
-                      <p className="text-sm text-text-secondary">{member.email}</p>
+                      <p className="font-medium text-text-primary dark:text-gray-100">{member.name}</p>
+                      <p className="text-sm text-text-secondary dark:text-gray-400">{member.email}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -300,7 +333,7 @@ export default function Admin() {
                       value={member.role}
                       onChange={(e) => handleRoleChange(member.id, e.target.value)}
                       disabled={member.id === user.id || (!isSuperAdmin && (member.role === 'admin' || false))}
-                      className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-sm bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSuperAdmin ? (
                         <>
@@ -321,7 +354,7 @@ export default function Admin() {
                     {member.id !== user.id && (isSuperAdmin || member.role !== 'admin') && (
                       <button
                         onClick={() => setShowDeleteConfirm(member)}
-                        className="p-2 rounded-lg text-text-secondary hover:text-red-600 hover:bg-red-50"
+                        className="p-2 rounded-lg text-text-secondary dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -337,15 +370,15 @@ export default function Admin() {
       {/* Publish Tab */}
       {activeTab === 'publish' && (
         <div>
-          <h2 className="font-display font-semibold text-lg mb-6">Publish Team Projects</h2>
+          <h2 className="font-display font-semibold text-lg mb-6 text-text-primary dark:text-gray-100">Publish Team Projects</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {projects.map((project) => {
               const pp = publishedMap[project.id]
               const isPublished = !!pp
               return (
-                <div key={project.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div key={project.id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                   {/* Image */}
-                  <div className="h-32 bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center relative">
+                  <div className="h-32 bg-gradient-to-br from-primary-100 dark:from-primary-900/30 to-primary-200 dark:to-primary-800/30 flex items-center justify-center relative">
                     {(isPublished ? pp.published_image : project.header_image) ? (
                       <img
                         src={isPublished ? pp.published_image : project.header_image}
@@ -353,7 +386,7 @@ export default function Admin() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="text-primary-400 text-4xl font-bold opacity-30">{project.title?.charAt(0)}</div>
+                      <div className="text-primary-400 dark:text-primary-600 text-4xl font-bold opacity-30">{project.title?.charAt(0)}</div>
                     )}
                     {isPublished && (
                       <span className="absolute top-2 left-2 px-2 py-0.5 bg-green-500 text-white rounded-full text-xs font-medium">
@@ -361,29 +394,29 @@ export default function Admin() {
                       </span>
                     )}
                     <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-medium ${
-                      project.status === 'active' ? 'bg-blue-100 text-blue-700' :
-                      project.status === 'completed' ? 'bg-green-100 text-green-700' :
-                      'bg-gray-100 text-gray-700'
+                      project.status === 'active' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' :
+                      project.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' :
+                      'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                     }`}>
                       {project.status}
                     </span>
                   </div>
                   {/* Content */}
                   <div className="p-4">
-                    <h3 className="font-semibold text-text-primary mb-1 truncate">{project.title}</h3>
-                    <p className="text-sm text-text-secondary line-clamp-2 mb-3">{project.description}</p>
+                    <h3 className="font-semibold text-text-primary dark:text-gray-100 mb-1 truncate">{project.title}</h3>
+                    <p className="text-sm text-text-secondary dark:text-gray-400 line-clamp-2 mb-3">{project.description}</p>
                     <div className="flex gap-2">
                       {isPublished ? (
                         <>
                           <button
                             onClick={() => openEditModal(pp)}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-primary-50 text-primary-700 rounded-lg text-sm hover:bg-primary-100"
+                            className="flex items-center gap-1 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-lg text-sm hover:bg-primary-100 dark:hover:bg-primary-900/50"
                           >
                             <Pencil size={14} /> Edit
                           </button>
                           <button
                             onClick={() => setShowUnpublishConfirm(pp)}
-                            className="flex items-center gap-1 px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-sm hover:bg-red-100"
+                            className="flex items-center gap-1 px-3 py-1.5 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-lg text-sm hover:bg-red-100 dark:hover:bg-red-900/50"
                           >
                             <XCircle size={14} /> Unpublish
                           </button>
@@ -391,7 +424,7 @@ export default function Admin() {
                       ) : (
                         <button
                           onClick={() => openPublishModal(project)}
-                          className="flex items-center gap-1 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-sm hover:bg-green-100"
+                          className="flex items-center gap-1 px-3 py-1.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-sm hover:bg-green-100 dark:hover:bg-green-900/50"
                         >
                           <Globe size={14} /> Publish
                         </button>
@@ -403,7 +436,7 @@ export default function Admin() {
             })}
           </div>
           {projects.length === 0 && (
-            <div className="text-center py-12 text-text-secondary">No team projects found.</div>
+            <div className="text-center py-12 text-text-secondary dark:text-gray-400">No team projects found.</div>
           )}
         </div>
       )}
@@ -415,8 +448,8 @@ export default function Admin() {
         title="Remove Team Member"
         size="sm"
       >
-        <p className="text-text-secondary">
-          Are you sure you want to remove <strong>{showDeleteConfirm?.name}</strong> from the team?
+        <p className="text-text-secondary dark:text-gray-400">
+          Are you sure you want to remove <strong className="text-text-primary dark:text-gray-100">{showDeleteConfirm?.name}</strong> from the team?
           This action cannot be undone.
         </p>
         <div className="flex justify-end gap-3 mt-6">
@@ -438,20 +471,20 @@ export default function Admin() {
         {isReviewing ? (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500" />
-            <span className="ml-3 text-text-secondary">Analyzing application...</span>
+            <span className="ml-3 text-text-secondary dark:text-gray-400">Analyzing application...</span>
           </div>
         ) : aiReview ? (
           <div>
             <div className="mb-3">
-              <span className="text-sm text-text-secondary">Applicant: </span>
-              <span className="font-medium">{applications.find(a => a.id === reviewingAppId)?.name}</span>
+              <span className="text-sm text-text-secondary dark:text-gray-400">Applicant: </span>
+              <span className="font-medium text-text-primary dark:text-gray-100">{applications.find(a => a.id === reviewingAppId)?.name}</span>
             </div>
-            <div className="prose prose-sm max-w-none">
-              <p className="text-text-secondary whitespace-pre-wrap">{typeof aiReview === 'string' ? aiReview : aiReview.summary || JSON.stringify(aiReview, null, 2)}</p>
+            <div className="prose prose-sm max-w-none dark:prose-invert">
+              <p className="text-text-secondary dark:text-gray-400 whitespace-pre-wrap">{typeof aiReview === 'string' ? aiReview : aiReview.summary || JSON.stringify(aiReview, null, 2)}</p>
             </div>
           </div>
         ) : (
-          <p className="text-text-secondary">No review available.</p>
+          <p className="text-text-secondary dark:text-gray-400">No review available.</p>
         )}
         <div className="flex justify-end pt-4">
           <Button variant="secondary" onClick={() => setShowReviewModal(false)}>Close</Button>
@@ -465,8 +498,8 @@ export default function Admin() {
         title="Unpublish Project"
         size="sm"
       >
-        <p className="text-text-secondary">
-          Are you sure you want to unpublish <strong>{showUnpublishConfirm?.published_title}</strong>?
+        <p className="text-text-secondary dark:text-gray-400">
+          Are you sure you want to unpublish <strong className="text-text-primary dark:text-gray-100">{showUnpublishConfirm?.published_title}</strong>?
           It will be removed from the public projects page.
         </p>
         <div className="flex justify-end gap-3 mt-6">
@@ -490,39 +523,39 @@ export default function Admin() {
           {/* Form */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">Title</label>
+              <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1">Title</label>
               <input
                 type="text"
                 value={publishForm.title}
                 onChange={(e) => setPublishForm({ ...publishForm, title: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-300"
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">Description</label>
+              <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1">Description</label>
               <textarea
                 value={publishForm.description}
                 onChange={(e) => setPublishForm({ ...publishForm, description: e.target.value })}
                 rows={5}
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-300 resize-none"
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300 resize-none"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">Image URL</label>
+              <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1">Image URL</label>
               <input
                 type="text"
                 value={publishForm.image}
                 onChange={(e) => setPublishForm({ ...publishForm, image: e.target.value })}
                 placeholder="https://..."
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-300"
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1">Status</label>
+              <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1">Status</label>
               <select
                 value={publishForm.status}
                 onChange={(e) => setPublishForm({ ...publishForm, status: e.target.value })}
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-300"
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300"
               >
                 <option value="ongoing">Ongoing</option>
                 <option value="completed">Completed</option>
@@ -532,9 +565,9 @@ export default function Admin() {
 
           {/* Live Preview */}
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-2">Preview</label>
-            <div className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
-              <div className="h-32 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center relative">
+            <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-2">Preview</label>
+            <div className="bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="h-32 bg-gradient-to-br from-blue-100 dark:from-blue-900/30 to-blue-200 dark:to-blue-800/30 flex items-center justify-center relative">
                 {publishForm.image ? (
                   <img
                     src={publishForm.image}
@@ -543,19 +576,19 @@ export default function Admin() {
                     onError={(e) => { e.target.style.display = 'none' }}
                   />
                 ) : (
-                  <div className="text-blue-400 text-4xl font-bold opacity-30">
+                  <div className="text-blue-400 dark:text-blue-600 text-4xl font-bold opacity-30">
                     {publishForm.title?.charAt(0) || '?'}
                   </div>
                 )}
                 <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
-                  publishForm.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                  publishForm.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
                 }`}>
                   {publishForm.status}
                 </span>
               </div>
               <div className="p-4">
-                <h4 className="font-semibold text-gray-900 mb-1">{publishForm.title || 'Untitled'}</h4>
-                <p className="text-sm text-gray-600 line-clamp-3">{publishForm.description || 'No description'}</p>
+                <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">{publishForm.title || 'Untitled'}</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">{publishForm.description || 'No description'}</p>
               </div>
             </div>
           </div>

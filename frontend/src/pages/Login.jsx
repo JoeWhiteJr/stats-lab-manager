@@ -12,6 +12,10 @@ export default function Login() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    document.title = 'Sign In - Stats Lab'
+  }, [])
+
+  useEffect(() => {
     if (token) {
       navigate('/dashboard')
     }
@@ -34,16 +38,16 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background dark:bg-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="font-display font-bold text-3xl text-primary-600">Stats Lab</h1>
-          <p className="mt-2 text-text-secondary">Welcome back! Sign in to continue.</p>
+          <p className="mt-2 text-text-secondary dark:text-gray-400">Welcome back! Sign in to continue.</p>
         </div>
 
         {/* Form */}
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-8">
           <form onSubmit={handleSubmit} className="space-y-5">
             <Input
               label="Email"
@@ -64,19 +68,19 @@ export default function Login() {
             />
 
             {pendingApproval && (
-              <div className="p-4 rounded-lg bg-amber-50 border border-amber-200 text-sm text-amber-800">
+              <div className="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 text-sm text-amber-800 dark:text-amber-300">
                 <p className="font-medium mb-1">Application Under Review</p>
                 <p>Your application is currently under review by the admins. Thank you for your patience.</p>
               </div>
             )}
             {error && !pendingApproval && (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-600">
+              <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-sm text-red-600 dark:text-red-400">
                 {error}
               </div>
             )}
 
             <div className="flex justify-end">
-              <Link to="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700">
+              <Link to="/forgot-password" className="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
                 Forgot password?
               </Link>
             </div>
@@ -90,9 +94,9 @@ export default function Login() {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-text-secondary">
+          <p className="mt-6 text-center text-sm text-text-secondary dark:text-gray-400">
             Want to join the team?{' '}
-            <Link to="/apply" className="text-primary-600 hover:text-primary-700 font-medium">
+            <Link to="/apply" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium">
               Apply here
             </Link>
           </p>
@@ -100,7 +104,7 @@ export default function Login() {
 
         {/* Home Link */}
         <div className="mt-6 text-center">
-          <Link to="/" className="text-sm text-text-secondary hover:text-primary-600 transition-colors">
+          <Link to="/" className="text-sm text-text-secondary dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
             ← Back to Home
           </Link>
         </div>

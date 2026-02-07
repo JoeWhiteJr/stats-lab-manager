@@ -39,6 +39,10 @@ export default function LabDashboard() {
   const canCreate = user?.role === 'admin' || user?.role === 'project_lead'
 
   useEffect(() => {
+    document.title = 'Dashboard - Stats Lab'
+  }, [])
+
+  useEffect(() => {
     fetchProjects()
   }, [fetchProjects])
 
@@ -169,61 +173,61 @@ export default function LabDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="group relative overflow-hidden bg-white rounded-xl border border-gray-200 p-5 hover:border-primary-300 hover:shadow-lg hover:shadow-primary-100/50 transition-all duration-300">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-primary-100 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
+        <div className="group relative overflow-hidden bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:border-primary-300 hover:shadow-lg hover:shadow-primary-100/50 transition-all duration-300">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-primary-100 dark:from-primary-900/30 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
           <div className="relative">
-            <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center mb-3">
-              <FolderKanban size={20} className="text-primary-600" />
+            <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mb-3">
+              <FolderKanban size={20} className="text-primary-600 dark:text-primary-300" />
             </div>
-            <p className="text-3xl font-display font-bold text-text-primary">{activeProjects.length}</p>
-            <p className="text-sm text-text-secondary mt-1">Active Projects</p>
+            <p className="text-3xl font-display font-bold text-text-primary dark:text-gray-100">{activeProjects.length}</p>
+            <p className="text-sm text-text-secondary dark:text-gray-400 mt-1">Active Projects</p>
           </div>
         </div>
 
-        <div className="group relative overflow-hidden bg-white rounded-xl border border-gray-200 p-5 hover:border-secondary-300 hover:shadow-lg hover:shadow-secondary-100/50 transition-all duration-300">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-secondary-100 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
+        <div className="group relative overflow-hidden bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:border-secondary-300 hover:shadow-lg hover:shadow-secondary-100/50 transition-all duration-300">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-secondary-100 dark:from-secondary-900/30 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
           <div className="relative">
-            <div className="w-10 h-10 rounded-xl bg-secondary-100 flex items-center justify-center mb-3">
-              <TrendingUp size={20} className="text-secondary-600" />
+            <div className="w-10 h-10 rounded-xl bg-secondary-100 dark:bg-secondary-900/30 flex items-center justify-center mb-3">
+              <TrendingUp size={20} className="text-secondary-600 dark:text-secondary-300" />
             </div>
-            <p className="text-3xl font-display font-bold text-text-primary">
+            <p className="text-3xl font-display font-bold text-text-primary dark:text-gray-100">
               {totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0}%
             </p>
-            <p className="text-sm text-text-secondary mt-1">Tasks Complete</p>
+            <p className="text-sm text-text-secondary dark:text-gray-400 mt-1">Tasks Complete</p>
           </div>
         </div>
 
-        <div className="group relative overflow-hidden bg-white rounded-xl border border-gray-200 p-5 hover:border-accent-300 hover:shadow-lg hover:shadow-accent-100/50 transition-all duration-300">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-accent-100 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
+        <div className="group relative overflow-hidden bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:border-accent-300 hover:shadow-lg hover:shadow-accent-100/50 transition-all duration-300">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-accent-100 dark:from-accent-900/30 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
           <div className="relative">
-            <div className="w-10 h-10 rounded-xl bg-accent-100 flex items-center justify-center mb-3">
-              <FileText size={20} className="text-accent-600" />
+            <div className="w-10 h-10 rounded-xl bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center mb-3">
+              <FileText size={20} className="text-accent-600 dark:text-accent-300" />
             </div>
-            <p className="text-3xl font-display font-bold text-text-primary">{totalFiles}</p>
-            <p className="text-sm text-text-secondary mt-1">Total Files</p>
+            <p className="text-3xl font-display font-bold text-text-primary dark:text-gray-100">{totalFiles}</p>
+            <p className="text-sm text-text-secondary dark:text-gray-400 mt-1">Total Files</p>
           </div>
         </div>
 
-        <div className="group relative overflow-hidden bg-white rounded-xl border border-gray-200 p-5 hover:border-green-300 hover:shadow-lg hover:shadow-green-100/50 transition-all duration-300">
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-100 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
+        <div className="group relative overflow-hidden bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:border-green-300 hover:shadow-lg hover:shadow-green-100/50 transition-all duration-300">
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-green-100 dark:from-green-900/30 to-transparent rounded-bl-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
           <div className="relative">
-            <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center mb-3">
-              <Users size={20} className="text-green-600" />
+            <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center mb-3">
+              <Users size={20} className="text-green-600 dark:text-green-300" />
             </div>
-            <p className="text-3xl font-display font-bold text-text-primary">{completedProjects.length}</p>
-            <p className="text-sm text-text-secondary mt-1">Completed</p>
+            <p className="text-3xl font-display font-bold text-text-primary dark:text-gray-100">{completedProjects.length}</p>
+            <p className="text-sm text-text-secondary dark:text-gray-400 mt-1">Completed</p>
           </div>
         </div>
       </div>
 
       {/* Tab navigation */}
-      <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 w-fit">
+      <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-xl p-1 w-fit">
         <button
           onClick={() => setActiveTab('overview')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             activeTab === 'overview'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           }`}
         >
           <LayoutGrid size={16} />
@@ -233,8 +237,8 @@ export default function LabDashboard() {
           onClick={() => setActiveTab('calendar')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
             activeTab === 'calendar'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm'
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           }`}
         >
           <Calendar size={16} />
@@ -253,13 +257,13 @@ export default function LabDashboard() {
             onDrop={handleDrop}
             className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${
               dragActive
-                ? 'border-primary-400 bg-primary-50'
-                : 'border-gray-300 hover:border-primary-300 hover:bg-gray-50'
+                ? 'border-primary-400 bg-primary-50 dark:bg-primary-900/30'
+                : 'border-gray-300 dark:border-gray-600 hover:border-primary-300 hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
           >
-            <Upload size={32} className={`mx-auto mb-3 ${dragActive ? 'text-primary-500' : 'text-gray-400'}`} />
-            <p className="font-medium text-text-primary mb-1">Drop files here to upload</p>
-            <p className="text-sm text-text-secondary">or click to select a project and upload</p>
+            <Upload size={32} className={`mx-auto mb-3 ${dragActive ? 'text-primary-500' : 'text-gray-400 dark:text-gray-500'}`} />
+            <p className="font-medium text-text-primary dark:text-gray-100 mb-1">Drop files here to upload</p>
+            <p className="text-sm text-text-secondary dark:text-gray-400">or click to select a project and upload</p>
             <Button
               variant="secondary"
               className="mt-4"
@@ -272,10 +276,10 @@ export default function LabDashboard() {
           {/* Active Projects */}
           <section>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="font-display font-bold text-xl text-text-primary">Active Projects</h2>
+              <h2 className="font-display font-bold text-xl text-text-primary dark:text-gray-100">Active Projects</h2>
               <Link
                 to="/dashboard/projects"
-                className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 text-sm font-medium"
+                className="inline-flex items-center gap-1 text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 text-sm font-medium"
               >
                 View all
                 <ArrowUpRight size={16} />
@@ -285,12 +289,12 @@ export default function LabDashboard() {
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-white rounded-xl border border-gray-200 animate-pulse">
-                    <div className="h-36 bg-gray-100 rounded-t-xl" />
+                  <div key={i} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 animate-pulse">
+                    <div className="h-36 bg-gray-100 dark:bg-gray-700 rounded-t-xl" />
                     <div className="p-5 space-y-3">
-                      <div className="h-5 bg-gray-100 rounded w-3/4" />
-                      <div className="h-4 bg-gray-100 rounded w-full" />
-                      <div className="h-2 bg-gray-100 rounded w-full" />
+                      <div className="h-5 bg-gray-100 dark:bg-gray-700 rounded w-3/4" />
+                      <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded w-full" />
+                      <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded w-full" />
                     </div>
                   </div>
                 ))}
@@ -302,14 +306,14 @@ export default function LabDashboard() {
                 ))}
               </div>
             ) : (
-              <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-12 text-center">
-                <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
-                  <FolderKanban size={36} className="text-primary-500" />
+              <div className="bg-gradient-to-br from-gray-50 dark:from-gray-800 to-white dark:to-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+                <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-primary-100 dark:from-primary-900/30 to-secondary-100 dark:to-secondary-900/30 flex items-center justify-center">
+                  <FolderKanban size={36} className="text-primary-500 dark:text-primary-400" />
                 </div>
-                <h3 className="font-display font-semibold text-xl text-text-primary mb-2">
+                <h3 className="font-display font-semibold text-xl text-text-primary dark:text-gray-100 mb-2">
                   No active projects yet
                 </h3>
-                <p className="text-text-secondary max-w-md mx-auto mb-6">
+                <p className="text-text-secondary dark:text-gray-400 max-w-md mx-auto mb-6">
                   Start your research journey by creating your first project. Organize your work, track progress, and collaborate with your team.
                 </p>
                 {canCreate && (
@@ -325,26 +329,26 @@ export default function LabDashboard() {
           {/* Recently Completed */}
           {completedProjects.length > 0 && (
             <section>
-              <h2 className="font-display font-bold text-xl text-text-primary mb-5">Recently Completed</h2>
+              <h2 className="font-display font-bold text-xl text-text-primary dark:text-gray-100 mb-5">Recently Completed</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {completedProjects.slice(0, 4).map((project) => (
                   <Link
                     key={project.id}
                     to={`/dashboard/projects/${project.id}`}
-                    className="group bg-white rounded-xl border border-gray-200 p-5 hover:border-green-300 hover:shadow-md transition-all"
+                    className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:border-green-300 dark:hover:border-green-600 hover:shadow-md transition-all"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                        <FolderKanban size={18} className="text-green-600" />
+                      <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                        <FolderKanban size={18} className="text-green-600 dark:text-green-300" />
                       </div>
-                      <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                      <span className="px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium">
                         Complete
                       </span>
                     </div>
-                    <h3 className="font-medium text-text-primary group-hover:text-green-700 line-clamp-1 mb-1">
+                    <h3 className="font-medium text-text-primary dark:text-gray-100 group-hover:text-green-700 dark:group-hover:text-green-300 line-clamp-1 mb-1">
                       {project.title}
                     </h3>
-                    <p className="text-xs text-text-secondary">
+                    <p className="text-xs text-text-secondary dark:text-gray-400">
                       {project.total_actions || 0} tasks completed
                     </p>
                   </Link>
@@ -355,30 +359,30 @@ export default function LabDashboard() {
 
           {/* Recent Activity */}
           <section>
-            <h2 className="font-display font-bold text-xl text-text-primary mb-4">Recent Activity</h2>
-            <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+            <h2 className="font-display font-bold text-xl text-text-primary dark:text-gray-100 mb-4">Recent Activity</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
               {loadingActivities ? (
-                <div className="p-4 text-center text-text-secondary text-sm">Loading activity...</div>
+                <div className="p-4 text-center text-text-secondary dark:text-gray-400 text-sm">Loading activity...</div>
               ) : activities.length > 0 ? (
                 activities.map(a => (
                   <div key={a.id} className="px-4 py-3 flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
-                      <span className="text-primary-700 text-xs font-medium">{a.user_name?.charAt(0)}</span>
+                    <div className="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center flex-shrink-0">
+                      <span className="text-primary-700 dark:text-primary-300 text-xs font-medium">{a.user_name?.charAt(0)}</span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm">
-                        <span className="font-medium text-text-primary">{a.user_name}</span>{' '}
-                        <span className="text-text-secondary">{a.action}</span>{' '}
-                        {a.entity_title && <span className="font-medium text-text-primary">{a.entity_title}</span>}
+                        <span className="font-medium text-text-primary dark:text-gray-100">{a.user_name}</span>{' '}
+                        <span className="text-text-secondary dark:text-gray-400">{a.action}</span>{' '}
+                        {a.entity_title && <span className="font-medium text-text-primary dark:text-gray-100">{a.entity_title}</span>}
                       </p>
-                      <p className="text-xs text-text-secondary mt-0.5">
+                      <p className="text-xs text-text-secondary dark:text-gray-400 mt-0.5">
                         {new Date(a.created_at).toLocaleDateString()} at {new Date(a.created_at).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="p-8 text-center text-text-secondary text-sm">No recent activity</div>
+                <div className="p-8 text-center text-text-secondary dark:text-gray-400 text-sm">No recent activity</div>
               )}
             </div>
           </section>
@@ -405,7 +409,7 @@ export default function LabDashboard() {
             required
           />
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">
+            <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">
               Description
             </label>
             <textarea
@@ -413,7 +417,7 @@ export default function LabDashboard() {
               onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
               placeholder="Brief overview of the project..."
               rows={4}
-              className="w-full px-4 py-2.5 rounded-organic border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 resize-none"
+              className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 resize-none"
             />
           </div>
           <div className="flex justify-end gap-3 pt-2">
@@ -435,13 +439,13 @@ export default function LabDashboard() {
       >
         <div className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-text-primary mb-1.5">
+            <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">
               Select Project
             </label>
             <select
               value={selectedProjectForUpload}
               onChange={(e) => setSelectedProjectForUpload(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-organic border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary-300"
+              className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300"
             >
               <option value="">Choose a project...</option>
               {activeProjects.map((project) => (
@@ -451,16 +455,16 @@ export default function LabDashboard() {
           </div>
           {droppedFile ? (
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">
+              <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">
                 File
               </label>
-              <p className="px-4 py-2.5 rounded-organic border border-gray-200 bg-gray-50 text-text-secondary text-sm">
+              <p className="px-4 py-2.5 rounded-organic border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-text-secondary dark:text-gray-400 text-sm">
                 {droppedFile.name}
               </p>
             </div>
           ) : (
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">
+              <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">
                 Select File
               </label>
               <input
@@ -468,7 +472,7 @@ export default function LabDashboard() {
                 type="file"
                 onChange={handleFileUpload}
                 disabled={!selectedProjectForUpload}
-                className="w-full px-4 py-2.5 rounded-organic border border-gray-300 bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 disabled:opacity-50"
+                className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-50 dark:file:bg-primary-900/30 file:text-primary-700 dark:file:text-primary-300 hover:file:bg-primary-100 dark:hover:file:bg-primary-900/50 disabled:opacity-50"
               />
             </div>
           )}
@@ -492,35 +496,35 @@ export default function LabDashboard() {
       <Modal isOpen={showAiSummary} onClose={() => setShowAiSummary(false)} title="AI Dashboard Summary" size="lg">
         <div className="space-y-4">
           {aiSummaryError ? (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+            <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg text-red-600 dark:text-red-400 text-sm">
               {aiSummaryError}
             </div>
           ) : aiSummary ? (
             <>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                <div className="p-3 bg-primary-50 rounded-lg text-center">
-                  <p className="text-xl font-bold text-primary-700">{aiSummary.stats?.activeProjects ?? activeProjects.length}</p>
-                  <p className="text-xs text-primary-600">Active</p>
+                <div className="p-3 bg-primary-50 dark:bg-primary-900/30 rounded-lg text-center">
+                  <p className="text-xl font-bold text-primary-700 dark:text-primary-300">{aiSummary.stats?.activeProjects ?? activeProjects.length}</p>
+                  <p className="text-xs text-primary-600 dark:text-primary-400">Active</p>
                 </div>
-                <div className="p-3 bg-amber-50 rounded-lg text-center">
-                  <p className="text-xl font-bold text-amber-700">{aiSummary.stats?.pendingTasks ?? (totalTasks - completedTasks)}</p>
-                  <p className="text-xs text-amber-600">Pending</p>
+                <div className="p-3 bg-amber-50 dark:bg-amber-900/30 rounded-lg text-center">
+                  <p className="text-xl font-bold text-amber-700 dark:text-amber-300">{aiSummary.stats?.pendingTasks ?? (totalTasks - completedTasks)}</p>
+                  <p className="text-xs text-amber-600 dark:text-amber-400">Pending</p>
                 </div>
-                <div className="p-3 bg-red-50 rounded-lg text-center">
-                  <p className="text-xl font-bold text-red-700">{aiSummary.stats?.overdueTasks ?? 0}</p>
-                  <p className="text-xs text-red-600">Overdue</p>
+                <div className="p-3 bg-red-50 dark:bg-red-900/30 rounded-lg text-center">
+                  <p className="text-xl font-bold text-red-700 dark:text-red-300">{aiSummary.stats?.overdueTasks ?? 0}</p>
+                  <p className="text-xs text-red-600 dark:text-red-400">Overdue</p>
                 </div>
-                <div className="p-3 bg-blue-50 rounded-lg text-center">
-                  <p className="text-xl font-bold text-blue-700">{aiSummary.stats?.dueThisWeek ?? 0}</p>
-                  <p className="text-xs text-blue-600">Due This Week</p>
+                <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-center">
+                  <p className="text-xl font-bold text-blue-700 dark:text-blue-300">{aiSummary.stats?.dueThisWeek ?? 0}</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400">Due This Week</p>
                 </div>
-                <div className="p-3 bg-green-50 rounded-lg text-center">
-                  <p className="text-xl font-bold text-green-700">{aiSummary.stats?.completedThisWeek ?? 0}</p>
-                  <p className="text-xs text-green-600">Done This Week</p>
+                <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-lg text-center">
+                  <p className="text-xl font-bold text-green-700 dark:text-green-300">{aiSummary.stats?.completedThisWeek ?? 0}</p>
+                  <p className="text-xs text-green-600 dark:text-green-400">Done This Week</p>
                 </div>
               </div>
-              <div className="prose prose-sm max-w-none">
-                <div className="whitespace-pre-wrap text-text-secondary leading-relaxed">
+              <div className="prose prose-sm max-w-none dark:prose-invert">
+                <div className="whitespace-pre-wrap text-text-secondary dark:text-gray-400 leading-relaxed">
                   {aiSummary.summary}
                 </div>
               </div>

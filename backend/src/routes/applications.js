@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const db = require('../config/database');
-const { authenticate, requireRole, generateToken } = require('../middleware/auth');
+const { authenticate, requireRole } = require('../middleware/auth');
 const { logAdminAction } = require('../middleware/auditLog');
 
 const router = express.Router();
