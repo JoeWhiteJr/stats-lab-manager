@@ -257,6 +257,8 @@ export const aiApi = {
     api.post('/ai/review-application', { applicationId }),
   summarizeChat: (roomId, messageCount) =>
     api.post('/ai/summarize-chat', { roomId, messageCount }),
+  adminSummary: (dateRange) =>
+    api.post('/ai/admin-summary', { dateRange }),
   summarizeProject: (projectId) =>
     api.post('/ai/summarize-project', { projectId }),
   summarizeDashboard: () =>

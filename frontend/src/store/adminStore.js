@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { adminApi } from '../services/api'
+import { adminApi, aiApi } from '../services/api'
 
 export const useAdminStore = create((set) => ({
   stats: null,
@@ -10,6 +10,9 @@ export const useAdminStore = create((set) => ({
   applicationTrends: [],
   isLoading: false,
   error: null,
+  aiSummary: null,
+  aiSummaryLoading: false,
+  aiSummaryError: null,
 
   fetchStats: async () => {
     set({ isLoading: true, error: null })
@@ -57,6 +60,23 @@ export const useAdminStore = create((set) => ({
       set({ error: error.response?.data?.error?.message || 'Failed to fetch trends' })
     }
   },
+
+  fetchAiSummary: async (dateRange = 'week') => {
+    set({ aiSummaryLoading: true, aiSummaryError: null })
+    try {
+      const { data } = await aiApi.adminSummary(dateRange)
+      set({ aiSummary: data, aiSummaryLoading: false })
+      return data
+    } catch (error) {
+      set({
+        aiSummaryError: error.response?.data?.error?.message || 'Failed to generate AI summary',
+        aiSummaryLoading: false
+      })
+      return null
+    }
+  },
+
+  clearAiSummary: () => set({ aiSummary: null, aiSummaryError: null }),
 
   clearError: () => set({ error: null })
 }))
