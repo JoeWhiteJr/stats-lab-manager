@@ -6,9 +6,10 @@ import ProjectCard from '../components/ProjectCard'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
 import Input from '../components/Input'
+import { CalendarView } from '../components/calendar/CalendarView'
 import {
   Plus, Upload, FolderKanban, Users, TrendingUp,
-  FileText, ArrowUpRight, Sparkles, Calendar
+  FileText, ArrowUpRight, Sparkles, Calendar, LayoutGrid
 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -22,6 +23,7 @@ export default function LabDashboard() {
   const [selectedProjectForUpload, setSelectedProjectForUpload] = useState('')
   const [dragActive, setDragActive] = useState(false)
   const fileInputRef = useRef(null)
+  const [activeTab, setActiveTab] = useState('overview')
 
   const canCreate = user?.role === 'admin' || user?.role === 'project_lead'
 
@@ -172,111 +174,147 @@ export default function LabDashboard() {
         </div>
       </div>
 
-      {/* Quick Upload Zone */}
-      <div
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-        className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${
-          dragActive
-            ? 'border-primary-400 bg-primary-50'
-            : 'border-gray-300 hover:border-primary-300 hover:bg-gray-50'
-        }`}
-      >
-        <Upload size={32} className={`mx-auto mb-3 ${dragActive ? 'text-primary-500' : 'text-gray-400'}`} />
-        <p className="font-medium text-text-primary mb-1">Drop files here to upload</p>
-        <p className="text-sm text-text-secondary">or click to select a project and upload</p>
-        <Button
-          variant="secondary"
-          className="mt-4"
-          onClick={() => setShowUploadModal(true)}
+      {/* Tab navigation */}
+      <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1 w-fit">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'overview'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
         >
-          Select Project & Upload
-        </Button>
+          <LayoutGrid size={16} />
+          Overview
+        </button>
+        <button
+          onClick={() => setActiveTab('calendar')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'calendar'
+              ? 'bg-white text-gray-900 shadow-sm'
+              : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Calendar size={16} />
+          Calendar
+        </button>
       </div>
 
-      {/* Active Projects */}
-      <section>
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="font-display font-bold text-xl text-text-primary">Active Projects</h2>
-          <Link
-            to="/dashboard/projects"
-            className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 text-sm font-medium"
+      {/* Tab content */}
+      {activeTab === 'overview' ? (
+        <>
+          {/* Quick Upload Zone */}
+          <div
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+            className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${
+              dragActive
+                ? 'border-primary-400 bg-primary-50'
+                : 'border-gray-300 hover:border-primary-300 hover:bg-gray-50'
+            }`}
           >
-            View all
-            <ArrowUpRight size={16} />
-          </Link>
-        </div>
+            <Upload size={32} className={`mx-auto mb-3 ${dragActive ? 'text-primary-500' : 'text-gray-400'}`} />
+            <p className="font-medium text-text-primary mb-1">Drop files here to upload</p>
+            <p className="text-sm text-text-secondary">or click to select a project and upload</p>
+            <Button
+              variant="secondary"
+              className="mt-4"
+              onClick={() => setShowUploadModal(true)}
+            >
+              Select Project & Upload
+            </Button>
+          </div>
 
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-xl border border-gray-200 animate-pulse">
-                <div className="h-36 bg-gray-100 rounded-t-xl" />
-                <div className="p-5 space-y-3">
-                  <div className="h-5 bg-gray-100 rounded w-3/4" />
-                  <div className="h-4 bg-gray-100 rounded w-full" />
-                  <div className="h-2 bg-gray-100 rounded w-full" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : activeProjects.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {activeProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
-        ) : (
-          <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-12 text-center">
-            <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
-              <FolderKanban size={36} className="text-primary-500" />
-            </div>
-            <h3 className="font-display font-semibold text-xl text-text-primary mb-2">
-              No active projects yet
-            </h3>
-            <p className="text-text-secondary max-w-md mx-auto mb-6">
-              Start your research journey by creating your first project. Organize your work, track progress, and collaborate with your team.
-            </p>
-            {canCreate && (
-              <Button onClick={() => setShowCreateModal(true)}>
-                <Plus size={18} />
-                Create Your First Project
-              </Button>
-            )}
-          </div>
-        )}
-      </section>
-
-      {/* Recently Completed */}
-      {completedProjects.length > 0 && (
-        <section>
-          <h2 className="font-display font-bold text-xl text-text-primary mb-5">Recently Completed</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {completedProjects.slice(0, 4).map((project) => (
+          {/* Active Projects */}
+          <section>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="font-display font-bold text-xl text-text-primary">Active Projects</h2>
               <Link
-                key={project.id}
-                to={`/dashboard/projects/${project.id}`}
-                className="group bg-white rounded-xl border border-gray-200 p-5 hover:border-green-300 hover:shadow-md transition-all"
+                to="/dashboard/projects"
+                className="inline-flex items-center gap-1 text-primary-600 hover:text-primary-700 text-sm font-medium"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                    <FolderKanban size={18} className="text-green-600" />
-                  </div>
-                  <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
-                    Complete
-                  </span>
-                </div>
-                <h3 className="font-medium text-text-primary group-hover:text-green-700 line-clamp-1 mb-1">
-                  {project.title}
-                </h3>
-                <p className="text-xs text-text-secondary">
-                  {project.total_actions || 0} tasks completed
-                </p>
+                View all
+                <ArrowUpRight size={16} />
               </Link>
-            ))}
-          </div>
+            </div>
+
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-white rounded-xl border border-gray-200 animate-pulse">
+                    <div className="h-36 bg-gray-100 rounded-t-xl" />
+                    <div className="p-5 space-y-3">
+                      <div className="h-5 bg-gray-100 rounded w-3/4" />
+                      <div className="h-4 bg-gray-100 rounded w-full" />
+                      <div className="h-2 bg-gray-100 rounded w-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : activeProjects.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {activeProjects.map((project) => (
+                  <ProjectCard key={project.id} project={project} />
+                ))}
+              </div>
+            ) : (
+              <div className="bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-200 p-12 text-center">
+                <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
+                  <FolderKanban size={36} className="text-primary-500" />
+                </div>
+                <h3 className="font-display font-semibold text-xl text-text-primary mb-2">
+                  No active projects yet
+                </h3>
+                <p className="text-text-secondary max-w-md mx-auto mb-6">
+                  Start your research journey by creating your first project. Organize your work, track progress, and collaborate with your team.
+                </p>
+                {canCreate && (
+                  <Button onClick={() => setShowCreateModal(true)}>
+                    <Plus size={18} />
+                    Create Your First Project
+                  </Button>
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* Recently Completed */}
+          {completedProjects.length > 0 && (
+            <section>
+              <h2 className="font-display font-bold text-xl text-text-primary mb-5">Recently Completed</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {completedProjects.slice(0, 4).map((project) => (
+                  <Link
+                    key={project.id}
+                    to={`/dashboard/projects/${project.id}`}
+                    className="group bg-white rounded-xl border border-gray-200 p-5 hover:border-green-300 hover:shadow-md transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                        <FolderKanban size={18} className="text-green-600" />
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                        Complete
+                      </span>
+                    </div>
+                    <h3 className="font-medium text-text-primary group-hover:text-green-700 line-clamp-1 mb-1">
+                      {project.title}
+                    </h3>
+                    <p className="text-xs text-text-secondary">
+                      {project.total_actions || 0} tasks completed
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+        </>
+      ) : (
+        /* Calendar Tab */
+        <section>
+          <CalendarView scope="lab" />
         </section>
       )}
 
