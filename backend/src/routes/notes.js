@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const db = require('../config/database');
 const { authenticate, requireProjectAccess } = require('../middleware/auth');
+const { sanitizeBody } = require('../middleware/sanitize');
 
 const router = express.Router();
 
@@ -43,7 +44,7 @@ router.get('/:id', authenticate, async (req, res, next) => {
 });
 
 // Create note
-router.post('/project/:projectId', authenticate, requireProjectAccess(), [
+router.post('/project/:projectId', authenticate, requireProjectAccess(), sanitizeBody('content'), [
   body('title').trim().notEmpty(),
   body('content').optional()
 ], async (req, res, next) => {
@@ -67,7 +68,7 @@ router.post('/project/:projectId', authenticate, requireProjectAccess(), [
 });
 
 // Update note
-router.put('/:id', authenticate, [
+router.put('/:id', authenticate, sanitizeBody('content'), [
   body('title').optional().trim().notEmpty(),
   body('content').optional()
 ], async (req, res, next) => {

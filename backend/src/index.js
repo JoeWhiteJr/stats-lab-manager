@@ -4,6 +4,8 @@ const cors = require('cors');
 const path = require('path');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const pinoHttp = require('pino-http');
+const logger = require('./config/logger');
 const socketService = require('./services/socketService');
 
 const authRoutes = require('./routes/auth');
@@ -33,6 +35,9 @@ app.set('trust proxy', 1);
 
 // Security headers
 app.use(helmet());
+
+// Structured HTTP request logging
+app.use(pinoHttp({ logger, autoLogging: { ignore: (req) => req.url === '/api/health' } }));
 
 // Middleware
 app.use(cors({
@@ -104,7 +109,7 @@ app.get('/api/health', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  logger.error({ err }, 'Unhandled error');
   res.status(err.status || 500).json({
     error: {
       message: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error',
@@ -130,8 +135,8 @@ socketService.initialize(server, SOCKET_CORS);
 // Only start server if not in test environment
 if (process.env.NODE_ENV !== 'test') {
   server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Stats Lab API running on port ${PORT}`);
-    console.log(`Socket.io ready for connections`);
+    logger.info({ port: PORT }, 'Stats Lab API running');
+    logger.info('Socket.io ready');
   });
 }
 

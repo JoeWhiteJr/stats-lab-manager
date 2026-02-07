@@ -3,6 +3,7 @@ const router = express.Router();
 const { body, param, query, validationResult } = require('express-validator');
 const db = require('../config/database');
 const { authenticate, requireRole } = require('../middleware/auth');
+const { sanitizeBody } = require('../middleware/sanitize');
 
 // All calendar routes require authentication
 router.use(authenticate);
@@ -186,7 +187,7 @@ router.get('/events/:id', async (req, res, next) => {
 });
 
 // POST /api/calendar/events - Create event
-router.post('/events', [
+router.post('/events', sanitizeBody('notes'), [
   body('title').trim().notEmpty().withMessage('Title is required'),
   body('start_time').isISO8601().withMessage('Valid start time required'),
   body('end_time').isISO8601().withMessage('Valid end time required'),
@@ -257,7 +258,7 @@ router.post('/events', [
 });
 
 // PUT /api/calendar/events/:id - Update event
-router.put('/events/:id', [
+router.put('/events/:id', sanitizeBody('notes'), [
   body('title').optional().trim().notEmpty(),
   body('start_time').optional().isISO8601(),
   body('end_time').optional().isISO8601(),

@@ -16,6 +16,8 @@ import Settings from './pages/Settings'
 import Admin from './pages/Admin'
 import Chat from './pages/Chat'
 import Apply from './pages/Apply'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import AccessRevoked from './pages/AccessRevoked'
 import NotFound from './pages/NotFound'
 
@@ -82,6 +84,8 @@ function App() {
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Navigate to="/apply" replace />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/apply" element={<Apply />} />
         <Route path="/access-revoked" element={<AccessRevoked />} />
 

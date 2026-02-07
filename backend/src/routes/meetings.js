@@ -6,6 +6,7 @@ const { v4: uuidv4 } = require('uuid');
 const { body, validationResult } = require('express-validator');
 const db = require('../config/database');
 const { authenticate, requireProjectAccess } = require('../middleware/auth');
+const { sanitizeBody } = require('../middleware/sanitize');
 
 const router = express.Router();
 
@@ -75,7 +76,7 @@ router.get('/:id', authenticate, async (req, res, next) => {
 });
 
 // Upload meeting audio
-router.post('/project/:projectId', authenticate, requireProjectAccess(), upload.single('audio'), [
+router.post('/project/:projectId', authenticate, requireProjectAccess(), upload.single('audio'), sanitizeBody('notes'), [
   body('title').trim().notEmpty(),
   body('recorded_at').optional().isISO8601(),
   body('notes').optional()
@@ -110,7 +111,7 @@ router.post('/project/:projectId', authenticate, requireProjectAccess(), upload.
 });
 
 // Update meeting (transcript, summary, notes, etc.)
-router.put('/:id', authenticate, [
+router.put('/:id', authenticate, sanitizeBody('notes'), [
   body('title').optional().trim().notEmpty(),
   body('transcript').optional(),
   body('summary').optional(),

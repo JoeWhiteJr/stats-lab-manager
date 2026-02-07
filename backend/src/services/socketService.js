@@ -1,6 +1,7 @@
 const { Server } = require('socket.io');
 const socketAuth = require('../middleware/socketAuth');
 const db = require('../config/database');
+const logger = require('../config/logger');
 
 let io = null;
 
@@ -30,7 +31,7 @@ const initialize = (httpServer, corsOrigin) => {
   // Handle connections
   io.on('connection', handleConnection);
 
-  console.log('Socket.io initialized');
+  logger.info('Socket.io initialized');
   return io;
 };
 
@@ -41,7 +42,7 @@ const handleConnection = async (socket) => {
   const userId = socket.userId;
   const userName = socket.user.name;
 
-  console.log(`User connected: ${userName} (${userId})`);
+  logger.info({ userId, userName }, 'User connected');
 
   // Track online status
   if (!onlineUsers.has(userId)) {
@@ -64,7 +65,7 @@ const handleConnection = async (socket) => {
       socket.join(`room:${row.room_id}`);
     }
   } catch (error) {
-    console.error('Error joining rooms:', error);
+    logger.error({ err: error }, 'Error joining rooms');
   }
 
   // Send current online users to the newly connected user
@@ -103,7 +104,7 @@ const handleJoinRoom = async (socket, { roomId }) => {
     socket.join(`room:${roomId}`);
     socket.emit('joined_room', { roomId });
   } catch (error) {
-    console.error('Error joining room:', error);
+    logger.error({ err: error, roomId }, 'Error joining room');
     socket.emit('error', { message: 'Failed to join room' });
   }
 };
@@ -169,7 +170,7 @@ const handleSendMessage = async (socket, { roomId, content, type = 'text' }) => 
     clearTyping(roomId, socket.userId);
 
   } catch (error) {
-    console.error('Error sending message:', error);
+    logger.error({ err: error, roomId }, 'Error sending message');
     socket.emit('error', { message: 'Failed to send message' });
   }
 };
@@ -239,7 +240,7 @@ const handleDisconnect = (socket) => {
   const userId = socket.userId;
   const userName = socket.user?.name;
 
-  console.log(`User disconnected: ${userName} (${userId})`);
+  logger.info({ userId, userName }, 'User disconnected');
 
   // Remove socket from online tracking
   if (onlineUsers.has(userId)) {
@@ -324,7 +325,7 @@ const notifyRoomUpdate = async (roomId) => {
       emitToRoom(roomId, 'room_updated', result.rows[0]);
     }
   } catch (error) {
-    console.error('Error notifying room update:', error);
+    logger.error({ err: error, roomId }, 'Error notifying room update');
   }
 };
 
