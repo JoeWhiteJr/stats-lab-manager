@@ -66,7 +66,7 @@ export default function MyDashboard() {
     }
   }
 
-  const completedToday = myTasks.filter(t => t.completed).length
+  const completedCount = myTasks.filter(t => t.completed).length
   const pendingTasks = myTasks.filter(t => !t.completed).length
 
   return (
@@ -107,10 +107,10 @@ export default function MyDashboard() {
               <CheckCircle2 size={24} className="text-green-600" />
             </div>
             <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-              Today
+              Done
             </span>
           </div>
-          <p className="text-4xl font-display font-bold text-text-primary">{completedToday}</p>
+          <p className="text-4xl font-display font-bold text-text-primary">{completedCount}</p>
           <p className="text-text-secondary mt-1">Tasks Completed</p>
         </div>
 

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useChatStore } from '../store/chatStore'
 import { useAuthStore } from '../store/authStore'
-import { usersApi, getUploadUrl } from '../services/api'
+import { usersApi, getUploadUrl, fetchAuthenticatedBlobUrl } from '../services/api'
 import socket from '../services/socket'
 import Modal from '../components/Modal'
 import Button from '../components/Button'
@@ -22,6 +22,37 @@ function extractUrls(text) {
   if (!text) return []
   const matches = text.match(URL_REGEX)
   return matches || []
+}
+
+function AuthenticatedAudio({ audioUrl }) {
+  const [blobUrl, setBlobUrl] = useState(null)
+  const isChatUpload = audioUrl && audioUrl.startsWith('/uploads/chat/')
+
+  useEffect(() => {
+    if (isChatUpload) {
+      let cancelled = false
+      fetchAuthenticatedBlobUrl(audioUrl).then((url) => {
+        if (!cancelled && url) setBlobUrl(url)
+      })
+      return () => {
+        cancelled = true
+        if (blobUrl) URL.revokeObjectURL(blobUrl)
+      }
+    }
+  }, [audioUrl, isChatUpload])
+
+  const src = isChatUpload ? blobUrl : getUploadUrl(audioUrl)
+
+  if (!src) {
+    return <p className="text-xs opacity-75">Loading audio...</p>
+  }
+
+  return (
+    <audio controls className="max-w-[250px]" preload="metadata">
+      <source src={src} type="audio/webm" />
+      Your browser does not support audio playback.
+    </audio>
+  )
 }
 
 export default function Chat() {
@@ -222,13 +253,9 @@ export default function Chat() {
 
     // Audio message
     if (msg.type === 'audio' && msg.audio_url) {
-      const audioSrc = getUploadUrl(msg.audio_url)
       return (
         <div>
-          <audio controls className="max-w-[250px]" preload="metadata">
-            <source src={audioSrc} type="audio/webm" />
-            Your browser does not support audio playback.
-          </audio>
+          <AuthenticatedAudio audioUrl={msg.audio_url} />
           {msg.audio_duration > 0 && (
             <p className="text-xs opacity-75 mt-1">
               {Math.floor(msg.audio_duration / 60)}:{(msg.audio_duration % 60).toString().padStart(2, '0')}

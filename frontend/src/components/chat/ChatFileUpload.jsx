@@ -1,6 +1,6 @@
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Paperclip, FileText, Download } from 'lucide-react'
-import { getUploadUrl } from '../../services/api'
+import { getUploadUrl, fetchAuthenticatedBlobUrl } from '../../services/api'
 
 const ALLOWED_TYPES = [
   'image/jpeg', 'image/png', 'image/gif', 'image/webp',
@@ -62,8 +62,34 @@ export default function ChatFileUpload({ onFileSelect, disabled }) {
 }
 
 export function FileAttachment({ fileUrl, fileName, type }) {
-  const url = getUploadUrl(fileUrl)
+  const isChatUpload = fileUrl && fileUrl.startsWith('/uploads/chat/')
+  const [blobUrl, setBlobUrl] = useState(null)
+  const directUrl = getUploadUrl(fileUrl)
   const isImage = type === 'file' && fileName && /\.(jpg|jpeg|png|gif|webp)$/i.test(fileName)
+
+  useEffect(() => {
+    if (isChatUpload && fileUrl) {
+      let cancelled = false
+      fetchAuthenticatedBlobUrl(fileUrl).then((url) => {
+        if (!cancelled && url) setBlobUrl(url)
+      })
+      return () => {
+        cancelled = true
+        if (blobUrl) URL.revokeObjectURL(blobUrl)
+      }
+    }
+  }, [fileUrl, isChatUpload])
+
+  const url = isChatUpload ? blobUrl : directUrl
+
+  if (!url) {
+    return (
+      <div className="flex items-center gap-2 mt-1.5 px-3 py-2 bg-black/10 rounded-lg opacity-50">
+        <FileText size={16} />
+        <span className="text-sm truncate flex-1">{fileName || 'Loading...'}</span>
+      </div>
+    )
+  }
 
   if (isImage) {
     return (

@@ -749,4 +749,17 @@ router.get('/:id', authenticate, async (req, res, next) => {
   }
 });
 
+// Serve chat uploads with authentication
+router.get('/uploads/:filename', authenticate, (req, res, next) => {
+  const uploadDir = process.env.UPLOAD_DIR || require('path').join(__dirname, '../../uploads');
+  const filePath = require('path').join(uploadDir, 'chat', req.params.filename);
+  const fs = require('fs');
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: { message: 'File not found' } });
+  }
+
+  res.sendFile(filePath);
+});
+
 module.exports = router;

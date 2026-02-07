@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const path = require('path');
+const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const socketService = require('./services/socketService');
 
@@ -26,6 +27,9 @@ const PORT = process.env.PORT || 3001;
 
 // Trust proxy (behind Nginx)
 app.set('trust proxy', 1);
+
+// Security headers
+app.use(helmet());
 
 // Middleware
 app.use(cors({
@@ -54,8 +58,6 @@ app.use(express.urlencoded({ extended: true }));
 // Other file uploads remain behind authenticated /api/files/:id/download endpoint
 const uploadDir = process.env.UPLOAD_DIR || path.join(__dirname, '../uploads');
 app.use('/uploads/covers', express.static(path.join(uploadDir, 'covers')));
-// Serve chat uploads (audio messages, shared files) statically
-app.use('/uploads/chat', express.static(path.join(uploadDir, 'chat')));
 
 // Rate limiting
 const authLimiter = rateLimit({
@@ -64,7 +66,14 @@ const authLimiter = rateLimit({
   message: { error: { message: 'Too many requests, please try again later' } }
 });
 
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100,
+  message: { error: { message: 'Too many requests, please try again later' } }
+});
+
 // API Routes
+app.use('/api', apiLimiter);
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/actions', actionRoutes);

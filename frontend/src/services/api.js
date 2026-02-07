@@ -18,8 +18,26 @@ export const getUploadUrl = (path) => {
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path
   }
+  // Route chat uploads through the authenticated API endpoint
+  if (path.startsWith('/uploads/chat/')) {
+    const filename = path.replace('/uploads/chat/', '')
+    return `${API_URL}/chats/uploads/${filename}`
+  }
   // Prepend the backend base URL
   return `${API_BASE_URL}${path}`
+}
+
+// Fetch a chat upload file as an authenticated blob URL
+export const fetchAuthenticatedBlobUrl = async (path) => {
+  if (!path) return null
+  try {
+    const response = await api.get(`/chats/uploads/${path.replace('/uploads/chat/', '')}`, {
+      responseType: 'blob'
+    })
+    return URL.createObjectURL(response.data)
+  } catch {
+    return null
+  }
 }
 
 // Add auth token to requests

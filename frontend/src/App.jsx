@@ -17,6 +17,7 @@ import Admin from './pages/Admin'
 import Chat from './pages/Chat'
 import Apply from './pages/Apply'
 import AccessRevoked from './pages/AccessRevoked'
+import NotFound from './pages/NotFound'
 
 // Jared's public site components
 import PublicLayout from './components/public/layout/PublicLayout'
@@ -106,8 +107,8 @@ function App() {
         {/* Redirect old root to dashboard for logged-in users - optional fallback */}
         <Route path="/app" element={<Navigate to="/dashboard" replace />} />
 
-        {/* Catch-all: redirect unknown routes to home */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Catch-all: show 404 for unknown routes */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   )

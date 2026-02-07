@@ -113,12 +113,28 @@ router.post('/project/:projectId', authenticate, requireProjectAccess(), upload.
 router.get('/:id/download', authenticate, async (req, res, next) => {
   try {
     const result = await db.query('SELECT * FROM files WHERE id = $1', [req.params.id]);
-
     if (result.rows.length === 0) {
       return res.status(404).json({ error: { message: 'File not found' } });
     }
-
     const file = result.rows[0];
+
+    // Check project access (admins can access all)
+    if (req.user.role !== 'admin') {
+      const accessCheck = await db.query(
+        `SELECT id FROM projects WHERE id = $1 AND created_by = $2
+         UNION
+         SELECT p.id FROM projects p
+         JOIN action_items ai ON ai.project_id = p.id
+         JOIN action_item_assignees aia ON aia.action_item_id = ai.id
+         WHERE p.id = $1 AND aia.user_id = $2
+         LIMIT 1`,
+        [file.project_id, req.user.id]
+      );
+      if (accessCheck.rows.length === 0) {
+        return res.status(403).json({ error: { message: 'Access denied' } });
+      }
+    }
+
     res.download(file.storage_path, file.original_filename);
   } catch (error) {
     next(error);
@@ -129,21 +145,33 @@ router.get('/:id/download', authenticate, async (req, res, next) => {
 router.delete('/:id', authenticate, async (req, res, next) => {
   try {
     const result = await db.query('SELECT * FROM files WHERE id = $1', [req.params.id]);
-
     if (result.rows.length === 0) {
       return res.status(404).json({ error: { message: 'File not found' } });
     }
-
     const file = result.rows[0];
 
-    // Delete from database
-    await db.query('DELETE FROM files WHERE id = $1', [req.params.id]);
+    // Check project access (admins can access all)
+    if (req.user.role !== 'admin') {
+      const accessCheck = await db.query(
+        `SELECT id FROM projects WHERE id = $1 AND created_by = $2
+         UNION
+         SELECT p.id FROM projects p
+         JOIN action_items ai ON ai.project_id = p.id
+         JOIN action_item_assignees aia ON aia.action_item_id = ai.id
+         WHERE p.id = $1 AND aia.user_id = $2
+         LIMIT 1`,
+        [file.project_id, req.user.id]
+      );
+      if (accessCheck.rows.length === 0) {
+        return res.status(403).json({ error: { message: 'Access denied' } });
+      }
+    }
 
-    // Delete physical file
+    await db.query('DELETE FROM files WHERE id = $1', [req.params.id]);
+    const fs = require('fs');
     fs.unlink(file.storage_path, (err) => {
       if (err) console.error('Error deleting file:', err);
     });
-
     res.json({ message: 'File deleted successfully' });
   } catch (error) {
     next(error);
