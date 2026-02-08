@@ -36,8 +36,8 @@ export default function DonatePage() {
     document.title = 'Donate | Utah Valley Research Lab';
   }, []);
 
-  const [_oneTimeAmount, setOneTimeAmount] = useState(100);
-  const [_monthlyAmount, setMonthlyAmount] = useState(25);
+  const [, setOneTimeAmount] = useState(100);
+  const [, setMonthlyAmount] = useState(25);
 
   const { hero, intro, impactCards, oneTime, monthly, corporate, otherWays, transparency } = donatePageData;
 
