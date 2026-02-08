@@ -1,6 +1,4 @@
 import Modal from './Modal'
-import { Keyboard } from 'lucide-react'
-
 const shortcuts = [
   { keys: ['⌘', 'K'], desc: 'Open search' },
   { keys: ['⌘', '/'], desc: 'Show this help' },

@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 
-export default function MentionAutocomplete({ members, query, onSelect, position }) {
+export default function MentionAutocomplete({ members, query, onSelect, position: _position }) {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const filtered = members.filter(m =>
     m.name?.toLowerCase().includes(query.toLowerCase()) ||

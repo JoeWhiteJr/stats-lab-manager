@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react'
-import { X, Download, Trash2, FileText, File, Music, Video, FileSpreadsheet } from 'lucide-react'
+import { X, Download, Trash2, FileText, File, Music, FileSpreadsheet } from 'lucide-react'
 import { format } from 'date-fns'
 import { getUploadUrl } from '../services/api'
 import Button from './Button'

@@ -2,7 +2,6 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  TrendingUp,
   CheckCircle,
   ArrowRight,
   Users,
@@ -11,11 +10,6 @@ import {
   Settings,
   Building,
   Rocket,
-  BarChart3,
-  MonitorSmartphone,
-  Workflow,
-  Brain,
-  Calculator,
 } from 'lucide-react';
 import SectionHeader from '../shared/SectionHeader';
 import ServiceCard from '../shared/ServiceCard';

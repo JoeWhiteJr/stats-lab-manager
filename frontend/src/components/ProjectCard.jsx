@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { CheckCircle2, Circle, Calendar } from 'lucide-react'
+import { CheckCircle2, Calendar } from 'lucide-react'
 import { format } from 'date-fns'
 import { getUploadUrl } from '../services/api'
 

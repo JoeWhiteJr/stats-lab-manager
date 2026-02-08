@@ -22,7 +22,7 @@ const Button = forwardRef(({
   disabled = false,
   loading = false,
   children,
-  as,
+  _as,
   ...props
 }, ref) => {
   return (

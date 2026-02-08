@@ -1,7 +1,6 @@
 // PublicProjectsPage.jsx - Projects page fetching from API with filtering
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import * as LucideIcons from 'lucide-react';
 import { ArrowRight, BarChart3 } from 'lucide-react';
 import PageHero from '../shared/PageHero';
 import ScrollAnimateWrapper from '../shared/ScrollAnimateWrapper';

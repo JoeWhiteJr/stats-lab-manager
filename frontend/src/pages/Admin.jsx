@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAdminStore } from '../store/adminStore'
 import { useApplicationStore } from '../store/applicationStore'
 import { useAuthStore } from '../store/authStore'
@@ -42,17 +42,7 @@ export default function Admin() {
 
   useEffect(() => { fetchStats(); fetchApplications() }, [fetchStats, fetchApplications])
 
-  useEffect(() => {
-    if (activeTab === 'team') {
-      loadTeam()
-    }
-    if (activeTab === 'publish') {
-      fetchProjects()
-      fetchPublishedProjects()
-    }
-  }, [activeTab])
-
-  const loadTeam = async () => {
+  const loadTeam = useCallback(async () => {
     setIsLoadingTeam(true)
     try {
       const { data } = await usersApi.list()
@@ -61,7 +51,17 @@ export default function Admin() {
       /* error handled silently */
     }
     setIsLoadingTeam(false)
-  }
+  }, [])
+
+  useEffect(() => {
+    if (activeTab === 'team') {
+      loadTeam()
+    }
+    if (activeTab === 'publish') {
+      fetchProjects()
+      fetchPublishedProjects()
+    }
+  }, [activeTab, fetchProjects, fetchPublishedProjects, loadTeam])
 
   const handleRoleChange = async (userId, newRole) => {
     try {

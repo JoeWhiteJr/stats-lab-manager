@@ -22,7 +22,6 @@ const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
 const ResetPassword = lazy(() => import('./pages/ResetPassword'))
 const AccessRevoked = lazy(() => import('./pages/AccessRevoked'))
 const NotFound = lazy(() => import('./pages/NotFound'))
-const Register = lazy(() => import('./pages/Register'))
 
 // Jared's public site components
 import PublicLayout from './components/public/layout/PublicLayout'

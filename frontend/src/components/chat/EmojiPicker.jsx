@@ -27,6 +27,7 @@ const EMOJI_CATEGORIES = {
   ]
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const QUICK_REACTIONS = ['\u{1F44D}', '\u{2764}', '\u{1F602}', '\u{1F62E}', '\u{1F622}', '\u{1F525}']
 
 export default function EmojiPicker({ onSelect, onClose }) {
