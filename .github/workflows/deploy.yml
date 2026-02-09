@@ -26,7 +26,7 @@ jobs:
             git pull origin main
             docker compose -f docker-compose.ec2.yml down --timeout 30 || true
             docker compose -f docker-compose.ec2.yml up -d --build --remove-orphans
-            sleep 10
+            sleep 20
             for f in database/migrations/*.sql; do
               docker exec -i statslab-db psql -U statslab -d statslab < "$f" || true
             done
