@@ -25,15 +25,13 @@ jobs:
             cd /opt/stats-lab-manager
             git pull origin main
             docker compose -f docker-compose.ec2.yml down --timeout 30 || true
-            docker compose -f docker-compose.ec2.yml up -d --build --remove-orphans
-            sleep 20
+            docker compose -f docker-compose.ec2.yml up -d --build --remove-orphans --wait --wait-timeout 120
             for f in database/migrations/*.sql; do
               docker exec -i statslab-db psql -U statslab -d statslab < "$f" || true
             done
             docker system prune -f
-            sleep 5
             echo "=== Backend container status ==="
-            docker inspect statslab-backend --format='{{.State.Status}} (exit: {{.State.ExitCode}})' || true
+            docker inspect statslab-backend --format='{{.State.Status}} (exit: {{.State.ExitCode}}) health: {{.State.Health.Status}}' || true
             echo "=== Nginx container status ==="
             docker inspect statslab-nginx --format='{{.State.Status}} (exit: {{.State.ExitCode}})' || true
             echo "=== Nginx logs (last 20 lines) ==="

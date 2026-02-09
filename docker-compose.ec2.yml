@@ -38,6 +38,12 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/api/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
     restart: unless-stopped
     networks:
       - statslab-network
@@ -49,6 +55,12 @@ services:
       args:
         VITE_API_URL: ${VITE_API_URL:-/api}
     container_name: statslab-frontend
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
     restart: unless-stopped
     networks:
       - statslab-network
@@ -64,8 +76,10 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - /var/www/certbot:/var/www/certbot:ro
     depends_on:
-      - frontend
-      - backend
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - statslab-network
