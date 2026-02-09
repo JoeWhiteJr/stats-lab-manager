@@ -19,6 +19,7 @@ jobs:
             # Install AWS CLI if not present
             if ! command -v aws &>/dev/null; then
               echo "Installing AWS CLI..."
+              sudo apt-get update -qq && sudo apt-get install -y -qq unzip > /dev/null
               curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
               cd /tmp && unzip -qo awscliv2.zip && sudo ./aws/install
               rm -rf /tmp/aws /tmp/awscliv2.zip
@@ -47,6 +48,9 @@ jobs:
             else
               echo "S3 bucket already exists."
             fi
+
+            # Pull latest code so backup scripts are up to date
+            cd /opt/stats-lab-manager && git fetch origin main && git reset --hard origin/main
 
             # Make backup scripts executable
             chmod +x /opt/stats-lab-manager/deploy/backup.sh
