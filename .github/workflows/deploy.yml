@@ -33,6 +33,10 @@ jobs:
             sleep 5
             echo "=== Backend container status ==="
             docker inspect statslab-backend --format='{{.State.Status}} (exit: {{.State.ExitCode}})' || true
+            echo "=== Nginx container status ==="
+            docker inspect statslab-nginx --format='{{.State.Status}} (exit: {{.State.ExitCode}})' || true
+            echo "=== Nginx logs (last 20 lines) ==="
+            docker logs statslab-nginx --tail 20 2>&1 || true
             echo "=== Backend logs (last 50 lines) ==="
             docker logs statslab-backend --tail 50 2>&1 || true
             echo "=== Deployment complete! ==="
