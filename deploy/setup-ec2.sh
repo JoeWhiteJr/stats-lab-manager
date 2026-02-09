@@ -87,10 +87,27 @@ install_git() {
     fi
 }
 
+# Install certbot for SSL certificates
+install_certbot() {
+    if command -v certbot &> /dev/null; then
+        echo "Certbot already installed"
+        return
+    fi
+
+    echo "Installing Certbot..."
+    if [ "$OS" = "amzn" ]; then
+        sudo dnf install -y certbot
+    elif [ "$OS" = "ubuntu" ]; then
+        sudo apt-get install -y certbot
+    fi
+    echo "Certbot installed: $(certbot --version)"
+}
+
 # Run installations
 install_docker
 install_docker_compose
 install_git
+install_certbot
 
 echo ""
 echo "=========================================="
@@ -100,18 +117,21 @@ echo ""
 echo "Next steps:"
 echo "1. Log out and back in (for docker group)"
 echo "2. Clone the repository:"
-echo "   git clone https://github.com/JoeWhiteJr/stats-lab-manager.git"
-echo "   cd stats-lab-manager"
+echo "   git clone https://github.com/JoeWhiteJr/Utah-Valley-Research-Lab.git"
+echo "   cd Utah-Valley-Research-Lab"
 echo ""
 echo "3. Create your .env file:"
 echo "   cp deploy/.env.example .env"
 echo "   nano .env  # Edit with your values"
 echo ""
-echo "4. Start the application:"
-echo "   docker-compose -f docker-compose.ec2.yml up -d --build"
+echo "4. Obtain SSL certificate (run BEFORE starting containers):"
+echo "   bash deploy/init-ssl.sh your-email@example.com"
 echo ""
-echo "5. Run database migrations:"
+echo "5. Start the application:"
+echo "   docker compose -f docker-compose.ec2.yml up -d --build"
+echo ""
+echo "6. Run database migrations:"
 echo "   ./deploy/migrate.sh"
 echo ""
-echo "6. Access the app at: http://YOUR_ELASTIC_IP"
+echo "7. Access the app at: https://utahvalleyresearchlab.com"
 echo ""

@@ -79,12 +79,17 @@ else
     docker compose -f docker-compose.ec2.yml ps
 fi
 
-# Check health endpoint
-HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/health 2>/dev/null || echo "000")
+# Check health endpoint (try HTTPS first, fall back to HTTP)
+HTTP_STATUS=$(curl -sk -o /dev/null -w "%{http_code}" https://localhost/health 2>/dev/null || echo "000")
 if [ "$HTTP_STATUS" = "200" ]; then
-    echo "    Health check passed (HTTP 200)."
+    echo "    Health check passed (HTTPS 200)."
 else
-    echo "    WARNING: Health check returned HTTP $HTTP_STATUS"
+    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/health 2>/dev/null || echo "000")
+    if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "301" ]; then
+        echo "    Health check passed (HTTP redirecting to HTTPS)."
+    else
+        echo "    WARNING: Health check returned HTTP $HTTP_STATUS"
+    fi
 fi
 
 # Clean up dangling images
@@ -92,4 +97,4 @@ docker system prune -f 2>/dev/null || true
 
 echo ""
 echo "=== Deployment complete! ==="
-echo "Site should be live at: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || echo '<EC2_PUBLIC_IP>')"
+echo "Site should be live at: https://utahvalleyresearchlab.com"
