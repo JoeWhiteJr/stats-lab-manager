@@ -121,7 +121,7 @@ export default function AudioPlayer({ src, className = '' }) {
   }
 
   return (
-    <div className={`bg-gray-50 rounded-lg p-3 ${className}`}>
+    <div className={`bg-gray-50 dark:bg-gray-800 rounded-lg p-3 ${className}`}>
       <audio ref={audioRef} src={src} preload="metadata" />
 
       <div className="flex items-center gap-3">
@@ -134,7 +134,7 @@ export default function AudioPlayer({ src, className = '' }) {
             transition-colors
             ${isLoaded
               ? 'bg-primary-500 hover:bg-primary-600 text-white'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
             }
           `}
         >
@@ -150,7 +150,7 @@ export default function AudioPlayer({ src, className = '' }) {
           <div
             ref={progressRef}
             onClick={handleProgressClick}
-            className="flex-1 h-2 bg-gray-200 rounded-full cursor-pointer relative group"
+            className="flex-1 h-2 bg-gray-200 dark:bg-gray-600 rounded-full cursor-pointer relative group"
           >
             {/* Progress Fill */}
             <div
@@ -173,7 +173,7 @@ export default function AudioPlayer({ src, className = '' }) {
         <select
           value={playbackRate}
           onChange={handleSpeedChange}
-          className="text-xs px-2 py-1 rounded border border-gray-200 bg-white text-text-secondary focus:outline-none focus:ring-1 focus:ring-primary-300"
+          className="text-xs px-2 py-1 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-text-secondary dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-primary-300"
         >
           <option value={0.5}>0.5x</option>
           <option value={0.75}>0.75x</option>
@@ -198,7 +198,7 @@ export default function AudioPlayer({ src, className = '' }) {
             step="0.1"
             value={isMuted ? 0 : volume}
             onChange={handleVolumeChange}
-            className="w-16 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity
+            className="w-16 h-1 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity
               [&::-webkit-slider-thumb]:appearance-none
               [&::-webkit-slider-thumb]:w-3
               [&::-webkit-slider-thumb]:h-3
