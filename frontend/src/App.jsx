@@ -59,7 +59,7 @@ function ProtectedRoute({ children }) {
       socket.connect(token)
     }
     // Don't disconnect on cleanup - only disconnect on logout
-  }, [user?.id])
+  }, [user?.id, token])
 
   useEffect(() => {
     if (!user) {
