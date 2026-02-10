@@ -405,7 +405,7 @@ router.post('/:id/join-request', authenticate, [
           `Join request: ${project.rows[0].title}`,
           `${req.user.name} has requested to join this project.`,
           req.params.id,
-          'project'
+          'join_request'
         );
 
         for (const notification of notifications) {
