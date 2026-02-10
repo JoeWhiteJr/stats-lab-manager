@@ -2,9 +2,11 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Bell } from 'lucide-react'
 import { useNotificationStore } from '../store/notificationStore'
+import JoinRequestModal from './JoinRequestModal'
 
 export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false)
+  const [joinRequestProjectId, setJoinRequestProjectId] = useState(null)
   const { unreadCount, notifications, markAllRead, markRead, fetchNotifications, fetchUnreadCount } = useNotificationStore()
   const bellRef = useRef(null)
   const navigate = useNavigate()
@@ -36,7 +38,10 @@ export default function NotificationBell() {
     setIsOpen(false)
 
     // Navigate based on notification type
-    if (n.reference_type === 'project' && n.reference_id) {
+    if (n.reference_type === 'join_request' && n.reference_id) {
+      setJoinRequestProjectId(n.reference_id)
+      return
+    } else if (n.reference_type === 'project' && n.reference_id) {
       navigate(`/dashboard/projects/${n.reference_id}`)
     } else if ((n.reference_type === 'message' || n.reference_type === 'chat') && n.reference_id) {
       navigate('/dashboard/chat')
@@ -73,6 +78,12 @@ export default function NotificationBell() {
             ))}
           </div>
         </div>
+      )}
+      {joinRequestProjectId && (
+        <JoinRequestModal
+          projectId={joinRequestProjectId}
+          onClose={() => setJoinRequestProjectId(null)}
+        />
       )}
     </div>
   )
