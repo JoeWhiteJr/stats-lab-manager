@@ -5,7 +5,7 @@ import { ArrowRight } from 'lucide-react';
 import PageHero from '../shared/PageHero';
 import TeamCard from '../shared/TeamCard';
 import ScrollAnimateWrapper from '../shared/ScrollAnimateWrapper';
-import { teamData as staticTeamData, ctaData } from '../../../data/publicSiteData';
+import { ctaData } from '../../../data/publicSiteData';
 import { useSiteContentStore } from '../../../store/siteContentStore';
 
 export default function TeamPage() {

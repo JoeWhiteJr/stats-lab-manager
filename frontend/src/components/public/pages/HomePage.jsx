@@ -16,11 +16,7 @@ import ServiceCard from '../shared/ServiceCard';
 import FeaturedProjectCard from '../shared/FeaturedProjectCard';
 import ScrollAnimateWrapper from '../shared/ScrollAnimateWrapper';
 import {
-  heroData as staticHeroData,
-  statsData as staticStatsData,
   partnersData,
-  aboutSummaryData as staticAboutSummary,
-  servicesData as staticServicesData,
   featuredProjectsData,
   teamHighlightsData,
   ctaData,

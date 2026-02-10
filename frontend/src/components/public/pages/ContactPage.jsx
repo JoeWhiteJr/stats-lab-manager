@@ -6,7 +6,7 @@ import SectionHeader from '../shared/SectionHeader';
 import ScrollAnimateWrapper from '../shared/ScrollAnimateWrapper';
 import FaqAccordion from '../shared/FaqAccordion';
 import { useContactForm } from '../../../hooks/useContactForm';
-import { contactPageData, faqData as staticFaqData, siteInfo } from '../../../data/publicSiteData';
+import { contactPageData, siteInfo } from '../../../data/publicSiteData';
 import { useSiteContentStore } from '../../../store/siteContentStore';
 
 export default function ContactPage() {
