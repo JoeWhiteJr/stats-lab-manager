@@ -47,8 +47,10 @@ describe('Applications API', () => {
       const res = await request(app)
         .post('/api/applications')
         .send({
-          name: 'Test Applicant',
+          firstName: 'Test',
+          lastName: 'Applicant',
           email: 'apptest-applicant@example.com',
+          password: 'password123',
           message: 'I would like to join the lab'
         });
 
@@ -67,8 +69,10 @@ describe('Applications API', () => {
       const res = await request(app)
         .post('/api/applications')
         .send({
-          name: 'Test Applicant Dupe',
+          firstName: 'Test',
+          lastName: 'Applicant Dupe',
           email: 'apptest-applicant@example.com',
+          password: 'password123',
           message: 'Duplicate application attempt'
         });
 
@@ -80,8 +84,10 @@ describe('Applications API', () => {
       const res = await request(app)
         .post('/api/applications')
         .send({
-          name: 'Existing User',
+          firstName: 'Existing',
+          lastName: 'User',
           email: 'apptest-admin@example.com',
+          password: 'password123',
           message: 'I already have an account'
         });
 
@@ -94,6 +100,7 @@ describe('Applications API', () => {
         .post('/api/applications')
         .send({
           email: 'apptest-noname@example.com',
+          password: 'password123',
           message: 'Missing name field'
         });
 
@@ -105,7 +112,9 @@ describe('Applications API', () => {
       const res = await request(app)
         .post('/api/applications')
         .send({
-          name: 'No Email Applicant',
+          firstName: 'No Email',
+          lastName: 'Applicant',
+          password: 'password123',
           message: 'Missing email field'
         });
 
@@ -117,8 +126,10 @@ describe('Applications API', () => {
       const res = await request(app)
         .post('/api/applications')
         .send({
-          name: 'Bad Email Applicant',
+          firstName: 'Bad Email',
+          lastName: 'Applicant',
           email: 'not-an-email',
+          password: 'password123',
           message: 'Invalid email format'
         });
 
@@ -130,8 +141,10 @@ describe('Applications API', () => {
       const res = await request(app)
         .post('/api/applications')
         .send({
-          name: 'No Message Applicant',
-          email: 'apptest-nomsg@example.com'
+          firstName: 'No Message',
+          lastName: 'Applicant',
+          email: 'apptest-nomsg@example.com',
+          password: 'password123'
         });
 
       expect(res.status).toBe(400);
@@ -202,8 +215,10 @@ describe('Applications API', () => {
       const appRes = await request(app)
         .post('/api/applications')
         .send({
-          name: 'Reject Candidate',
+          firstName: 'Reject',
+          lastName: 'Candidate',
           email: 'apptest-reject@example.com',
+          password: 'password123',
           message: 'Will be rejected'
         });
       rejectAppId = appRes.body.application.id;
@@ -301,8 +316,10 @@ describe('Applications API', () => {
       const appRes = await request(app)
         .post('/api/applications')
         .send({
-          name: 'Default Role Applicant',
+          firstName: 'Default Role',
+          lastName: 'Applicant',
           email: 'apptest-defaultrole@example.com',
+          password: 'password123',
           message: 'No role specified'
         });
 

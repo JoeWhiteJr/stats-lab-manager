@@ -122,7 +122,8 @@ describe('Users API', () => {
         .put('/api/users/profile')
         .set('Authorization', `Bearer ${regularToken}`)
         .send({
-          name: 'Updated Name Test'
+          firstName: 'Updated',
+          lastName: 'Name Test'
         });
 
       expect(res.status).toBe(200);
@@ -174,7 +175,7 @@ describe('Users API', () => {
         .put('/api/users/profile')
         .set('Authorization', `Bearer ${regularToken}`)
         .send({
-          name: '   '
+          firstName: '   '
         });
 
       expect(res.status).toBe(400);
