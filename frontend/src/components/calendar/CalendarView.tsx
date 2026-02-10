@@ -15,9 +15,10 @@ import type { CalendarScope, CalendarViewType } from './types';
 
 interface CalendarViewProps {
   scope: CalendarScope;
+  compact?: boolean;
 }
 
-export function CalendarView({ scope }: CalendarViewProps) {
+export function CalendarView({ scope, compact = false }: CalendarViewProps) {
   const { user } = useAuthStore();
   const { projects } = useProjectStore();
 
@@ -193,7 +194,7 @@ export function CalendarView({ scope }: CalendarViewProps) {
       )}
 
       {/* Calendar Body */}
-      <div className="overflow-auto" style={{ maxHeight: currentView === 'monthly' ? '600px' : '700px' }}>
+      <div className="overflow-auto" style={{ maxHeight: compact ? (currentView === 'monthly' ? '350px' : '400px') : (currentView === 'monthly' ? '600px' : '700px') }}>
         {currentView === 'daily' && (
           <DailyView
             selectedDate={selectedDate}

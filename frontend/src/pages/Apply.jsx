@@ -6,7 +6,7 @@ import Input from '../components/Input'
 import { CheckCircle, ArrowLeft } from 'lucide-react'
 
 export default function Apply() {
-  const [formData, setFormData] = useState({ name: '', email: '', message: '' })
+  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '', message: '' })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
@@ -22,9 +22,21 @@ export default function Apply() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters')
+      return
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
     setIsLoading(true)
     try {
-      await applicationsApi.submit(formData)
+      const { confirmPassword, ...submitData } = formData
+      await applicationsApi.submit(submitData)
       setSuccess(true)
     } catch (err) {
       setError(err.response?.data?.error?.message || 'Failed to submit')
@@ -39,7 +51,7 @@ export default function Apply() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 max-w-md w-full text-center">
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
           <h1 className="font-display font-bold text-2xl text-text-primary dark:text-gray-100 mb-2">Application Submitted!</h1>
-          <p className="text-text-secondary dark:text-gray-400 mb-6">We&apos;ll review your application and get back to you soon.</p>
+          <p className="text-text-secondary dark:text-gray-400 mb-6">We&apos;ll review your application and get back to you soon. Once approved, you can log in with the password you chose.</p>
           <Link to="/login"><Button>Go to Login</Button></Link>
         </div>
       </div>
@@ -56,19 +68,46 @@ export default function Apply() {
         <p className="text-text-secondary dark:text-gray-400 mb-6">Apply to become a member of the Stats Lab team.</p>
         {error && <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-lg text-red-700 dark:text-red-400 text-sm">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            label="Full Name"
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="First Name"
+              type="text"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              required
+            />
+            <Input
+              label="Last Name"
+              type="text"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              required
+            />
+          </div>
           <Input
             label="Email"
             type="email"
             name="email"
             value={formData.email}
+            onChange={handleChange}
+            required
+          />
+          <Input
+            label="Password"
+            type="password"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder="At least 8 characters"
+            required
+          />
+          <Input
+            label="Confirm Password"
+            type="password"
+            name="confirmPassword"
+            value={formData.confirmPassword}
             onChange={handleChange}
             required
           />
