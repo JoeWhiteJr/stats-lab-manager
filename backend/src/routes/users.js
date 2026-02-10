@@ -206,7 +206,8 @@ router.get('/:id', authenticate, async (req, res, next) => {
 
 // Update user profile
 router.put('/profile', authenticate, [
-  body('name').optional().trim().notEmpty(),
+  body('firstName').optional().trim().notEmpty(),
+  body('lastName').optional().trim().notEmpty(),
   body('email').optional().isEmail().normalizeEmail()
 ], async (req, res, next) => {
   try {
@@ -215,7 +216,7 @@ router.put('/profile', authenticate, [
       return res.status(400).json({ error: { message: 'Validation failed', details: errors.array() } });
     }
 
-    const { name, email } = req.body;
+    const { firstName, lastName, email } = req.body;
 
     // Check if email is already taken by another user
     if (email) {
@@ -232,7 +233,8 @@ router.put('/profile', authenticate, [
     const values = [];
     let paramCount = 1;
 
-    if (name !== undefined) { updates.push(`name = $${paramCount++}`); values.push(name); }
+    if (firstName !== undefined) { updates.push(`first_name = $${paramCount++}`); values.push(firstName); }
+    if (lastName !== undefined) { updates.push(`last_name = $${paramCount++}`); values.push(lastName); }
     if (email !== undefined) { updates.push(`email = $${paramCount++}`); values.push(email); }
 
     if (updates.length === 0) {
@@ -241,7 +243,7 @@ router.put('/profile', authenticate, [
 
     values.push(req.user.id);
     const result = await db.query(
-      `UPDATE users SET ${updates.join(', ')} WHERE id = $${paramCount} RETURNING id, email, name, role, avatar_url`,
+      `UPDATE users SET ${updates.join(', ')} WHERE id = $${paramCount} RETURNING id, email, name, first_name, last_name, role, avatar_url`,
       values
     );
 

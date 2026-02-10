@@ -15,9 +15,11 @@ import type { CalendarScope, CalendarViewType } from './types';
 
 interface CalendarViewProps {
   scope: CalendarScope;
+  compact?: boolean;
+  projectId?: string;
 }
 
-export function CalendarView({ scope }: CalendarViewProps) {
+export function CalendarView({ scope, compact = false, projectId }: CalendarViewProps) {
   const { user } = useAuthStore();
   const { projects } = useProjectStore();
 
@@ -32,10 +34,18 @@ export function CalendarView({ scope }: CalendarViewProps) {
     zoomIn, zoomOut, resetZoom,
   } = useCalendarStore();
 
-  // Set scope when component mounts
+  // Set scope and projectId filter when component mounts
   useEffect(() => {
     setScope(scope);
-  }, [scope, setScope]);
+    if (scope === 'project' && projectId) {
+      setFilters({ projectId });
+    }
+    return () => {
+      if (scope === 'project') {
+        setFilters({ projectId: null });
+      }
+    };
+  }, [scope, projectId, setScope, setFilters]);
 
   // Calculate date range based on current view
   const dateRange = useMemo(() => {
@@ -79,7 +89,7 @@ export function CalendarView({ scope }: CalendarViewProps) {
   const goToToday = () => setSelectedDate(new Date());
 
   // Permission check
-  const canCreate = scope === 'personal' || user?.role === 'admin' || user?.role === 'project_lead';
+  const canCreate = scope === 'personal' || scope === 'project' || scope === 'dashboard' || user?.role === 'admin' || user?.role === 'project_lead';
 
   // Format header date
   const headerDate = useMemo(() => {
@@ -193,7 +203,7 @@ export function CalendarView({ scope }: CalendarViewProps) {
       )}
 
       {/* Calendar Body */}
-      <div className="overflow-auto" style={{ maxHeight: currentView === 'monthly' ? '600px' : '700px' }}>
+      <div className="overflow-auto" style={{ maxHeight: compact ? (currentView === 'monthly' ? '350px' : '400px') : (currentView === 'monthly' ? '600px' : '700px') }}>
         {currentView === 'daily' && (
           <DailyView
             selectedDate={selectedDate}

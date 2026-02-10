@@ -140,8 +140,8 @@ CREATE TRIGGER update_user_preferences_updated_at BEFORE UPDATE ON user_preferen
 
 -- Seed initial admin user (password: admin123 - should be changed immediately)
 -- Password hash generated with bcrypt (12 rounds)
-INSERT INTO users (email, password_hash, name, role)
-VALUES ('admin@statslab.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4DY6r1q6F3q9i9Oi', 'Admin User', 'admin')
+INSERT INTO users (email, password_hash, first_name, last_name, role)
+VALUES ('admin@statslab.com', '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4DY6r1q6F3q9i9Oi', 'Admin', 'User', 'admin')
 ON CONFLICT (email) DO NOTHING;
 
 -- Create default preferences for the admin user

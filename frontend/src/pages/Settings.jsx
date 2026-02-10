@@ -10,7 +10,7 @@ export default function Settings() {
   const [activeSection, setActiveSection] = useState('profile')
 
   // Profile state
-  const [profileData, setProfileData] = useState({ name: '', email: '' })
+  const [profileData, setProfileData] = useState({ firstName: '', lastName: '', email: '' })
   const [isSavingProfile, setIsSavingProfile] = useState(false)
   const [profileMessage, setProfileMessage] = useState({ type: '', text: '' })
   const [avatarUploading, setAvatarUploading] = useState(false)
@@ -31,7 +31,7 @@ export default function Settings() {
 
   useEffect(() => {
     if (user) {
-      setProfileData({ name: user.name, email: user.email })
+      setProfileData({ firstName: user.first_name || '', lastName: user.last_name || '', email: user.email })
     }
   }, [user])
 
@@ -181,12 +181,20 @@ export default function Settings() {
                     <p className="text-xs text-text-secondary dark:text-gray-400 mt-1">Max 5MB, JPG/PNG</p>
                   </div>
                 </div>
-                <Input
-                  label="Full name"
-                  value={profileData.name}
-                  onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                  required
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="First Name"
+                    value={profileData.firstName}
+                    onChange={(e) => setProfileData({ ...profileData, firstName: e.target.value })}
+                    required
+                  />
+                  <Input
+                    label="Last Name"
+                    value={profileData.lastName}
+                    onChange={(e) => setProfileData({ ...profileData, lastName: e.target.value })}
+                    required
+                  />
+                </div>
                 <Input
                   label="Email"
                   type="email"

@@ -10,8 +10,10 @@ const router = express.Router();
 
 // Submit application (public - no auth required)
 router.post('/', [
-  body('name').trim().notEmpty().withMessage('Name is required'),
+  body('firstName').trim().notEmpty().withMessage('First name is required'),
+  body('lastName').trim().notEmpty().withMessage('Last name is required'),
   body('email').isEmail().normalizeEmail().withMessage('Valid email is required'),
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters'),
   body('message').trim().notEmpty().withMessage('Message is required')
 ], async (req, res, next) => {
   try {
@@ -20,7 +22,7 @@ router.post('/', [
       return res.status(400).json({ error: { message: 'Validation failed', details: errors.array() } });
     }
 
-    const { name, email, message } = req.body;
+    const { firstName, lastName, email, password, message } = req.body;
 
     // Check if email already has a pending application
     const existing = await db.query(
@@ -37,9 +39,11 @@ router.post('/', [
       return res.status(409).json({ error: { message: 'An account with this email already exists' } });
     }
 
+    const passwordHash = await bcrypt.hash(password, 12);
+
     const result = await db.query(
-      'INSERT INTO applications (name, email, message) VALUES ($1, $2, $3) RETURNING *',
-      [name, email, message]
+      'INSERT INTO applications (first_name, last_name, email, message, password_hash) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [firstName, lastName, email, message, passwordHash]
     );
 
     res.status(201).json({
@@ -145,8 +149,8 @@ router.put('/:id/approve', authenticate, requireRole('admin'), [
 
     // Create user account
     const userResult = await client.query(
-      'INSERT INTO users (email, password_hash, name, role) VALUES ($1, $2, $3, $4) RETURNING id, email, name, role',
-      [application.email, passwordHash, application.name, role]
+      'INSERT INTO users (email, password_hash, first_name, last_name, role) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, name, role',
+      [application.email, passwordHash, application.first_name, application.last_name, role]
     );
 
     // Create default preferences for new user
@@ -310,8 +314,8 @@ router.post('/bulk', authenticate, requireRole('admin'), [
           }
 
           const userResult = await client.query(
-            'INSERT INTO users (email, password_hash, name, role) VALUES ($1, $2, $3, $4) RETURNING id',
-            [application.email, passwordHash, application.name, 'viewer']
+            'INSERT INTO users (email, password_hash, first_name, last_name, role) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+            [application.email, passwordHash, application.first_name, application.last_name, 'viewer']
           );
 
           await client.query(
