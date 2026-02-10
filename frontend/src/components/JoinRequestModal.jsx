@@ -118,7 +118,7 @@ export default function JoinRequestModal({ projectId, onClose }) {
                   </div>
                   {req.message && (
                     <p className="text-sm text-text-secondary dark:text-gray-400 mb-3 italic">
-                      "{req.message}"
+                      &ldquo;{req.message}&rdquo;
                     </p>
                   )}
                   <div className="flex justify-end gap-2">
