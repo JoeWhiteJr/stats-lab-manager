@@ -50,16 +50,16 @@ const MeetingCard = memo(function MeetingCard({ meeting, onView, onDelete, onEdi
           {onEdit && (
             <button
               onClick={() => onEdit(meeting)}
-              className="p-1.5 rounded text-text-secondary hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/30 opacity-0 group-hover:opacity-100 transition-opacity"
-              title="Edit"
+              className="p-1.5 rounded text-text-secondary dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30 opacity-0 group-hover:opacity-100 transition-opacity"
+              aria-label="Edit meeting notes"
             >
               <StickyNote size={16} />
             </button>
           )}
           <button
             onClick={() => onDelete(meeting.id)}
-            className="p-1.5 rounded text-text-secondary hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 opacity-0 group-hover:opacity-100 transition-opacity"
-            title="Delete"
+            className="p-1.5 rounded text-text-secondary dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 opacity-0 group-hover:opacity-100 transition-opacity"
+            aria-label="Delete meeting"
           >
             <Trash2 size={16} />
           </button>

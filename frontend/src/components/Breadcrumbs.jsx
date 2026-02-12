@@ -70,13 +70,14 @@ export default function Breadcrumbs() {
           <span key={crumb.path} className="flex items-center gap-1.5">
             {index > 0 && <ChevronRight size={14} className="text-gray-400" />}
             {isLast ? (
-              <span className="text-text-primary dark:text-gray-100 font-medium truncate max-w-[200px]">
+              <span className="text-text-primary dark:text-gray-100 font-medium truncate max-w-[200px]" title={crumb.label}>
                 {crumb.label}
               </span>
             ) : (
               <Link
                 to={crumb.path}
                 className="text-text-secondary dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors truncate max-w-[200px]"
+                title={crumb.label}
               >
                 {crumb.label}
               </Link>

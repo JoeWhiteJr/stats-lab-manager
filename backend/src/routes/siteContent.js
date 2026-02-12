@@ -78,7 +78,8 @@ adminRouter.get('/site-content', async (req, res, next) => {
 
 // PUT /api/admin/site-content/:section
 adminRouter.put('/site-content/:section', [
-  body('key').isString().trim().notEmpty(),
+  param('section').trim().notEmpty().isLength({ max: 100 }),
+  body('key').isString().trim().notEmpty().isLength({ max: 100 }),
   body('value').exists(),
 ], async (req, res, next) => {
   try {
@@ -121,8 +122,14 @@ adminRouter.get('/team-members', async (req, res, next) => {
 
 // POST /api/admin/team-members
 adminRouter.post('/team-members', [
-  body('name').isString().trim().notEmpty(),
-  body('category').isString().trim().notEmpty(),
+  body('name').isString().trim().notEmpty().isLength({ max: 200 }),
+  body('category').isString().trim().notEmpty().isLength({ max: 100 }),
+  body('role').optional().trim().isLength({ max: 100 }),
+  body('title').optional().trim().isLength({ max: 200 }),
+  body('bio').optional().trim().isLength({ max: 5000 }),
+  body('email').optional({ values: 'falsy' }).isEmail(),
+  body('linkedin_url').optional({ values: 'falsy' }).isURL(),
+  body('display_order').optional().isInt({ min: 0, max: 999 }),
 ], async (req, res, next) => {
   try {
     const errors = validationResult(req);

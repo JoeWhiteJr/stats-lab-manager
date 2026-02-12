@@ -253,7 +253,7 @@ router.put('/:id/reject', authenticate, requireRole('admin'), [
 
 // Update admin notes (admin only)
 router.put('/:id/notes', authenticate, requireRole('admin'), [
-  body('notes').trim()
+  body('notes').trim().isLength({ max: 5000 })
 ], async (req, res, next) => {
   try {
     const { notes } = req.body;

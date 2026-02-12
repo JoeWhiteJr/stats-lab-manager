@@ -144,6 +144,7 @@ export default function CategoryManager({
                           formData.color === color ? 'ring-2 ring-offset-1 ring-gray-400 dark:ring-gray-500 scale-110' : ''
                         }`}
                         style={{ backgroundColor: color }}
+                        aria-label={`Select color ${color}`}
                       />
                     ))}
                   </div>
@@ -151,6 +152,7 @@ export default function CategoryManager({
                     type="submit"
                     disabled={isSubmitting}
                     className="p-1 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 rounded"
+                    aria-label="Save category"
                   >
                     <Check size={16} />
                   </button>
@@ -158,6 +160,7 @@ export default function CategoryManager({
                     type="button"
                     onClick={handleCancelEdit}
                     className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                    aria-label="Cancel editing"
                   >
                     <X size={16} />
                   </button>
@@ -176,12 +179,14 @@ export default function CategoryManager({
                     <button
                       onClick={() => handleOpenEdit(category)}
                       className="p-1 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded"
+                      aria-label="Edit category"
                     >
                       <Edit2 size={14} />
                     </button>
                     <button
                       onClick={() => setDeleteConfirm(category)}
                       className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
+                      aria-label="Delete category"
                     >
                       <Trash2 size={14} />
                     </button>
@@ -230,6 +235,7 @@ export default function CategoryManager({
                       : 'hover:scale-105'
                   }`}
                   style={{ backgroundColor: color }}
+                  aria-label={`Select color ${color}`}
                 />
               ))}
             </div>

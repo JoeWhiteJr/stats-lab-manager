@@ -130,6 +130,9 @@ router.put('/:id', authenticate, [
 // Delete category
 router.delete('/:id', authenticate, async (req, res, next) => {
   try {
+    // Null out category_id on affected action items before deleting
+    await db.query('UPDATE action_items SET category_id = NULL WHERE category_id = $1', [req.params.id]);
+
     const result = await db.query('DELETE FROM categories WHERE id = $1 RETURNING id', [req.params.id]);
 
     if (result.rows.length === 0) {

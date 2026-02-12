@@ -182,10 +182,16 @@ const typeToEmailPref = {
 const sendNotificationEmails = async (userIds, type, title, body, referenceId) => {
   if (!userIds || userIds.length === 0) return;
 
+  const ALLOWED_PREF_COLUMNS = ['email_chat', 'email_mentions', 'email_applications', 'email_system'];
   const prefColumn = typeToEmailPref[type] || 'email_system';
+  if (!ALLOWED_PREF_COLUMNS.includes(prefColumn)) {
+    logger.error({ type, prefColumn }, 'Invalid email preference column');
+    return;
+  }
   const appUrl = process.env.APP_URL || 'http://localhost:5173';
 
   try {
+    // prefColumn is safe — validated against ALLOWED_PREF_COLUMNS whitelist above
     const result = await db.query(
       `SELECT u.id, u.name, u.email, up.${prefColumn} AS email_enabled
        FROM users u

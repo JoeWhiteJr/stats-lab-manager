@@ -56,12 +56,12 @@ const ProjectCard = memo(function ProjectCard({ project, showActions = true, onC
           isInactive
             ? 'text-text-secondary dark:text-gray-400'
             : 'text-text-primary dark:text-gray-100 group-hover:text-primary-600 dark:group-hover:text-primary-400'
-        }`}>
+        }`} title={project.title}>
           {project.title}
         </h3>
 
         {project.description && (
-          <p className="mt-2 text-sm text-text-secondary dark:text-gray-400 line-clamp-2">
+          <p className="mt-2 text-sm text-text-secondary dark:text-gray-400 line-clamp-2" title={project.description}>
             {project.description}
           </p>
         )}

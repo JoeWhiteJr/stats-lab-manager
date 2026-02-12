@@ -59,23 +59,23 @@ export default function FileCard({ file, onDownload, onDelete, onPreview }) {
           {onPreview && (
             <button
               onClick={(e) => { e.stopPropagation(); onPreview(file); }}
-              className="p-2 bg-white dark:bg-gray-700 rounded-lg text-text-primary hover:bg-gray-100 dark:hover:bg-gray-600"
-              title="Preview"
+              className="p-2 bg-white dark:bg-gray-700 rounded-lg text-text-primary dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600"
+              aria-label="Preview file"
             >
               <Eye size={18} />
             </button>
           )}
           <button
             onClick={(e) => { e.stopPropagation(); onDownload(file); }}
-            className="p-2 bg-white dark:bg-gray-700 rounded-lg text-text-primary hover:bg-gray-100 dark:hover:bg-gray-600"
-            title="Download"
+            className="p-2 bg-white dark:bg-gray-700 rounded-lg text-text-primary dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600"
+            aria-label="Download file"
           >
             <Download size={18} />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); onDelete(file.id); }}
-            className="p-2 bg-white dark:bg-gray-700 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30"
-            title="Delete"
+            className="p-2 bg-white dark:bg-gray-700 rounded-lg text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+            aria-label="Delete file"
           >
             <Trash2 size={18} />
           </button>

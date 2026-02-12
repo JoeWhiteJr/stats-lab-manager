@@ -20,7 +20,7 @@ export default function ConfirmDialog({
           <AlertTriangle size={24} className="text-red-500 dark:text-red-400" />
         </div>
         {message && (
-          <p className="text-sm text-text-secondary mb-6">{message}</p>
+          <p className="text-sm text-text-secondary dark:text-gray-400 mb-6">{message}</p>
         )}
         <div className="flex gap-3 w-full">
           <Button
