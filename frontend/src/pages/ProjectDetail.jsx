@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import { CalendarView } from '../components/calendar/CalendarView'
 import { toast } from '../store/toastStore'
+import { PROJECT_STATUSES } from '../constants'
 
 const tabs = [
   { id: 'overview', label: 'Overview', icon: FileText },
@@ -603,7 +604,7 @@ export default function ProjectDetail() {
                       <div className="px-3 py-2 text-xs font-semibold text-text-secondary dark:text-gray-400 uppercase tracking-wider">
                         Set Status
                       </div>
-                      {['active', 'completed', 'inactive', 'archived'].map((status) => (
+                      {PROJECT_STATUSES.map((status) => (
                         <button
                           key={status}
                           onClick={() => handleStatusChange(status)}
@@ -667,7 +668,7 @@ export default function ProjectDetail() {
                     value={importantInfoDraft}
                     onChange={(e) => setImportantInfoDraft(e.target.value)}
                     rows={6}
-                    className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 resize-none"
+                    className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 resize-y"
                     placeholder="Add important information, links, or notes for the team..."
                   />
                   <div className="flex justify-end gap-2">
@@ -954,6 +955,24 @@ export default function ProjectDetail() {
                         if (taskStatusFilter === 'completed' && !a.completed) return false
                         return true
                       }).length})
+                    </button>
+                  </div>
+                )}
+
+                {/* Active filter indicator */}
+                {(categoryFilter || assigneeFilter) && (
+                  <div className="flex items-center justify-between mb-3 px-1">
+                    <p className="text-xs text-text-secondary dark:text-gray-400">
+                      Showing {filteredActions.length} {filteredActions.length === 1 ? 'task' : 'tasks'}
+                      {assigneeFilter === 'me' ? ' assigned to you' : assigneeFilter ? ` assigned to ${teamMembers.find(m => m.id === assigneeFilter)?.name || 'member'}` : ''}
+                      {categoryFilter && categoryFilter !== 'uncategorized' ? ` in ${categories.find(c => c.id === categoryFilter)?.name || 'category'}` : ''}
+                      {categoryFilter === 'uncategorized' ? ' (uncategorized)' : ''}
+                    </p>
+                    <button
+                      onClick={() => { setCategoryFilter(null); setAssigneeFilter(null) }}
+                      className="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium"
+                    >
+                      Clear filters
                     </button>
                   </div>
                 )}

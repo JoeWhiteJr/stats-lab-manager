@@ -24,6 +24,8 @@ export default function Admin() {
   const [teamMembers, setTeamMembers] = useState([])
   const [isLoadingTeam, setIsLoadingTeam] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null)
+  const [teamPage, setTeamPage] = useState(0)
+  const TEAM_PAGE_SIZE = 20
   const [showReviewModal, setShowReviewModal] = useState(false)
   const [reviewingAppId, setReviewingAppId] = useState(null)
   const [isReviewing, setIsReviewing] = useState(false)
@@ -305,7 +307,12 @@ export default function Admin() {
       )}
       {activeTab === 'team' && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <h2 className="font-display font-semibold text-lg mb-6 text-text-primary dark:text-gray-100">Team Members</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-display font-semibold text-lg text-text-primary dark:text-gray-100">Team Members</h2>
+            {teamMembers.length > 0 && (
+              <span className="text-sm text-text-secondary dark:text-gray-400">{teamMembers.length} total</span>
+            )}
+          </div>
           {isLoadingTeam ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
@@ -314,7 +321,7 @@ export default function Admin() {
             </div>
           ) : (
             <div className="space-y-3">
-              {teamMembers.map((member) => (
+              {teamMembers.slice(teamPage * TEAM_PAGE_SIZE, (teamPage + 1) * TEAM_PAGE_SIZE).map((member) => (
                 <div
                   key={member.id}
                   className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
@@ -364,6 +371,29 @@ export default function Admin() {
                   </div>
                 </div>
               ))}
+              {teamMembers.length > TEAM_PAGE_SIZE && (
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <span className="text-sm text-text-secondary dark:text-gray-400">
+                    Showing {teamPage * TEAM_PAGE_SIZE + 1}–{Math.min((teamPage + 1) * TEAM_PAGE_SIZE, teamMembers.length)} of {teamMembers.length}
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setTeamPage(p => p - 1)}
+                      disabled={teamPage === 0}
+                      className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-text-secondary dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setTeamPage(p => p + 1)}
+                      disabled={(teamPage + 1) * TEAM_PAGE_SIZE >= teamMembers.length}
+                      className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-text-secondary dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>

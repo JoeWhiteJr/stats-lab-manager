@@ -2,14 +2,10 @@ import { memo } from 'react'
 import { CheckCircle2, Calendar, Users } from 'lucide-react'
 import { format } from 'date-fns'
 import { getUploadUrl } from '../services/api'
+import { PROJECT_STATUS_COLORS } from '../constants'
 
 const ProjectCard = memo(function ProjectCard({ project, showActions = true, onClick, pendingJoinRequests = 0 }) {
-  const statusColors = {
-    active: 'bg-secondary-100 dark:bg-secondary-900/30 text-secondary-700 dark:text-secondary-300',
-    completed: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
-    archived: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400',
-    inactive: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'
-  }
+  const statusColors = PROJECT_STATUS_COLORS
 
   const isInactive = project.status === 'inactive'
 

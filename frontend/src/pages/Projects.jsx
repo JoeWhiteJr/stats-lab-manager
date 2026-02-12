@@ -8,6 +8,7 @@ import Button from '../components/Button'
 import Modal from '../components/Modal'
 import Input from '../components/Input'
 import { Plus, Search, FolderKanban, ChevronDown, ChevronUp } from 'lucide-react'
+import { PROJECT_STATUSES } from '../constants'
 
 export default function Projects() {
   const navigate = useNavigate()
@@ -105,7 +106,7 @@ export default function Projects() {
           />
         </div>
         <div className="flex gap-2 flex-wrap">
-          {['all', 'active', 'completed', 'inactive'].map((status) => (
+          {['all', ...PROJECT_STATUSES.filter(s => s !== 'archived')].map((status) => (
             <button
               key={status}
               onClick={() => setFilter(status)}

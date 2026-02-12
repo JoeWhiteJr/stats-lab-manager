@@ -16,7 +16,7 @@ import { useChatNotifications } from '../components/chat/useChatNotifications'
 import { chatApi } from '../services/api'
 import { toast } from '../store/toastStore'
 import { MessageCircle, Plus, Sparkles, Send, Trash2, Smile, Pencil, Reply, X, ArrowLeft } from 'lucide-react'
-import { format, isToday, isYesterday } from 'date-fns'
+import { format, isToday, isYesterday, formatDistanceToNow } from 'date-fns'
 
 // Detect URLs in text
 const URL_REGEX = /https?:\/\/[^\s<]+/g
@@ -379,6 +379,10 @@ export default function Chat() {
 
   const formatMessageTime = (dateStr) => {
     const date = new Date(dateStr)
+    const now = new Date()
+    const diffMs = now - date
+    // Within last hour: relative ("5 min ago")
+    if (diffMs < 60 * 60 * 1000) return formatDistanceToNow(date, { addSuffix: true })
     if (isToday(date)) return format(date, 'h:mm a')
     if (isYesterday(date)) return 'Yesterday ' + format(date, 'h:mm a')
     return format(date, 'MMM d, h:mm a')
@@ -551,6 +555,18 @@ export default function Chat() {
                   >
                     Load older messages
                   </button>
+                </div>
+              )}
+
+              {isLoading && messages.length === 0 && (
+                <div className="flex-1 flex items-center justify-center h-full">
+                  <div className="space-y-4 w-full max-w-md px-4">
+                    {[1, 2, 3, 4].map(i => (
+                      <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`rounded-2xl animate-pulse bg-gray-200 dark:bg-gray-700 ${i % 2 === 0 ? 'w-48' : 'w-56'} h-10`} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
