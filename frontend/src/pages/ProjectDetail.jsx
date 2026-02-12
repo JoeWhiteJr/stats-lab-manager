@@ -17,6 +17,7 @@ import DatePicker from '../components/DatePicker'
 import RichTextEditor, { RichTextContent } from '../components/RichTextEditor'
 import AudioRecorder from '../components/AudioRecorder'
 import CategoryManager from '../components/CategoryManager'
+import ConfirmDialog from '../components/ConfirmDialog'
 import {
   ArrowLeft, Edit3, Trash2, Plus, Upload, ListTodo, FileText,
   StickyNote, Mic, Image, MoreVertical, Check, Users, Sparkles, Loader2,
@@ -57,6 +58,7 @@ export default function ProjectDetail() {
   const [teamMembers, setTeamMembers] = useState([])
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false)
   const [editData, setEditData] = useState({ title: '', description: '', status: 'active', progress: 0 })
 
   // Action modals
@@ -274,6 +276,7 @@ export default function ProjectDetail() {
   const handleSaveImportantInfo = async () => {
     await updateProject(id, { important_info: importantInfoDraft })
     setEditingImportantInfo(false)
+    toast.success('Important info saved')
   }
 
   // Handle Add Member modal
@@ -726,7 +729,7 @@ export default function ProjectDetail() {
                 )}
                 {membershipStatus?.status === 'member' && membershipStatus?.role !== 'lead' && (
                   <button
-                    onClick={() => { if (window.confirm('Are you sure you want to leave this project?')) leaveProject(id) }}
+                    onClick={() => setShowLeaveConfirm(true)}
                     className="flex items-center gap-1.5 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-text-secondary dark:text-gray-400 text-sm font-medium rounded-lg hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-colors"
                   >
                     <UserMinus size={16} />
@@ -1202,6 +1205,17 @@ export default function ProjectDetail() {
           <Button variant="danger" onClick={handleDeleteProject}>Delete Project</Button>
         </div>
       </Modal>
+
+      {/* Leave Project Confirmation */}
+      <ConfirmDialog
+        isOpen={showLeaveConfirm}
+        onClose={() => setShowLeaveConfirm(false)}
+        onConfirm={() => { leaveProject(id); setShowLeaveConfirm(false) }}
+        title="Leave Project"
+        message="Are you sure you want to leave this project? You will lose access to its resources."
+        confirmLabel="Leave"
+        variant="danger"
+      />
 
       {/* Add Action Modal */}
       <Modal isOpen={showActionModal} onClose={() => setShowActionModal(false)} title="Add Action Item">

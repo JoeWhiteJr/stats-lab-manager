@@ -502,6 +502,7 @@ export default function Chat() {
                 <button
                   onClick={handleMobileBack}
                   className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-text-secondary dark:text-gray-400"
+                  aria-label="Back to conversations"
                 >
                   <ArrowLeft size={20} />
                 </button>
@@ -713,7 +714,7 @@ export default function Chat() {
                   <p className="text-xs font-medium text-primary-600 dark:text-primary-400">{replyingTo.sender_name}</p>
                   <p className="text-xs text-text-secondary dark:text-gray-400 truncate">{replyingTo.content}</p>
                 </div>
-                <button onClick={handleCancelReply} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded">
+                <button onClick={handleCancelReply} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded" aria-label="Cancel reply">
                   <X size={14} className="dark:text-gray-400" />
                 </button>
               </div>
@@ -785,6 +786,7 @@ export default function Chat() {
                   type="submit"
                   disabled={!messageText.trim() || isSending}
                   className="p-2.5 rounded-xl bg-primary-500 text-white hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  aria-label="Send message"
                 >
                   <Send size={18} />
                 </button>

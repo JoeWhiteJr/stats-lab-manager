@@ -4,6 +4,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { GripVertical, Trash2, Pencil, Calendar, User, Users, Tag, ChevronDown, ChevronRight, CornerDownRight, MessageSquare, Send as SendIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import CategoryBadge from './CategoryBadge'
+import ConfirmDialog from './ConfirmDialog'
 import { commentsApi } from '../services/api'
 import { toast } from '../store/toastStore'
 
@@ -29,6 +30,7 @@ export default function ActionItem({
   const [newComment, setNewComment] = useState('')
   const [loadingComments, setLoadingComments] = useState(false)
   const [commentCount, setCommentCount] = useState(action.comment_count || 0)
+  const [deleteCommentTarget, setDeleteCommentTarget] = useState(null)
 
   const {
     attributes,
@@ -116,6 +118,7 @@ export default function ActionItem({
           {...attributes}
           {...listeners}
           className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-grab active:cursor-grabbing"
+          aria-label="Drag to reorder"
         >
           <GripVertical size={16} />
         </button>
@@ -251,6 +254,7 @@ export default function ActionItem({
             className={`p-1.5 rounded text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-all ${
               isHovered ? 'opacity-100' : 'opacity-0'
             }`}
+            aria-label="Edit task"
           >
             <Pencil size={16} />
           </button>
@@ -267,6 +271,7 @@ export default function ActionItem({
           className={`p-1.5 rounded text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all ${
             isHovered ? 'opacity-100' : 'opacity-0'
           }`}
+          aria-label="Delete task"
         >
           <Trash2 size={16} />
         </button>
@@ -286,14 +291,7 @@ export default function ActionItem({
                       {new Date(c.created_at).toLocaleDateString()}
                     </span>
                     <button
-                      onClick={async () => {
-                        if (!window.confirm('Delete this comment?')) return
-                        try {
-                          await commentsApi.delete(action.id, c.id)
-                          setComments(prev => prev.filter(x => x.id !== c.id))
-                          setCommentCount(prev => prev - 1)
-                        } catch { toast.error('Failed to delete comment') }
-                      }}
+                      onClick={() => setDeleteCommentTarget(c)}
                       className="ml-auto opacity-0 group-hover/comment:opacity-100 p-0.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-opacity"
                       title="Delete comment"
                     >
@@ -352,6 +350,21 @@ export default function ActionItem({
           ))}
         </div>
       )}
+      <ConfirmDialog
+        isOpen={!!deleteCommentTarget}
+        onClose={() => setDeleteCommentTarget(null)}
+        onConfirm={async () => {
+          try {
+            await commentsApi.delete(action.id, deleteCommentTarget.id)
+            setComments(prev => prev.filter(x => x.id !== deleteCommentTarget.id))
+            setCommentCount(prev => prev - 1)
+          } catch { toast.error('Failed to delete comment') }
+          setDeleteCommentTarget(null)
+        }}
+        title="Delete Comment"
+        message="Are you sure you want to delete this comment?"
+        confirmLabel="Delete"
+      />
     </div>
   )
 }

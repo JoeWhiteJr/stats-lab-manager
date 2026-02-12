@@ -7,6 +7,7 @@ import { useProjectStore } from '../../store/projectStore';
 import { usersApi } from '../../services/api';
 import { ClockPicker } from './ClockPicker';
 import { RepeatPicker } from './RepeatPicker';
+import ConfirmDialog from '../ConfirmDialog';
 import type { CalendarScope, CalendarCategory, RepeatRule, CreateEventData } from './types';
 import { CATEGORY_COLORS } from './types';
 
@@ -48,6 +49,7 @@ export function EventModal({ scope, onClose }: EventModalProps) {
     editingEvent?.attendees?.map((a) => a.user_id) || []
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // New category form
   const [showNewCategory, setShowNewCategory] = useState(false);
@@ -108,8 +110,12 @@ export function EventModal({ scope, onClose }: EventModalProps) {
     onClose();
   };
 
-  const handleDelete = async () => {
-    if (editingEvent && window.confirm('Are you sure you want to delete this event?')) {
+  const handleDelete = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (editingEvent) {
       await deleteEvent(editingEvent.id);
       onClose();
     }
@@ -135,6 +141,7 @@ export function EventModal({ scope, onClose }: EventModalProps) {
   };
 
   return (
+    <>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
       <div
         className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
@@ -147,11 +154,11 @@ export function EventModal({ scope, onClose }: EventModalProps) {
           </h2>
           <div className="flex items-center gap-2">
             {isEditing && (
-              <button onClick={handleDelete} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors">
+              <button onClick={handleDelete} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" aria-label="Delete event">
                 <Trash2 size={18} />
               </button>
             )}
-            <button onClick={onClose} className="p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+            <button onClick={onClose} className="p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" aria-label="Close">
               <X size={18} />
             </button>
           </div>
@@ -399,6 +406,15 @@ export function EventModal({ scope, onClose }: EventModalProps) {
         </form>
       </div>
     </div>
+    <ConfirmDialog
+      isOpen={showDeleteConfirm}
+      onClose={() => setShowDeleteConfirm(false)}
+      onConfirm={confirmDelete}
+      title="Delete Event"
+      message="Are you sure you want to delete this event? This cannot be undone."
+      confirmLabel="Delete"
+    />
+    </>
   );
 }
 

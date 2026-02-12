@@ -42,15 +42,25 @@ const upload = multer({
 // Get meetings for a project
 router.get('/project/:projectId', authenticate, requireProjectAccess(), async (req, res, next) => {
   try {
+    const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+    const offset = Math.max(parseInt(req.query.offset) || 0, 0);
+
+    const countResult = await db.query(
+      'SELECT COUNT(*) FROM meetings WHERE project_id = $1',
+      [req.params.projectId]
+    );
+    const total = parseInt(countResult.rows[0].count);
+
     const result = await db.query(`
       SELECT m.*, u.name as creator_name
       FROM meetings m
       JOIN users u ON m.created_by = u.id
       WHERE m.project_id = $1
       ORDER BY m.recorded_at DESC NULLS LAST, m.created_at DESC
-    `, [req.params.projectId]);
+      LIMIT $2 OFFSET $3
+    `, [req.params.projectId, limit, offset]);
 
-    res.json({ meetings: result.rows });
+    res.json({ meetings: result.rows, total, limit, offset });
   } catch (error) {
     next(error);
   }

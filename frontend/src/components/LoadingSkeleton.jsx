@@ -1,12 +1,12 @@
 function Bone({ className = '' }) {
   return (
-    <div className={`bg-gray-200 rounded-organic animate-pulse ${className}`} />
+    <div className={`bg-gray-200 dark:bg-gray-700 rounded-organic animate-pulse ${className}`} />
   )
 }
 
 export function CardSkeleton() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
       <Bone className="h-32 rounded-none" />
       <div className="p-5 space-y-3">
         <Bone className="h-5 w-3/4" />
@@ -34,7 +34,7 @@ export function ListSkeleton({ rows = 4 }) {
 
 export function StatSkeleton() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5">
+    <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
       <Bone className="w-10 h-10 rounded-organic" />
       <div className="mt-3 space-y-2">
         <Bone className="h-7 w-16" />

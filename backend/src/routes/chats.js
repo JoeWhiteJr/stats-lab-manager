@@ -55,6 +55,17 @@ const chatUpload = multer({
 // Get user's chat rooms
 router.get('/', authenticate, async (req, res, next) => {
   try {
+    const limit = Math.min(parseInt(req.query.limit) || 50, 100);
+    const offset = Math.max(parseInt(req.query.offset) || 0, 0);
+
+    const countResult = await db.query(
+      `SELECT COUNT(*) FROM chat_rooms cr
+       JOIN chat_members cm ON cr.id = cm.room_id
+       WHERE cm.user_id = $1 AND cr.deleted_at IS NULL`,
+      [req.user.id]
+    );
+    const total = parseInt(countResult.rows[0].count);
+
     const result = await db.query(`
       SELECT
         cr.*,
@@ -88,9 +99,10 @@ router.get('/', authenticate, async (req, res, next) => {
       ORDER BY (
         SELECT MAX(m.created_at) FROM messages m WHERE m.room_id = cr.id
       ) DESC NULLS LAST
-    `, [req.user.id]);
+      LIMIT $2 OFFSET $3
+    `, [req.user.id, limit, offset]);
 
-    res.json({ rooms: result.rows });
+    res.json({ rooms: result.rows, total, limit, offset });
   } catch (error) {
     next(error);
   }
@@ -156,14 +168,14 @@ router.post('/', authenticate, [
       [room.id, req.user.id, 'admin']
     );
 
-    // Add other members
-    for (const memberId of memberIds) {
-      if (memberId !== req.user.id) {
-        await client.query(
-          'INSERT INTO chat_members (room_id, user_id, role) VALUES ($1, $2, $3)',
-          [room.id, memberId, 'member']
-        );
-      }
+    // Add other members (batch insert)
+    const otherMembers = memberIds.filter(id => id !== req.user.id);
+    if (otherMembers.length > 0) {
+      const values = otherMembers.map((_, i) => `($1, $${i + 2}, 'member')`).join(', ');
+      await client.query(
+        `INSERT INTO chat_members (room_id, user_id, role) VALUES ${values}`,
+        [room.id, ...otherMembers]
+      );
     }
 
     await client.query('COMMIT');
@@ -623,21 +635,22 @@ router.post('/:id/members', authenticate, [
     await client.query('BEGIN');
 
     const { userIds } = req.body;
-    const added = [];
 
-    for (const userId of userIds) {
-      const existing = await client.query(
-        'SELECT user_id FROM chat_members WHERE room_id = $1 AND user_id = $2',
-        [req.params.id, userId]
+    // Find which users are already members (single query)
+    const existingResult = await client.query(
+      'SELECT user_id FROM chat_members WHERE room_id = $1 AND user_id = ANY($2)',
+      [req.params.id, userIds]
+    );
+    const existingIds = new Set(existingResult.rows.map(r => r.user_id));
+    const added = userIds.filter(id => !existingIds.has(id));
+
+    // Batch insert new members
+    if (added.length > 0) {
+      const values = added.map((_, i) => `($1, $${i + 2}, 'member')`).join(', ');
+      await client.query(
+        `INSERT INTO chat_members (room_id, user_id, role) VALUES ${values}`,
+        [req.params.id, ...added]
       );
-
-      if (existing.rows.length === 0) {
-        await client.query(
-          'INSERT INTO chat_members (room_id, user_id, role) VALUES ($1, $2, $3)',
-          [req.params.id, userId, 'member']
-        );
-        added.push(userId);
-      }
     }
 
     await client.query('COMMIT');

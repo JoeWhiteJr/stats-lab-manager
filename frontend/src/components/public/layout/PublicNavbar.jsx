@@ -135,6 +135,7 @@ export default function PublicNavbar() {
                       <button
                         onClick={() => setShowUserMenu(!showUserMenu)}
                         className="rounded-full hover:ring-2 hover:ring-pub-blue-200 transition-all"
+                        aria-label="User menu"
                       >
                         <Avatar name={user?.name} size="sm" />
                       </button>

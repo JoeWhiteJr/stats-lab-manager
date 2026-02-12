@@ -76,6 +76,7 @@ export default function Layout() {
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+            aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
           >
             {sidebarOpen ? <X size={24} className="dark:text-gray-200" /> : <Menu size={24} className="dark:text-gray-200" />}
           </button>
