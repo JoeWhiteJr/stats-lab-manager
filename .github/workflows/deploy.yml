@@ -30,6 +30,7 @@ jobs:
               sudo cp deploy/ssl.conf /etc/nginx/conf.d/ssl.conf
             fi
             docker compose -f docker-compose.ec2.yml down --timeout 30 || true
+            docker system prune -af --volumes 2>/dev/null || docker system prune -f
             docker compose -f docker-compose.ec2.yml up -d --build --remove-orphans --wait --wait-timeout 120
             for f in database/migrations/*.sql; do
               docker exec -i statslab-db psql -U statslab -d statslab < "$f" || true
