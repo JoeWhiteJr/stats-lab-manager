@@ -25,7 +25,8 @@ ALTER TABLE files ADD COLUMN IF NOT EXISTS deleted_by UUID REFERENCES users(id) 
 CREATE INDEX IF NOT EXISTS idx_files_active ON files(id) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_files_trashed ON files(deleted_at) WHERE deleted_at IS NOT NULL;
 
--- Notes: add deleted_by if not present (deleted_at already exists from migration 025)
+-- Notes
+ALTER TABLE notes ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL;
 ALTER TABLE notes ADD COLUMN IF NOT EXISTS deleted_by UUID REFERENCES users(id) DEFAULT NULL;
 CREATE INDEX IF NOT EXISTS idx_notes_active ON notes(id) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_notes_trashed ON notes(deleted_at) WHERE deleted_at IS NOT NULL;
