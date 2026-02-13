@@ -1,5 +1,4 @@
 const db = require('../config/database');
-const logger = require('../config/logger');
 const { embedText } = require('./embeddingService');
 const pgvector = require('pgvector');
 

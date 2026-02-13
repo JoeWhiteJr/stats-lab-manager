@@ -150,7 +150,7 @@ export default function AssistantSidebar() {
               {messages.length === 0 && !isLoading && (
                 <div className="text-center text-sm text-text-secondary dark:text-gray-400 py-8">
                   <p className="font-medium mb-1">Ask a question</p>
-                  <p>I'll search through your research documents to find answers.</p>
+                  <p>I&apos;ll search through your research documents to find answers.</p>
                 </div>
               )}
               {messages.map((msg) => (
