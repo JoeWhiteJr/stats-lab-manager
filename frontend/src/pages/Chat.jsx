@@ -86,6 +86,7 @@ export default function Chat() {
   const [selectedMembers, setSelectedMembers] = useState([])
   const [allUsers, setAllUsers] = useState([])
   const [isCreating, setIsCreating] = useState(false)
+  const [dmLoading, setDmLoading] = useState(null)
   const [createError, setCreateError] = useState('')
   const [isSummarizing, setIsSummarizing] = useState(false)
   const [showSummaryModal, setShowSummaryModal] = useState(false)
@@ -1243,12 +1244,18 @@ export default function Chat() {
                 </div>
                 {!isCurrentUser && (
                   <button
+                    disabled={dmLoading === member.id}
                     onClick={async () => {
+                      if (dmLoading) return
+                      setDmLoading(member.id)
                       const room = await createRoom('direct', [member.id])
-                      navigate(`/dashboard/chat/${room.id}`)
-                      setShowMembersModal(false)
+                      setDmLoading(null)
+                      if (room) {
+                        navigate(`/dashboard/chat/${room.id}`)
+                        setShowMembersModal(false)
+                      }
                     }}
-                    className="p-1.5 rounded-full text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:text-primary-400 dark:hover:bg-primary-900/30 transition-colors"
+                    className="p-1.5 rounded-full text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:text-primary-400 dark:hover:bg-primary-900/30 transition-colors disabled:opacity-50 disabled:pointer-events-none"
                     title={`Message ${member.name}`}
                   >
                     <MessageCircle className="w-4 h-4" />
