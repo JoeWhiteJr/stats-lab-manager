@@ -1241,6 +1241,19 @@ export default function Chat() {
                     {isCurrentUser && <span className="ml-1 text-text-secondary dark:text-gray-400 font-normal">(You)</span>}
                   </span>
                 </div>
+                {!isCurrentUser && (
+                  <button
+                    onClick={async () => {
+                      const room = await createRoom('direct', [member.id])
+                      navigate(`/dashboard/chat/${room.id}`)
+                      setShowMembersModal(false)
+                    }}
+                    className="p-1.5 rounded-full text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:text-primary-400 dark:hover:bg-primary-900/30 transition-colors"
+                    title={`Message ${member.name}`}
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                  </button>
+                )}
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                   member.role === 'admin'
                     ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
