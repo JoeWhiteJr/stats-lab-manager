@@ -83,7 +83,6 @@ export default function Chat() {
 
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [chatName, setChatName] = useState('')
-  const [chatType, setChatType] = useState('group')
   const [selectedMembers, setSelectedMembers] = useState([])
   const [allUsers, setAllUsers] = useState([])
   const [isCreating, setIsCreating] = useState(false)
@@ -184,7 +183,6 @@ export default function Chat() {
   const handleOpenCreate = async () => {
     setCreateError('')
     setChatName('')
-    setChatType('group')
     setSelectedMembers([])
     setMemberSearchQuery('')
     setSelectedProjectId('')
@@ -555,7 +553,6 @@ export default function Chat() {
   // Split rooms into pinned and regular
   const pinnedRooms = rooms.filter(r => r.pinned_at)
   const regularRooms = rooms.filter(r => !r.pinned_at)
-  const displayRooms = showArchived ? archivedRooms : rooms
 
   return (
     <div className="h-[calc(100vh-7rem)] flex bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">

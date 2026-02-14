@@ -22,7 +22,6 @@ function getInitials(name) {
 }
 
 export default function ChatRoomAvatar({ room, currentUserId, size = 40 }) {
-  const sizeClass = `w-[${size}px] h-[${size}px]`
   const style = { width: size, height: size, minWidth: size }
 
   if (room.type === 'direct') {
