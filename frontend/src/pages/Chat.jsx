@@ -19,7 +19,7 @@ import MediaViewer from '../components/chat/MediaViewer'
 import { useChatNotifications } from '../components/chat/useChatNotifications'
 import { chatApi } from '../services/api'
 import { toast } from '../store/toastStore'
-import { MessageCircle, Plus, Sparkles, Send, Trash2, Smile, Pencil, Reply, X, ArrowLeft, Search, Image, Archive } from 'lucide-react'
+import { MessageCircle, Plus, Sparkles, Send, Trash2, Smile, Pencil, Reply, X, ArrowLeft, Search, Image, Archive, UserPlus } from 'lucide-react'
 import { format, isToday, isYesterday, formatDistanceToNow } from 'date-fns'
 
 // Detect URLs in text
@@ -76,7 +76,8 @@ export default function Chat() {
     rooms, archivedRooms, currentRoom, messages, readReceipts, hasMore, isLoading,
     fetchRooms, fetchRoom, fetchMessages, sendMessage, deleteMessage, markRead,
     clearCurrentRoom, createRoom, summarizeChat,
-    toggleReaction, sendAudioMessage, sendFileMessage, deleteRoom,
+    toggleReaction, sendAudioMessage, sendFileMessage, deleteRoom, renameRoom,
+    addMembers, removeMember,
     toggleMute, markUnread, togglePin, toggleArchive, fetchArchivedRooms
   } = useChatStore()
   const { user } = useAuthStore()
@@ -126,6 +127,26 @@ export default function Chat() {
   const typingTimeoutRef = useRef(null)
 
   const isAdmin = user?.role === 'admin'
+
+  // Permission check: can current user manage the current chat room?
+  const canManageCurrentChat = currentRoom?.type === 'group' && (
+    user?.role === 'admin' ||
+    currentRoom.members?.find(m => m.id === user?.id)?.role === 'admin' ||
+    user?.role === 'project_lead'
+  )
+
+  // Rename modal state
+  const [showRenameModal, setShowRenameModal] = useState(false)
+  const [renameText, setRenameText] = useState('')
+  const [isRenaming, setIsRenaming] = useState(false)
+
+  // Add/remove member state
+  const [showAddMemberSection, setShowAddMemberSection] = useState(false)
+  const [addMemberSearch, setAddMemberSearch] = useState('')
+  const [addMemberSelected, setAddMemberSelected] = useState([])
+  const [addMemberUsers, setAddMemberUsers] = useState([])
+  const [isAddingMembers, setIsAddingMembers] = useState(false)
+  const [removingMemberId, setRemovingMemberId] = useState(null)
 
   // Push notifications hook
   useChatNotifications()
@@ -548,6 +569,59 @@ export default function Chat() {
     setShowArchived(!showArchived)
   }
 
+  const handleOpenRename = () => {
+    setRenameText(currentRoom?.name || '')
+    setShowRenameModal(true)
+  }
+
+  const handleRenameSubmit = async (e) => {
+    e.preventDefault()
+    const trimmed = renameText.trim()
+    if (!trimmed || !currentRoom) return
+    setIsRenaming(true)
+    const success = await renameRoom(currentRoom.id, trimmed)
+    setIsRenaming(false)
+    if (success) {
+      setShowRenameModal(false)
+      toast.success('Chat renamed')
+    }
+  }
+
+  const handleOpenAddMembers = async () => {
+    setAddMemberSearch('')
+    setAddMemberSelected([])
+    try {
+      const { data } = await usersApi.team()
+      const existingIds = new Set(currentRoom?.members?.map(m => m.id) || [])
+      setAddMemberUsers(data.users.filter(u => !existingIds.has(u.id)))
+    } catch {
+      toast.error('Failed to load users')
+    }
+    setShowAddMemberSection(true)
+  }
+
+  const handleAddMembersSubmit = async () => {
+    if (addMemberSelected.length === 0 || !currentRoom) return
+    setIsAddingMembers(true)
+    const success = await addMembers(currentRoom.id, addMemberSelected)
+    setIsAddingMembers(false)
+    if (success) {
+      setShowAddMemberSection(false)
+      setAddMemberSelected([])
+      toast.success('Members added')
+    }
+  }
+
+  const handleRemoveMember = async (memberId) => {
+    if (!currentRoom) return
+    setRemovingMemberId(memberId)
+    const success = await removeMember(currentRoom.id, memberId)
+    setRemovingMemberId(null)
+    if (success) {
+      toast.success('Member removed')
+    }
+  }
+
   const filteredUsers = allUsers.filter(u =>
     u.name?.toLowerCase().includes(memberSearchQuery.toLowerCase())
   )
@@ -684,25 +758,36 @@ export default function Chat() {
                   <ArrowLeft size={20} />
                 </button>
                 {currentRoom.type !== 'direct' ? (
-                  <button
-                    onClick={() => setShowMembersModal(true)}
-                    className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer text-left"
-                    title="View members"
-                  >
-                    <ChatRoomAvatar room={currentRoom} currentUserId={user?.id} size={36} />
-                    <div>
-                      <h2 className="font-semibold dark:text-gray-100">
-                        {currentRoom.name || 'Group Chat'}
-                      </h2>
-                      <p className="text-xs text-text-secondary dark:text-gray-400">
-                        {currentRoom.members?.length || 0} members
-                        {(() => {
-                          const onlineCount = currentRoom.members?.filter(m => onlineUserIds.includes(m.id)).length || 0
-                          return onlineCount > 0 ? ` · ${onlineCount} online` : ''
-                        })()}
-                      </p>
-                    </div>
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setShowMembersModal(true)}
+                      className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer text-left"
+                      title="View members"
+                    >
+                      <ChatRoomAvatar room={currentRoom} currentUserId={user?.id} size={36} />
+                      <div>
+                        <h2 className="font-semibold dark:text-gray-100">
+                          {currentRoom.name || 'Group Chat'}
+                        </h2>
+                        <p className="text-xs text-text-secondary dark:text-gray-400">
+                          {currentRoom.members?.length || 0} members
+                          {(() => {
+                            const onlineCount = currentRoom.members?.filter(m => onlineUserIds.includes(m.id)).length || 0
+                            return onlineCount > 0 ? ` · ${onlineCount} online` : ''
+                          })()}
+                        </p>
+                      </div>
+                    </button>
+                    {canManageCurrentChat && (
+                      <button
+                        onClick={handleOpenRename}
+                        className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                        title="Rename chat"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <div className="flex items-center gap-3">
                     <ChatRoomAvatar room={currentRoom} currentUserId={user?.id} size={36} />
@@ -1210,13 +1295,90 @@ export default function Chat() {
         </div>
       </Modal>
 
+      {/* Rename Chat Modal */}
+      <Modal isOpen={showRenameModal} onClose={() => setShowRenameModal(false)} title="Rename Chat" size="sm">
+        <form onSubmit={handleRenameSubmit} className="space-y-4">
+          <Input
+            label="Chat Name"
+            value={renameText}
+            onChange={(e) => setRenameText(e.target.value)}
+            placeholder="Enter new name..."
+            maxLength={255}
+            autoFocus
+          />
+          <div className="flex justify-end gap-3">
+            <Button type="button" variant="secondary" onClick={() => setShowRenameModal(false)}>Cancel</Button>
+            <Button type="submit" loading={isRenaming} disabled={!renameText.trim()}>Rename</Button>
+          </div>
+        </form>
+      </Modal>
+
       {/* Members Modal */}
       <Modal
         isOpen={showMembersModal}
-        onClose={() => setShowMembersModal(false)}
+        onClose={() => { setShowMembersModal(false); setShowAddMemberSection(false) }}
         title={`${currentRoom?.name || 'Chat'} — ${currentRoom?.members?.length || 0} members`}
         size="md"
       >
+        {/* Add Members Button */}
+        {canManageCurrentChat && !showAddMemberSection && (
+          <button
+            onClick={handleOpenAddMembers}
+            className="w-full flex items-center gap-2 px-3 py-2 mb-2 rounded-lg text-sm font-medium text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+          >
+            <UserPlus size={16} />
+            Add Members
+          </button>
+        )}
+
+        {/* Inline Add Members Section */}
+        {showAddMemberSection && (
+          <div className="mb-3 p-3 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800">
+            <input
+              type="text"
+              value={addMemberSearch}
+              onChange={(e) => setAddMemberSearch(e.target.value)}
+              placeholder="Search users..."
+              className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-text-primary dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-primary-300 mb-2"
+            />
+            <div className="max-h-36 overflow-y-auto mb-2">
+              {addMemberUsers
+                .filter(u => u.name?.toLowerCase().includes(addMemberSearch.toLowerCase()))
+                .map(u => (
+                  <label key={u.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={addMemberSelected.includes(u.id)}
+                      onChange={() => setAddMemberSelected(prev =>
+                        prev.includes(u.id) ? prev.filter(id => id !== u.id) : [...prev, u.id]
+                      )}
+                      className="rounded border-gray-300 dark:border-gray-600 text-primary-600 focus:ring-primary-300"
+                    />
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      {u.avatar_url ? (
+                        <img src={getUploadUrl(u.avatar_url)} alt="" className="w-6 h-6 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-[10px] font-semibold text-white">
+                          {u.name?.charAt(0)?.toUpperCase()}
+                        </div>
+                      )}
+                      <span className="text-sm dark:text-gray-100 truncate">{u.name}</span>
+                    </div>
+                  </label>
+                ))}
+              {addMemberUsers.filter(u => u.name?.toLowerCase().includes(addMemberSearch.toLowerCase())).length === 0 && (
+                <p className="text-center text-sm text-gray-400 dark:text-gray-500 py-2">No users found</p>
+              )}
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" size="sm" onClick={() => setShowAddMemberSection(false)}>Cancel</Button>
+              <Button size="sm" onClick={handleAddMembersSubmit} loading={isAddingMembers} disabled={addMemberSelected.length === 0}>
+                Add ({addMemberSelected.length})
+              </Button>
+            </div>
+          </div>
+        )}
+
         <div className="max-h-96 overflow-y-auto -mx-2">
           {currentRoom?.members?.map(member => {
             const isOnline = onlineUserIds.includes(member.id)
@@ -1259,6 +1421,16 @@ export default function Chat() {
                     title={`Message ${member.name}`}
                   >
                     <MessageCircle className="w-4 h-4" />
+                  </button>
+                )}
+                {canManageCurrentChat && !isCurrentUser && (
+                  <button
+                    disabled={removingMemberId === member.id}
+                    onClick={() => handleRemoveMember(member.id)}
+                    className="p-1.5 rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50"
+                    title={`Remove ${member.name}`}
+                  >
+                    <X className="w-4 h-4" />
                   </button>
                 )}
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
