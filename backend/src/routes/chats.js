@@ -12,6 +12,33 @@ const { createNotificationForUsers } = require('./notifications');
 
 const router = express.Router();
 
+// Check if user can manage a chat room (rename, add/remove members)
+// Returns true for: global admins, chat room admins, project leads on project-linked rooms
+async function canManageChat(userId, roomId) {
+  // Global admin
+  const userResult = await db.query('SELECT role FROM users WHERE id = $1', [userId]);
+  if (userResult.rows.length > 0 && userResult.rows[0].role === 'admin') return true;
+
+  // Chat room admin
+  const memberResult = await db.query(
+    'SELECT role FROM chat_members WHERE room_id = $1 AND user_id = $2',
+    [roomId, userId]
+  );
+  if (memberResult.rows.length > 0 && memberResult.rows[0].role === 'admin') return true;
+
+  // Project lead for project-linked rooms
+  const roomResult = await db.query('SELECT project_id FROM chat_rooms WHERE id = $1', [roomId]);
+  if (roomResult.rows[0]?.project_id) {
+    const projectMember = await db.query(
+      'SELECT role FROM project_members WHERE project_id = $1 AND user_id = $2',
+      [roomResult.rows[0].project_id, userId]
+    );
+    if (projectMember.rows.length > 0 && projectMember.rows[0].role === 'lead') return true;
+  }
+
+  return false;
+}
+
 // Configure multer for chat file/audio uploads
 const chatUploadDir = path.join(process.env.UPLOAD_DIR || path.join(__dirname, '../../uploads'), 'chat');
 if (!fs.existsSync(chatUploadDir)) {
@@ -222,6 +249,45 @@ router.post('/', authenticate, [
     next(error);
   } finally {
     client.release();
+  }
+});
+
+// Rename chat room
+router.put('/:id', authenticate, [
+  body('name').trim().notEmpty().isLength({ max: 255 })
+], async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: { message: 'Validation failed', details: errors.array() } });
+    }
+
+    // Check room exists and is a group
+    const room = await db.query('SELECT * FROM chat_rooms WHERE id = $1 AND deleted_at IS NULL', [req.params.id]);
+    if (room.rows.length === 0) {
+      return res.status(404).json({ error: { message: 'Chat room not found' } });
+    }
+    if (room.rows[0].type !== 'group') {
+      return res.status(400).json({ error: { message: 'Only group chats can be renamed' } });
+    }
+
+    // Check permission
+    const hasPermission = await canManageChat(req.user.id, req.params.id);
+    if (!hasPermission) {
+      return res.status(403).json({ error: { message: 'You do not have permission to rename this chat' } });
+    }
+
+    const { name } = req.body;
+    const result = await db.query(
+      'UPDATE chat_rooms SET name = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+      [name, req.params.id]
+    );
+
+    socketService.notifyRoomUpdate(req.params.id);
+
+    res.json({ room: result.rows[0] });
+  } catch (error) {
+    next(error);
   }
 });
 
@@ -634,13 +700,9 @@ router.post('/:id/members', authenticate, [
       return res.status(400).json({ error: { message: 'Validation failed', details: errors.array() } });
     }
 
-    // Check if user is admin of this room
-    const membership = await db.query(
-      'SELECT role FROM chat_members WHERE room_id = $1 AND user_id = $2',
-      [req.params.id, req.user.id]
-    );
-
-    if (membership.rows.length === 0 || (membership.rows[0].role !== 'admin' && req.user.role !== 'admin')) {
+    // Check if user can manage this chat
+    const hasPermission = await canManageChat(req.user.id, req.params.id);
+    if (!hasPermission) {
       return res.status(403).json({ error: { message: 'Only room admins can add members' } });
     }
 
@@ -696,15 +758,10 @@ router.post('/:id/members', authenticate, [
 // Remove member from group chat
 router.delete('/:id/members/:userId', authenticate, async (req, res, next) => {
   try {
-    // Check if requester is admin of this room
-    const membership = await db.query(
-      'SELECT role FROM chat_members WHERE room_id = $1 AND user_id = $2',
-      [req.params.id, req.user.id]
-    );
-
-    if (membership.rows.length === 0 || (membership.rows[0].role !== 'admin' && req.user.role !== 'admin')) {
-      // Users can remove themselves
-      if (req.params.userId !== req.user.id) {
+    // Users can always remove themselves; for others, check management permission
+    if (req.params.userId !== req.user.id) {
+      const hasPermission = await canManageChat(req.user.id, req.params.id);
+      if (!hasPermission) {
         return res.status(403).json({ error: { message: 'Only room admins can remove members' } });
       }
     }

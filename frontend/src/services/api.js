@@ -214,6 +214,7 @@ export const chatApi = {
   removeMember: (roomId, userId) =>
     api.delete(`/chats/${roomId}/members/${userId}`),
   markRead: (roomId) => api.put(`/chats/${roomId}/read`),
+  renameRoom: (roomId, name) => api.put(`/chats/${roomId}`, { name }),
   deleteRoom: (roomId) => api.delete(`/chats/${roomId}`),
   toggleMute: (roomId) => api.put(`/chats/${roomId}/mute`),
   markUnread: (roomId) => api.put(`/chats/${roomId}/mark-unread`),

@@ -117,6 +117,20 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
+  renameRoom: async (roomId, name) => {
+    try {
+      const { data } = await chatApi.renameRoom(roomId, name)
+      set((state) => ({
+        rooms: state.rooms.map(r => r.id === roomId ? { ...r, name: data.room.name } : r),
+        currentRoom: state.currentRoom?.id === roomId ? { ...state.currentRoom, name: data.room.name } : state.currentRoom
+      }))
+      return true
+    } catch (error) {
+      set({ error: error.response?.data?.error?.message || 'Failed to rename room' })
+      return false
+    }
+  },
+
   // Members
   addMembers: async (roomId, userIds) => {
     try {
