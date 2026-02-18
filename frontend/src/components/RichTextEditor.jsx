@@ -18,6 +18,7 @@ export default function RichTextEditor({
       [{ 'header': [1, 2, 3, false] }],
       ['bold', 'italic', 'underline', 'strike'],
       [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+      [{ 'indent': '-1' }, { 'indent': '+1' }],
       ['blockquote'],
       ['link'],
       ['clean']
@@ -32,6 +33,7 @@ export default function RichTextEditor({
     'header',
     'bold', 'italic', 'underline', 'strike',
     'list', 'bullet',
+    'indent',
     'blockquote',
     'link'
   ]

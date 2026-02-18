@@ -243,8 +243,8 @@ export default function AudioPlayer({ src, meetingId, className = '' }) {
 
         {/* Progress Bar */}
         <div className="flex-1 flex items-center gap-2">
-          <span className="text-xs text-text-secondary w-10 text-right">
-            {formatTime(currentTime)}
+          <span className="text-xs text-text-secondary dark:text-gray-400 whitespace-nowrap">
+            {formatTime(currentTime)} / {formatTime(duration)}
           </span>
 
           <div
@@ -258,19 +258,15 @@ export default function AudioPlayer({ src, meetingId, className = '' }) {
           >
             {/* Progress Fill */}
             <div
-              className={`absolute top-0 left-0 h-full bg-primary-500 rounded-full ${isDragging ? '' : 'transition-all'}`}
+              className={`absolute top-0 left-0 h-full bg-primary-500 rounded-full pointer-events-none ${isDragging ? '' : 'transition-all'}`}
               style={{ width: `${progressPercent}%` }}
             />
             {/* Hover/drag indicator */}
             <div
-              className={`absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-primary-600 rounded-full shadow-sm ${isDragging ? 'opacity-100 scale-110' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}
+              className={`absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-primary-600 rounded-full shadow-sm pointer-events-none ${isDragging ? 'opacity-100 scale-110' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}
               style={{ left: `calc(${progressPercent}% - 7px)` }}
             />
           </div>
-
-          <span className="text-xs text-text-secondary w-10">
-            {formatTime(duration)}
-          </span>
         </div>
 
         {/* Speed Control */}

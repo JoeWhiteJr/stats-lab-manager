@@ -491,8 +491,10 @@ export default function ProjectDetail() {
     fetchFiles(id)
   }
 
-  // Note helpers
-  const pinnedNotes = notes.filter(n => n.is_pinned || n.pinned_for_project)
+  // Note helpers — project pins first, then personal pins
+  const projectPinnedNotes = notes.filter(n => n.pinned_for_project)
+  const personalPinnedNotes = notes.filter(n => n.is_pinned && !n.pinned_for_project)
+  const pinnedNotes = [...projectPinnedNotes, ...personalPinnedNotes]
   const unpinnedNotes = notes.filter(n => !n.is_pinned && !n.pinned_for_project)
 
   // Sort members with lead on top
@@ -1037,19 +1039,35 @@ export default function ProjectDetail() {
                   Pinned
                 </h4>
                 {pinnedNotes.length > 0 ? (
-                  <div className="space-y-2">
-                    {pinnedNotes.map((note) => (
-                      <button
-                        key={note.id}
-                        onClick={() => handleEditNote(note)}
-                        className="w-full text-left px-2 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
-                      >
-                        <p className="text-xs font-medium text-text-primary dark:text-gray-100 truncate">{note.title}</p>
-                        {note.pinned_for_project && (
-                          <span className="text-[10px] text-primary-500 dark:text-primary-400">Project pin</span>
-                        )}
-                      </button>
-                    ))}
+                  <div className="space-y-1">
+                    {projectPinnedNotes.length > 0 && (
+                      <>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-primary-500 dark:text-primary-400 px-2 pt-1">Project Pins</p>
+                        {projectPinnedNotes.map((note) => (
+                          <button
+                            key={note.id}
+                            onClick={() => handleEditNote(note)}
+                            className="w-full text-left px-2 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors border-l-2 border-primary-400 dark:border-primary-500"
+                          >
+                            <p className="text-xs font-medium text-text-primary dark:text-gray-100 truncate">{note.title}</p>
+                          </button>
+                        ))}
+                      </>
+                    )}
+                    {personalPinnedNotes.length > 0 && (
+                      <>
+                        <p className={`text-[10px] font-semibold uppercase tracking-wider text-text-secondary dark:text-gray-400 px-2 ${projectPinnedNotes.length > 0 ? 'pt-2 mt-1 border-t border-gray-100 dark:border-gray-700' : 'pt-1'}`}>My Pins</p>
+                        {personalPinnedNotes.map((note) => (
+                          <button
+                            key={note.id}
+                            onClick={() => handleEditNote(note)}
+                            className="w-full text-left px-2 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors"
+                          >
+                            <p className="text-xs font-medium text-text-primary dark:text-gray-100 truncate">{note.title}</p>
+                          </button>
+                        ))}
+                      </>
+                    )}
                   </div>
                 ) : (
                   <p className="text-xs text-text-secondary dark:text-gray-400">No pinned notes</p>
@@ -1321,12 +1339,11 @@ export default function ProjectDetail() {
             className="w-full text-xl font-display font-semibold text-text-primary dark:text-gray-100 bg-transparent border-none outline-none placeholder:text-gray-400"
           />
           <div className="flex-1">
-            <textarea
+            <RichTextEditor
               value={noteData.content}
-              onChange={(e) => setNoteData({ ...noteData, content: e.target.value })}
-              rows={20}
+              onChange={(content) => setNoteData({ ...noteData, content })}
               placeholder="Write your note..."
-              className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 resize-y min-h-[400px]"
+              minHeight="400px"
             />
           </div>
           <div className="flex justify-end gap-3 pt-2">
