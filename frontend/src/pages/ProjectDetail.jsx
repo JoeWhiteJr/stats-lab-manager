@@ -402,16 +402,6 @@ export default function ProjectDetail() {
     setShowRecorder(false)
   }
 
-  const handleEditMeeting = (meeting) => {
-    setEditingMeeting(meeting)
-    setMeetingData({
-      title: meeting.title,
-      recorded_at: meeting.recorded_at ? meeting.recorded_at.split('T')[0] : '',
-      notes: meeting.notes || ''
-    })
-    setShowEditMeetingModal(true)
-  }
-
   const handleSaveMeeting = async (e) => {
     e.preventDefault()
     if (editingMeeting) {
