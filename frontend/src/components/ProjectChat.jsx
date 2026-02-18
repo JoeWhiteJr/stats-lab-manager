@@ -55,7 +55,7 @@ function AuthenticatedAudio({ audioUrl }) {
 
 export default function ProjectChat({ projectId }) {
   const {
-    messages, readReceipts, hasMore, isLoading,
+    messages, hasMore, isLoading,
     fetchMessages, sendMessage, deleteMessage, markRead,
     clearCurrentRoom, toggleReaction, sendAudioMessage, sendFileMessage
   } = useChatStore()

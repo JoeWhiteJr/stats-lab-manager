@@ -4,7 +4,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { useAuthStore } from '../store/authStore'
 import { useProjectStore } from '../store/projectStore'
-import { usersApi, filesApi, aiApi, meetingsApi, getUploadUrl } from '../services/api'
+import { usersApi, filesApi, aiApi, meetingsApi } from '../services/api'
 import Button from '../components/Button'
 import Modal from '../components/Modal'
 import Input from '../components/Input'
@@ -14,7 +14,7 @@ import FilePreviewModal from '../components/FilePreviewModal'
 import NoteCard from '../components/NoteCard'
 import MeetingCard from '../components/MeetingCard'
 import DatePicker from '../components/DatePicker'
-import RichTextEditor, { RichTextContent } from '../components/RichTextEditor'
+import RichTextEditor from '../components/RichTextEditor'
 import AudioRecorder from '../components/AudioRecorder'
 import AudioPlayer from '../components/AudioPlayer'
 import CategoryManager from '../components/CategoryManager'
@@ -23,7 +23,7 @@ import ProjectChat from '../components/ProjectChat'
 import {
   ArrowLeft, Edit3, Trash2, Plus, Upload, ListTodo, FileText,
   StickyNote, Mic, MoreVertical, Check, Users, Sparkles, Loader2,
-  Calendar, UserPlus, UserMinus, Crown, Clock, Mail, Shield,
+  Calendar, UserPlus, UserMinus, Crown, Clock, Shield,
   MessageCircle, FolderPlus, Folder, ChevronRight, Search, Pin
 } from 'lucide-react'
 import { CalendarView } from '../components/calendar/CalendarView'
