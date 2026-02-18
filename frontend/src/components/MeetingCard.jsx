@@ -65,18 +65,34 @@ const MeetingCard = memo(function MeetingCard({ meeting, onView, onDelete, onEdi
           <Mic size={12} />
           {hasAudio ? 'Has audio' : 'No audio'}
         </span>
-        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${
-          hasTranscript ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
-        }`}>
-          <FileText size={12} />
-          {hasTranscript ? 'Transcribed' : 'No transcript'}
-        </span>
-        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${
-          hasSummary ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' : 'bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
-        }`}>
-          <Sparkles size={12} />
-          {hasSummary ? 'Summarized' : 'No summary'}
-        </span>
+        {hasTranscript ? (
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+            <FileText size={12} />
+            Transcribed
+          </span>
+        ) : (
+          <button
+            onClick={() => onView?.(meeting)}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+          >
+            <FileText size={12} />
+            No transcript
+          </button>
+        )}
+        {hasSummary ? (
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+            <Sparkles size={12} />
+            Summarized
+          </span>
+        ) : (
+          <button
+            onClick={() => onView?.(meeting)}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+          >
+            <Sparkles size={12} />
+            No summary
+          </button>
+        )}
         {hasNotes && (
           <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
             <StickyNote size={12} />
@@ -92,16 +108,14 @@ const MeetingCard = memo(function MeetingCard({ meeting, onView, onDelete, onEdi
         </div>
       )}
 
-      {/* Generate Summary button when no summary */}
-      {!hasSummary && (
-        <button
-          onClick={(e) => { e.stopPropagation(); onView?.(meeting) }}
-          className="mt-3 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
-        >
-          <Sparkles size={12} />
-          Generate Summary
-        </button>
-      )}
+      {/* Open Meeting Notes button */}
+      <button
+        onClick={() => onView?.(meeting)}
+        className="mt-3 w-full flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-text-secondary dark:text-gray-400 border border-gray-200 dark:border-gray-600 rounded-lg hover:border-primary-300 dark:hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+      >
+        <FileText size={14} />
+        Open Meeting Notes
+      </button>
 
       {/* Expandable notes section */}
       {hasNotes && (

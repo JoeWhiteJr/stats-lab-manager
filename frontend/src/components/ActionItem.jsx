@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, memo } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { GripVertical, Trash2, Pencil, Calendar, User, Users, Tag, Flag, MessageSquare, Send as SendIcon } from 'lucide-react'
+import { GripVertical, Trash2, Pencil, Calendar, Tag, Flag, MessageSquare, Send as SendIcon } from 'lucide-react'
 import { format } from 'date-fns'
+import Avatar from './Avatar'
 import CategoryBadge from './CategoryBadge'
 import ConfirmDialog from './ConfirmDialog'
 import { commentsApi } from '../services/api'
@@ -144,15 +145,32 @@ const ActionItem = memo(function ActionItem({
                 {format(new Date(action.due_date), 'MMM d')}
               </span>
             )}
-            {/* Display multiple assignees */}
+            {/* Display multiple assignees with avatars */}
             {assignees.length > 0 ? (
-              <span className="flex items-center gap-1 text-xs text-text-secondary dark:text-gray-400">
-                {assignees.length === 1 ? <User size={12} /> : <Users size={12} />}
+              <span className="flex items-center gap-1.5 text-xs text-text-secondary dark:text-gray-400">
+                <span className="flex items-center -space-x-1.5">
+                  {assignees.map(a => {
+                    const fullUser = users.find(u => u.id === a.user_id)
+                    return (
+                      <Avatar
+                        key={a.user_id}
+                        name={a.user_name}
+                        src={fullUser?.avatar_url}
+                        size="xs"
+                        className="ring-1 ring-white dark:ring-gray-800"
+                      />
+                    )
+                  })}
+                </span>
                 {assignees.map(a => a.user_name).join(', ')}
               </span>
             ) : assignedUser ? (
-              <span className="flex items-center gap-1 text-xs text-text-secondary dark:text-gray-400">
-                <User size={12} />
+              <span className="flex items-center gap-1.5 text-xs text-text-secondary dark:text-gray-400">
+                <Avatar
+                  name={assignedUser.name}
+                  src={assignedUser.avatar_url}
+                  size="xs"
+                />
                 {assignedUser.name}
               </span>
             ) : null}
