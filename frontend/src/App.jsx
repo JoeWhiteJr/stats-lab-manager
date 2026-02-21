@@ -25,6 +25,7 @@ const AccessRevoked = lazy(() => import('./pages/AccessRevoked'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 const BookClub = lazy(() => import('./pages/BookClub'))
 const VVC = lazy(() => import('./pages/VVC'))
+const Resources = lazy(() => import('./pages/Resources'))
 
 // Jared's public site components
 import PublicLayout from './components/public/layout/PublicLayout'
@@ -142,6 +143,7 @@ function App() {
               <Route path="chat/:roomId" element={<Chat />} />
               <Route path="book-club" element={<BookClub />} />
               <Route path="vvc" element={<VVC />} />
+              <Route path="resources" element={<Resources />} />
               <Route path="admin" element={<AdminRoute><Admin /></AdminRoute>} />
             </Route>
 
