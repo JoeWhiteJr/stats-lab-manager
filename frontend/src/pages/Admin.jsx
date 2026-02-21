@@ -24,14 +24,14 @@ export default function Admin() {
   const { publishedProjects, fetchPublishedProjects, publishProject, updatePublishedProject, unpublishProject } = usePublishStore()
   const { unreadCountsByType, fetchUnreadCountsByType, markReadByType } = useNotificationStore()
 
+  // Recommendations new count
+  const [recNewCount, setRecNewCount] = useState(0)
+
   const tabNotifications = {
     applications: (unreadCountsByType.application || 0) > 0,
     projects: (unreadCountsByType.join_request || 0) > 0,
     recommendations: recNewCount > 0,
   }
-
-  // Recommendations new count
-  const [recNewCount, setRecNewCount] = useState(0)
 
   // Team state
   const [teamMembers, setTeamMembers] = useState([])
