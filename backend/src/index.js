@@ -35,6 +35,7 @@ const assistantRoutes = require('./routes/assistant');
 const personalNoteRoutes = require('./routes/personalNotes');
 const bookClubRoutes = require('./routes/bookClub');
 const recommendationRoutes = require('./routes/recommendations');
+const vvcRoutes = require('./routes/vvc');
 const { publicRouter: siteContentPublicRoutes, adminRouter: siteContentAdminRoutes } = require('./routes/siteContent');
 
 const app = express();
@@ -124,6 +125,7 @@ app.use('/api/assistant', assistantRoutes);
 app.use('/api/personal-notes', personalNoteRoutes);
 app.use('/api/book-club', bookClubRoutes);
 app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/vvc', vvcRoutes);
 app.use('/api/public', siteContentPublicRoutes);
 app.use('/api/admin', siteContentAdminRoutes);
 
