@@ -185,6 +185,54 @@ export const bookClubApi = {
   getAudio: (id) => api.get(`/book-club/${id}/audio`, { responseType: 'blob' }),
 }
 
+// VVC (Vasu's Vibe Coding)
+export const vvcApi = {
+  list: () => api.get('/vvc'),
+  create: (data) => api.post('/vvc', data),
+  update: (id, data) => api.put(`/vvc/${id}`, data),
+  delete: (id) => api.delete(`/vvc/${id}`),
+  uploadVideo: (id, videoFile, onProgress) => {
+    const formData = new FormData()
+    formData.append('video', videoFile)
+    return api.put(`/vvc/${id}/video`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: onProgress
+        ? (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            )
+            onProgress(percentCompleted)
+          }
+        : undefined
+    })
+  },
+  getVideo: (id) => api.get(`/vvc/${id}/video`, { responseType: 'blob' }),
+  uploadImages: (id, files) => {
+    const formData = new FormData()
+    files.forEach(f => formData.append('images', f))
+    return api.post(`/vvc/${id}/images`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  },
+  getImageUrl: (sessionId, imageId) => `${API_URL}/vvc/${sessionId}/images/${imageId}`,
+  deleteImage: (sessionId, imageId) => api.delete(`/vvc/${sessionId}/images/${imageId}`),
+  getResources: () => api.get('/vvc/resources'),
+  updateResource: (key, value) => api.put('/vvc/resources', { key, value }),
+  // Member projects
+  listProjects: () => api.get('/vvc/projects'),
+  createProject: (data) => api.post('/vvc/projects', data),
+  updateProject: (id, data) => api.put(`/vvc/projects/${id}`, data),
+  deleteProject: (id) => api.delete(`/vvc/projects/${id}`),
+  uploadScreenshot: (id, file) => {
+    const formData = new FormData()
+    formData.append('screenshot', file)
+    return api.put(`/vvc/projects/${id}/screenshot`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  },
+  getScreenshotUrl: (id) => `${API_URL}/vvc/projects/${id}/screenshot`,
+}
+
 // Notes
 export const notesApi = {
   list: (projectId, search) => api.get(`/notes/project/${projectId}`, { params: search ? { search } : undefined }),
