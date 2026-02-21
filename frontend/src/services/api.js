@@ -501,4 +501,20 @@ export const recommendationsApi = {
   delete: (id) => api.delete(`/recommendations/${id}`)
 }
 
+// Lab Dashboard
+export const labDashboardApi = {
+  getNews: () => api.get('/lab-dashboard/news'),
+  createNews: (data) => api.post('/lab-dashboard/news', data),
+  updateNews: (id, data) => api.put(`/lab-dashboard/news/${id}`, data),
+  deleteNews: (id) => api.delete(`/lab-dashboard/news/${id}`),
+  getContent: () => api.get('/lab-dashboard/content'),
+  updateContent: (key, value) => api.put('/lab-dashboard/content', { key, value }),
+}
+
+// Resources
+export const resourcesApi = {
+  getContent: () => api.get('/public/site-content/resources'),
+  updateContent: (key, value) => api.put('/admin/site-content/resources', { key, value }),
+}
+
 export default api
