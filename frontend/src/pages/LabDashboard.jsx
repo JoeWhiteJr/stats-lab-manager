@@ -203,14 +203,14 @@ export default function LabDashboard() {
   }
 
   const openNewsModal = (item = null) => {
-    if (item) { setEditingNews(item); setNewsForm({ title: item.title, body: item.body }) }
+    if (item) { setEditingNews(item); setNewsForm({ title: item.title, body: item.body || '' }) }
     else { setEditingNews(null); setNewsForm({ title: '', body: '' }) }
     setShowNewsModal(true)
   }
 
   const handleSaveNews = async (e) => {
     e.preventDefault()
-    if (!newsForm.title.trim() || !newsForm.body.trim()) return
+    if (!newsForm.title.trim()) return
     setSavingNews(true)
     try {
       if (editingNews) {
@@ -347,7 +347,7 @@ export default function LabDashboard() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-text-primary dark:text-gray-100">{item.title}</h3>
-                        <p className="text-sm text-text-secondary dark:text-gray-400 mt-1 line-clamp-2">{item.body}</p>
+                        {item.body && <p className="text-sm text-text-secondary dark:text-gray-400 mt-1 line-clamp-2">{item.body}</p>}
                         <div className="flex items-center gap-2 mt-2 text-xs text-text-secondary dark:text-gray-500">
                           <span>{item.author_name}</span>
                           <span>&middot;</span>
@@ -657,8 +657,8 @@ export default function LabDashboard() {
             <input type="text" value={newsForm.title} onChange={(e) => setNewsForm(f => ({ ...f, title: e.target.value }))} placeholder="News title..." required className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">Body</label>
-            <textarea value={newsForm.body} onChange={(e) => setNewsForm(f => ({ ...f, body: e.target.value }))} placeholder="What's the news?" rows={4} required className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 resize-none" />
+            <label className="block text-sm font-medium text-text-primary dark:text-gray-100 mb-1.5">Body <span className="text-text-secondary dark:text-gray-400 font-normal">(optional)</span></label>
+            <textarea value={newsForm.body} onChange={(e) => setNewsForm(f => ({ ...f, body: e.target.value }))} placeholder="Add details (optional)..." rows={4} className="w-full px-4 py-2.5 rounded-organic border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-text-primary dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400 resize-none" />
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="secondary" onClick={() => setShowNewsModal(false)}>Cancel</Button>

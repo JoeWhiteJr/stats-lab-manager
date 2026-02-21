@@ -28,7 +28,7 @@ router.get('/news', async (req, res, next) => {
 // POST /api/lab-dashboard/news
 router.post('/news', requireRole('admin'), [
   body('title').trim().notEmpty().isLength({ max: 255 }),
-  body('body').trim().notEmpty(),
+  body('body').optional().trim(),
 ], async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -39,7 +39,7 @@ router.post('/news', requireRole('admin'), [
     const { title, body: newsBody } = req.body;
     const result = await db.query(
       `INSERT INTO lab_news (title, body, created_by) VALUES ($1, $2, $3) RETURNING *`,
-      [title, newsBody, req.user.id]
+      [title, newsBody || null, req.user.id]
     );
 
     // Fetch with author info
